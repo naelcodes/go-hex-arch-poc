@@ -5,16 +5,16 @@ FROM golang:latest
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
-COPY . /app
+COPY . .
 
 # Download and install any required dependencies
 RUN go mod download
 
 # Build the Go app
-RUN go build -o /bin
+RUN go build -o ./bin 
 
 # Expose port 3000 for incoming traffic
 EXPOSE 3000
 
 # Define the command to run the app when the container starts
-CMD ["/app/bin"]
+CMD ["./bin"]
