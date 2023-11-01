@@ -15,6 +15,7 @@ func AddCustomer(c *fiber.Ctx) error {
 
 		result := database.DB.Create(&newCustomer)
 		if result.Error != nil {
+			
 			return c.Status(500).JSON(result.Error)
 		}
 
