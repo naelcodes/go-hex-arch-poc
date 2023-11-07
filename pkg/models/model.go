@@ -17,7 +17,7 @@ type Customer struct {
 	Is_sub_agency   bool    `json:"isSubAgency"`
 	// Opening_balance float64 `json:"openingBalance"`
 	Language        string  `json:"language"`
-	Slug            int32   `json:"slug"`       //needed due to constraint - unique
+	Slug            int32   `json:"slug"`       //needed due to constraint - unique (add a random value before each save)
 	Id_currency     uint    `json:"idCurrency"` //needed due to constraint
 	Id_country      uint    `json:"idCountry"`  //needed due to constraint
 	// Irs_share_key   string  `json:"irsShareKey"`

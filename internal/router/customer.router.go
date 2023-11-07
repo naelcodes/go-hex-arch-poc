@@ -7,6 +7,7 @@ import (
 
 func SetupRoutes(customerRouter fiber.Router){
 	
+	//TODO : add paginations on GET
 	 customerRouter.Get("",handlers.GetAlLCustomers)
 	 customerRouter.Post("",handlers.AddCustomer)
 	 customerRouter.Put("/:id", handlers.UpdateCustomer)

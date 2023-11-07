@@ -10,23 +10,21 @@ import (
 	"github.com/naelcodes/customer-rest-api/internal/router"
 )
 
+func main() {
 
+	database.ConnectDb()
 
-func main(){
-
-	 database.ConnectDb()
-
-	 app := fiber.New()
-	 app.Use(cors.New(cors.Config{
+	app := fiber.New()
+	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 	}))
 
-	 apiV1Router := app.Group("/api/v1")
-	 customerRouter := apiV1Router.Group("/customers")
+	apiV1Router := app.Group("/api/v1")
+	customerRouter := apiV1Router.Group("/customers")
 
-	 router.SetupRoutes(customerRouter)
+	router.SetupRoutes(customerRouter)
 
-	 fmt.Println("SERVER STARTING ON PORT 3000....")
-	 log.Fatal(app.Listen(":3000"))
-	 
+	fmt.Println("SERVER STARTING ON PORT 3000....")
+	log.Fatal(app.Listen(":3000"))
+
 }
