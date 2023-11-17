@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/naelcodes/customer-rest-api/internal/database"
-	"github.com/naelcodes/customer-rest-api/internal/router"
+	"github.com/naelcodes/ab-backend/database"
+	"github.com/naelcodes/ab-backend/router"
 )
 
 func main() {
