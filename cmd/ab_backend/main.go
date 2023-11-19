@@ -4,14 +4,21 @@ import (
 	"log"
 
 	"github.com/naelcodes/ab-backend/internal/bootstrap"
+	"github.com/naelcodes/ab-backend/internal/common"
+	"github.com/naelcodes/ab-backend/internal/pkg/database"
 	"github.com/naelcodes/ab-backend/internal/pkg/server"
 )
 
 func main() {
-	app := new(server.Engine)
 
-	app.Init()
-	bootstrap.InitModules(app)
+	appEngine := new(server.AppEngine)
+	appEngine.Init()
 
-	log.Fatal(app.Serve())
+	globalContext := new(common.GlobalContext)
+	globalContext.Database = database.PostgresConnection()
+	globalContext.AppEngine = appEngine
+
+	bootstrap.InitModules(globalContext)
+
+	log.Fatal(appEngine.Serve())
 }

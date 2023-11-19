@@ -1,11 +1,7 @@
 package domain
 
-import "github.com/naelcodes/ab-backend/internal/common/base"
-
-type CustomerEntity struct {
-	base.IBaseEntity
-	base.BaseEntity
-
+type CustomerAggregate struct {
+	Id              uint
 	Name            string
 	Alias           string
 	AbKey           string

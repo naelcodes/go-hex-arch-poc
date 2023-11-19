@@ -1,12 +1,5 @@
 package application
 
-import "github.com/naelcodes/ab-backend/internal/modules/customers/dto"
+func (application *CustomerApplication) CreateCustomerService() {
 
-type CreateCustomerService struct {
-	appSvc
-}
-
-func (appSvc *CreateCustomerService) Execute(dto.CreateUserDTO) (int, error) {
-	result := appSvc.repository.Save(dto)
-	return result, nil
 }
