@@ -10,6 +10,7 @@ type CreateCustomerDTO struct {
 }
 
 type UpdateCustomerDTO struct {
+	Id                int     `json:"id"`
 	Customer_name     *string `json:"customerName"`
 	State             *string `json:"state"`
 	Account_number    *string `json:"accountNumber"`

@@ -1,44 +1,76 @@
 package postgresAdapter
 
 import (
+	"context"
+	"fmt"
+	"slices"
+
 	"github.com/naelcodes/ab-backend/internal/common"
+	"github.com/naelcodes/ab-backend/internal/ent"
+	"github.com/naelcodes/ab-backend/internal/ent/customer"
+	"github.com/naelcodes/ab-backend/internal/modules/customers/domain"
+	"github.com/naelcodes/ab-backend/internal/modules/customers/parser"
 )
 
 type CustomerRepository struct {
-	Database any
+	Database *ent.Client
+	Context  context.Context
 }
 
-func (cRepo CustomerRepository) FindById(id uint) (*CustomerModel, error) {
+func (repo *CustomerRepository) GetById(id uint) (*domain.CustomerAggregate, error) {
 	return nil, nil
 }
 
-func (cRepo CustomerRepository) Find(query common.GetQueryParams, options ...any) ([]*CustomerModel, error) {
-	return nil, nil
+func (repo *CustomerRepository) GetAll(query *common.GetQueryParams) ([]*domain.CustomerAggregate, error) {
+
+	customerQuery := repo.Database.Customer.Query()
+
+	if query != nil {
+
+		if query.Fields != nil && slices.Contains(*query.Fields, "id") && slices.Contains(*query.Fields, "name") {
+			customerQuery.Select(customer.FieldID, customer.FieldCustomerName)
+		}
+
+		if query.PageNumber != nil && query.PageSize != nil {
+			pageNumber := *query.PageNumber
+			numberOfRecordsPerPage := *query.PageSize
+			customerQuery.Offset(pageNumber * numberOfRecordsPerPage)
+			customerQuery.Limit(numberOfRecordsPerPage)
+		}
+
+	}
+
+	customers, err := customerQuery.All(repo.Context)
+
+	if err != nil {
+		fmt.Println("db-error", err)
+		return nil, err
+	}
+
+	fmt.Println("Customers:", customers)
+	customerAggregateList := parser.CustomerModelListToAggregateList(customers)
+
+	return customerAggregateList, nil
 }
-func (cRepo CustomerRepository) FindAll() ([]*CustomerModel, error) {
-	return nil, nil
+
+func (repo *CustomerRepository) Count() (*int, error) {
+	totalRowCount, err := repo.Database.Customer.Query().Count(repo.Context)
+
+	if err != nil {
+		return nil, err
+	}
+	return &totalRowCount, nil
 }
-func (cRepo CustomerRepository) Count() int {
-	return 0
-}
-func (cRepo CustomerRepository) Save(newCustomer *CustomerModel) error {
-	// result := cRepo.DB.Create(&newCustomer)
-	// if result.Error != nil {
-	// 	return result.Error
-	// }
+func (repo *CustomerRepository) Save(customer *domain.CustomerAggregate) error {
 	return nil
 }
-func (cRepo CustomerRepository) Update(entity *CustomerModel) error {
+func (repo *CustomerRepository) Update(entity *CustomerModel) error {
 	return nil
 }
-func (cRepo CustomerRepository) Delete(entity *CustomerModel) error {
+func (repo *CustomerRepository) Delete(entity *CustomerModel) error {
 	return nil
 }
 
-func (cRepo CustomerRepository) GetAllCountries() []*CountryModel {
-
-	// countries := []*CountryModel{}
-	// cRepo.DB.Where("currency_code=?", "XOF").Find(&countries)
-
+func (repo *CustomerRepository) GetAllCountries() []*domain.CountryVO {
 	return nil
 }

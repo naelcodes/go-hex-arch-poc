@@ -11,8 +11,8 @@ type GetAllDTO[T any] struct {
 }
 
 type GetQueryParams struct {
-	PageSize   *int
-	PageNumber *int
-	Fields     *[]string
-	Embed      *string
+	PageSize   *int      `query:"page-size"`
+	PageNumber *int      `query:"page"`
+	Fields     *[]string `query:"fields"`
+	Embed      *string   `query:"embed"`
 }

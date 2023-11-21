@@ -1,16 +1,15 @@
 package domain
 
 type CustomerAggregate struct {
-	Id              uint
+	Id              int
 	Name            string
 	Alias           string
 	AbKey           string
 	TmcClientNumber string
 	AccountNumber   string
-
-	Country CountryVO
-	Slug    uint64
-	Tag     string
+	State           string
+	CountryId       int
+	Tag             string
 }
 
 type CountryVO struct {

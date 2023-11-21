@@ -9,10 +9,10 @@ import (
 
 func Init(globalContext *common.GlobalContext) {
 
-	customerRepository := &PostgresAdapter.CustomerRepository{Database: globalContext.Database}
+	customerRepository := &PostgresAdapter.CustomerRepository{Database: globalContext.Database, Context: globalContext.Context}
 
 	customerApplication := new(application.CustomerApplication)
-	customerApplication.Init(customerRepository)
+	customerApplication.Init(globalContext.Context, customerRepository)
 
 	customerRestController := new(RestAdpater.CostumerRestController)
 	customerRestController.Application = customerApplication

@@ -2,16 +2,18 @@ package bootstrap
 
 import (
 	"github.com/naelcodes/ab-backend/internal/common"
-	customersModule "github.com/naelcodes/ab-backend/internal/modules/customers"
+	customerModule "github.com/naelcodes/ab-backend/internal/modules/customers"
+	imputationModule "github.com/naelcodes/ab-backend/internal/modules/imputations"
+	invoiceModule "github.com/naelcodes/ab-backend/internal/modules/invoices"
+	paymentModule "github.com/naelcodes/ab-backend/internal/modules/payments"
 )
 
 // Inject module dependencies
 func InitModules(globalContext *common.GlobalContext) {
 
-	customersModule.Init(globalContext)
-
-	// invoiceModule := new(invoiceRestAdapter.InvoiceModule)
-	// invoiceRepository := invoiceDatabaseAdapter.InvoiceRepository{}
-	// invoiceModule.Init(appEngine, invoiceRepository)
+	customerModule.Init(globalContext)
+	invoiceModule.Init(globalContext)
+	paymentModule.Init(globalContext)
+	imputationModule.Init(globalContext)
 
 }

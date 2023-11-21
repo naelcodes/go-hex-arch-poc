@@ -26,7 +26,7 @@ func (controller *CostumerRestController) attachCustomerRoutesHandlers(router fi
 	router.Get("/:id", controller.GetCustomerHandler())
 	router.Post("", controller.CreateCustomerHandler())
 	router.Put("/:id", controller.UpdateCustomerHandler())
-	router.Delete("/:id", controller.deleteCustomerHandler())
+	router.Delete("/:id", controller.DeleteCustomerHandler())
 }
 
 func (controller *CostumerRestController) attachCountriesRouteHandler(router fiber.Router) {

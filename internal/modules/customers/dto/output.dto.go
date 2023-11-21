@@ -9,15 +9,14 @@ type GetCountriesDTO struct {
 }
 
 type GetCustomerDTO struct {
-	Id                uint   ` json:"id"`
+	Id                int    ` json:"id"`
 	Customer_name     string `json:"customerName"`
 	State             string `json:"state"`
 	Account_number    string `json:"accountNumber"`
-	Slug              uint64 `json:"slug"`
-	Id_country        uint   `json:"idCountry"`
+	Id_country        int    `json:"idCountry"`
 	Alias             string `json:"alias"`
 	Ab_key            string `json:"abKey"`
 	Tmc_client_number string `json:"tmcClientNumber"`
 }
 
-type GetCustomersDTO common.GetAllDTO[[]GetCustomerDTO]
+type GetCustomersDTO common.GetAllDTO[[]*GetCustomerDTO]

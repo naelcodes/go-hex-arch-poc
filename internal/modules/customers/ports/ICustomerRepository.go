@@ -2,10 +2,12 @@ package ports
 
 import (
 	"github.com/naelcodes/ab-backend/internal/common"
-	PostgresAdapter "github.com/naelcodes/ab-backend/internal/modules/customers/adapters/postgres-adapter"
+	"github.com/naelcodes/ab-backend/internal/modules/customers/domain"
 )
 
 type ICustomerRepository interface {
-	common.IRepository[PostgresAdapter.CustomerModel]
-	GetAllCountries() []*PostgresAdapter.CountryModel
+	common.IRepository[domain.CustomerAggregate]
+	GetAll(*common.GetQueryParams) ([]*domain.CustomerAggregate, error)
+	Count() (*int, error)
+	GetAllCountries() []*domain.CountryVO
 }

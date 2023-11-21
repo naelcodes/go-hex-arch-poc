@@ -1,9 +1,5 @@
 package postgresAdapter
 
-type Tabler interface {
-	TableName() string
-}
-
 type CustomerModel struct {
 	Customer_name     string
 	State             string
@@ -20,12 +16,4 @@ type CountryModel struct {
 	Id   uint
 	Code string
 	Name string
-}
-
-func (CustomerModel) TableName() string {
-	return "customer"
-}
-
-func (CountryModel) TableName() string {
-	return "country"
 }
