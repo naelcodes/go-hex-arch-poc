@@ -1,7 +1,10 @@
 package common
 
-type Currency string
-type Id uint
+type EID uint
+
+type BaseEntity struct {
+	Id EID
+}
 
 type GetAllDTO[T any] struct {
 	Data          T   `json:"data"`

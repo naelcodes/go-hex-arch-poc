@@ -25,6 +25,8 @@ const (
 	FieldAlias = "alias"
 	// FieldAbKey holds the string denoting the ab_key field in the database.
 	FieldAbKey = "ab_key"
+	// FieldState holds the string denoting the state field in the database.
+	FieldState = "state"
 	// FieldTmcClientNumber holds the string denoting the tmc_client_number field in the database.
 	FieldTmcClientNumber = "tmc_client_number"
 	// FieldTag holds the string denoting the tag field in the database.
@@ -42,6 +44,7 @@ var Columns = []string{
 	FieldIDCountry,
 	FieldAlias,
 	FieldAbKey,
+	FieldState,
 	FieldTmcClientNumber,
 	FieldTag,
 }
@@ -55,6 +58,13 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultIDCurrency holds the default value on creation for the "id_currency" field.
+	DefaultIDCurrency int
+	// DefaultIDCountry holds the default value on creation for the "id_country" field.
+	DefaultIDCountry int
+)
 
 // Tag defines the type for the "Tag" enum field.
 type Tag string
@@ -119,6 +129,11 @@ func ByAlias(opts ...sql.OrderTermOption) OrderOption {
 // ByAbKey orders the results by the ab_key field.
 func ByAbKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAbKey, opts...).ToFunc()
+}
+
+// ByState orders the results by the state field.
+func ByState(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldState, opts...).ToFunc()
 }
 
 // ByTmcClientNumber orders the results by the tmc_client_number field.

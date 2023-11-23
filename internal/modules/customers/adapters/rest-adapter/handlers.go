@@ -14,7 +14,7 @@ func (controller *CostumerRestController) GetAllCustomersHandler() fiber.Handler
 		queryParams := new(common.GetQueryParams)
 		c.QueryParser(queryParams)
 
-		result, err := controller.Application.GetAllCustomersService(queryParams)
+		result, err := controller.Application.Query.GetAllCustomersService(queryParams)
 
 		if err != nil {
 			fmt.Println("error", err)
@@ -52,13 +52,6 @@ func (controller *CostumerRestController) DeleteCustomerHandler() fiber.Handler 
 	return func(c *fiber.Ctx) error {
 		return c.Status(200).JSON("\\delete handler")
 
-	}
-
-}
-
-func (controller *CostumerRestController) GetAllCountriesHandler() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		return c.Status(200).JSON("")
 	}
 
 }

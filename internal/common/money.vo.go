@@ -1,11 +1,17 @@
 package common
 
+type Currency string
 type Money struct {
 	currency Currency
 	value    float32
 }
 
-func (m *Money) Init(currency string, amount float32) error {
+var (
+	INVALID_MONETARY_VALUE = GenericError{nil, "monetary value can't be less than zero"}
+	INVALID_CURRENCY       = GenericError{nil, "monetary operations can't be done with monetary value of different currencies"}
+)
+
+func (m *Money) New(currency string, amount float32) error {
 	if amount < 0 {
 		return INVALID_MONETARY_VALUE
 	}

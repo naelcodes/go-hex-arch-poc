@@ -82,6 +82,11 @@ func AbKey(v string) predicate.Customer {
 	return predicate.Customer(sql.FieldEQ(FieldAbKey, v))
 }
 
+// State applies equality check predicate on the "state" field. It's identical to StateEQ.
+func State(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldEQ(FieldState, v))
+}
+
 // TmcClientNumber applies equality check predicate on the "tmc_client_number" field. It's identical to TmcClientNumberEQ.
 func TmcClientNumber(v string) predicate.Customer {
 	return predicate.Customer(sql.FieldEQ(FieldTmcClientNumber, v))
@@ -425,6 +430,81 @@ func AbKeyEqualFold(v string) predicate.Customer {
 // AbKeyContainsFold applies the ContainsFold predicate on the "ab_key" field.
 func AbKeyContainsFold(v string) predicate.Customer {
 	return predicate.Customer(sql.FieldContainsFold(FieldAbKey, v))
+}
+
+// StateEQ applies the EQ predicate on the "state" field.
+func StateEQ(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldEQ(FieldState, v))
+}
+
+// StateNEQ applies the NEQ predicate on the "state" field.
+func StateNEQ(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldNEQ(FieldState, v))
+}
+
+// StateIn applies the In predicate on the "state" field.
+func StateIn(vs ...string) predicate.Customer {
+	return predicate.Customer(sql.FieldIn(FieldState, vs...))
+}
+
+// StateNotIn applies the NotIn predicate on the "state" field.
+func StateNotIn(vs ...string) predicate.Customer {
+	return predicate.Customer(sql.FieldNotIn(FieldState, vs...))
+}
+
+// StateGT applies the GT predicate on the "state" field.
+func StateGT(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldGT(FieldState, v))
+}
+
+// StateGTE applies the GTE predicate on the "state" field.
+func StateGTE(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldGTE(FieldState, v))
+}
+
+// StateLT applies the LT predicate on the "state" field.
+func StateLT(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldLT(FieldState, v))
+}
+
+// StateLTE applies the LTE predicate on the "state" field.
+func StateLTE(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldLTE(FieldState, v))
+}
+
+// StateContains applies the Contains predicate on the "state" field.
+func StateContains(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldContains(FieldState, v))
+}
+
+// StateHasPrefix applies the HasPrefix predicate on the "state" field.
+func StateHasPrefix(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldHasPrefix(FieldState, v))
+}
+
+// StateHasSuffix applies the HasSuffix predicate on the "state" field.
+func StateHasSuffix(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldHasSuffix(FieldState, v))
+}
+
+// StateIsNil applies the IsNil predicate on the "state" field.
+func StateIsNil() predicate.Customer {
+	return predicate.Customer(sql.FieldIsNull(FieldState))
+}
+
+// StateNotNil applies the NotNil predicate on the "state" field.
+func StateNotNil() predicate.Customer {
+	return predicate.Customer(sql.FieldNotNull(FieldState))
+}
+
+// StateEqualFold applies the EqualFold predicate on the "state" field.
+func StateEqualFold(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldEqualFold(FieldState, v))
+}
+
+// StateContainsFold applies the ContainsFold predicate on the "state" field.
+func StateContainsFold(v string) predicate.Customer {
+	return predicate.Customer(sql.FieldContainsFold(FieldState, v))
 }
 
 // TmcClientNumberEQ applies the EQ predicate on the "tmc_client_number" field.

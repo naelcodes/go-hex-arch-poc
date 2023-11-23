@@ -9,27 +9,16 @@ import (
 )
 
 var (
-	// CountryColumns holds the columns for the "country" table.
-	CountryColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "code", Type: field.TypeString},
-	}
-	// CountryTable holds the schema information for the "country" table.
-	CountryTable = &schema.Table{
-		Name:       "country",
-		Columns:    CountryColumns,
-		PrimaryKey: []*schema.Column{CountryColumns[0]},
-	}
 	// CustomerColumns holds the columns for the "customer" table.
 	CustomerColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "customer_name", Type: field.TypeString},
 		{Name: "account_number", Type: field.TypeString, Unique: true},
-		{Name: "id_currency", Type: field.TypeInt},
-		{Name: "id_country", Type: field.TypeInt, Unique: true},
+		{Name: "id_currency", Type: field.TypeInt, Default: 550},
+		{Name: "id_country", Type: field.TypeInt, Default: 40},
 		{Name: "alias", Type: field.TypeString, Unique: true},
 		{Name: "ab_key", Type: field.TypeString, Unique: true},
+		{Name: "state", Type: field.TypeString, Nullable: true},
 		{Name: "tmc_client_number", Type: field.TypeString, Unique: true},
 		{Name: "tag", Type: field.TypeEnum, Enums: []string{"1", "2", "3"}, Default: "3"},
 	}
@@ -41,15 +30,11 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		CountryTable,
 		CustomerTable,
 	}
 )
 
 func init() {
-	CountryTable.Annotation = &entsql.Annotation{
-		Table: "country",
-	}
 	CustomerTable.Annotation = &entsql.Annotation{
 		Table: "customer",
 	}

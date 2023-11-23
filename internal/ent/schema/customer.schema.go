@@ -15,10 +15,11 @@ func (Customer) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("customer_name"),
 		field.String("account_number").Unique(),
-		field.Int("id_currency"),
-		field.Int("id_country").Unique(),
+		field.Int("id_currency").Default(550),
+		field.Int("id_country").Default(40),
 		field.String("alias").Unique(),
 		field.String("ab_key").Unique(),
+		field.String("state").Optional(),
 		field.String("tmc_client_number").Unique(),
 		field.Enum("Tag").Values("1", "2", "3").Default("3"),
 	}

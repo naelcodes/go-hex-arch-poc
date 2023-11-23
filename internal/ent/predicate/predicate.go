@@ -6,8 +6,5 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// Country is the predicate function for country builders.
-type Country func(*sql.Selector)
-
 // Customer is the predicate function for customer builders.
 type Customer func(*sql.Selector)

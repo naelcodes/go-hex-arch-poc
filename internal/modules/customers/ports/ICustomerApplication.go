@@ -5,11 +5,15 @@ import (
 	"github.com/naelcodes/ab-backend/internal/modules/customers/dto"
 )
 
-type ICustomerApplication interface {
-	CreateCustomerService()
-	UpdateCustomerService()
-	GetAllCountriesService()
-	GetAllCustomersService(*common.GetQueryParams) (*dto.GetCustomersDTO, error)
-	GetCustomerService()
-	DeleteCustomerService()
+type ICustomerCommandService interface {
+	CreateCustomerService(dto.CreateCustomerDTO) (common.EID, error)
+	UpdateCustomerService(dto.UpdateCustomerDTO) (bool, error)
+	DeleteCustomerService(common.EID) (bool, error)
+}
+
+type ICustomerQueryService interface {
+	GetAllCustomersService(*common.GetQueryParams) (*dto.GetAllCustomersDTO, error)
+	GetCustomerService(common.EID) (*dto.GetCustomerDTO, error)
+	GetCustomerOpenPaymentsService(id common.EID) (*dto.GetCustomerOpenPaymentsDTO, error)
+	GetCustomerUnPaidInvoicesService(id common.EID) (*dto.GetCustomerUnpaidInvoicesDTO, error)
 }

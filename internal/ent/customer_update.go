@@ -125,6 +125,26 @@ func (cu *CustomerUpdate) SetNillableAbKey(s *string) *CustomerUpdate {
 	return cu
 }
 
+// SetState sets the "state" field.
+func (cu *CustomerUpdate) SetState(s string) *CustomerUpdate {
+	cu.mutation.SetState(s)
+	return cu
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (cu *CustomerUpdate) SetNillableState(s *string) *CustomerUpdate {
+	if s != nil {
+		cu.SetState(*s)
+	}
+	return cu
+}
+
+// ClearState clears the value of the "state" field.
+func (cu *CustomerUpdate) ClearState() *CustomerUpdate {
+	cu.mutation.ClearState()
+	return cu
+}
+
 // SetTmcClientNumber sets the "tmc_client_number" field.
 func (cu *CustomerUpdate) SetTmcClientNumber(s string) *CustomerUpdate {
 	cu.mutation.SetTmcClientNumber(s)
@@ -230,6 +250,12 @@ func (cu *CustomerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := cu.mutation.AbKey(); ok {
 		_spec.SetField(customer.FieldAbKey, field.TypeString, value)
+	}
+	if value, ok := cu.mutation.State(); ok {
+		_spec.SetField(customer.FieldState, field.TypeString, value)
+	}
+	if cu.mutation.StateCleared() {
+		_spec.ClearField(customer.FieldState, field.TypeString)
 	}
 	if value, ok := cu.mutation.TmcClientNumber(); ok {
 		_spec.SetField(customer.FieldTmcClientNumber, field.TypeString, value)
@@ -352,6 +378,26 @@ func (cuo *CustomerUpdateOne) SetNillableAbKey(s *string) *CustomerUpdateOne {
 	if s != nil {
 		cuo.SetAbKey(*s)
 	}
+	return cuo
+}
+
+// SetState sets the "state" field.
+func (cuo *CustomerUpdateOne) SetState(s string) *CustomerUpdateOne {
+	cuo.mutation.SetState(s)
+	return cuo
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (cuo *CustomerUpdateOne) SetNillableState(s *string) *CustomerUpdateOne {
+	if s != nil {
+		cuo.SetState(*s)
+	}
+	return cuo
+}
+
+// ClearState clears the value of the "state" field.
+func (cuo *CustomerUpdateOne) ClearState() *CustomerUpdateOne {
+	cuo.mutation.ClearState()
 	return cuo
 }
 
@@ -490,6 +536,12 @@ func (cuo *CustomerUpdateOne) sqlSave(ctx context.Context) (_node *Customer, err
 	}
 	if value, ok := cuo.mutation.AbKey(); ok {
 		_spec.SetField(customer.FieldAbKey, field.TypeString, value)
+	}
+	if value, ok := cuo.mutation.State(); ok {
+		_spec.SetField(customer.FieldState, field.TypeString, value)
+	}
+	if cuo.mutation.StateCleared() {
+		_spec.ClearField(customer.FieldState, field.TypeString)
 	}
 	if value, ok := cuo.mutation.TmcClientNumber(); ok {
 		_spec.SetField(customer.FieldTmcClientNumber, field.TypeString, value)

@@ -28,6 +28,8 @@ type Customer struct {
 	Alias string `json:"alias,omitempty"`
 	// AbKey holds the value of the "ab_key" field.
 	AbKey string `json:"ab_key,omitempty"`
+	// State holds the value of the "state" field.
+	State string `json:"state,omitempty"`
 	// TmcClientNumber holds the value of the "tmc_client_number" field.
 	TmcClientNumber string `json:"tmc_client_number,omitempty"`
 	// Tag holds the value of the "Tag" field.
@@ -42,7 +44,7 @@ func (*Customer) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case customer.FieldID, customer.FieldIDCurrency, customer.FieldIDCountry:
 			values[i] = new(sql.NullInt64)
-		case customer.FieldCustomerName, customer.FieldAccountNumber, customer.FieldAlias, customer.FieldAbKey, customer.FieldTmcClientNumber, customer.FieldTag:
+		case customer.FieldCustomerName, customer.FieldAccountNumber, customer.FieldAlias, customer.FieldAbKey, customer.FieldState, customer.FieldTmcClientNumber, customer.FieldTag:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -100,6 +102,12 @@ func (c *Customer) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field ab_key", values[i])
 			} else if value.Valid {
 				c.AbKey = value.String
+			}
+		case customer.FieldState:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field state", values[i])
+			} else if value.Valid {
+				c.State = value.String
 			}
 		case customer.FieldTmcClientNumber:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -166,6 +174,9 @@ func (c *Customer) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("ab_key=")
 	builder.WriteString(c.AbKey)
+	builder.WriteString(", ")
+	builder.WriteString("state=")
+	builder.WriteString(c.State)
 	builder.WriteString(", ")
 	builder.WriteString("tmc_client_number=")
 	builder.WriteString(c.TmcClientNumber)

@@ -2,12 +2,12 @@ package restAdapter
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/naelcodes/ab-backend/internal/modules/customers/ports"
+	"github.com/naelcodes/ab-backend/internal/modules/customers/application"
 	"github.com/naelcodes/ab-backend/internal/pkg/server"
 )
 
 type CostumerRestController struct {
-	Application ports.ICustomerApplication
+	Application *application.CustomerApplication
 }
 
 func (controller *CostumerRestController) Init(appEngine *server.AppEngine) {
@@ -17,7 +17,6 @@ func (controller *CostumerRestController) Init(appEngine *server.AppEngine) {
 
 	//validation middlewares here
 	controller.attachCustomerRoutesHandlers(baseRouter.Group("/customers"))
-	controller.attachCountriesRouteHandler(baseRouter.Group("/countries"))
 }
 
 func (controller *CostumerRestController) attachCustomerRoutesHandlers(router fiber.Router) {
@@ -27,8 +26,4 @@ func (controller *CostumerRestController) attachCustomerRoutesHandlers(router fi
 	router.Post("", controller.CreateCustomerHandler())
 	router.Put("/:id", controller.UpdateCustomerHandler())
 	router.Delete("/:id", controller.DeleteCustomerHandler())
-}
-
-func (controller *CostumerRestController) attachCountriesRouteHandler(router fiber.Router) {
-	router.Get("", controller.GetAllCountriesHandler())
 }

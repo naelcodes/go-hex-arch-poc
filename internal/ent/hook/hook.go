@@ -9,18 +9,6 @@ import (
 	"github.com/naelcodes/ab-backend/internal/ent"
 )
 
-// The CountryFunc type is an adapter to allow the use of ordinary
-// function as Country mutator.
-type CountryFunc func(context.Context, *ent.CountryMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f CountryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.CountryMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CountryMutation", m)
-}
-
 // The CustomerFunc type is an adapter to allow the use of ordinary
 // function as Customer mutator.
 type CustomerFunc func(context.Context, *ent.CustomerMutation) (ent.Value, error)

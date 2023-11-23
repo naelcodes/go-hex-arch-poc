@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"github.com/naelcodes/ab-backend/internal/ent/customer"
 	"github.com/naelcodes/ab-backend/internal/ent/schema"
 )
 
@@ -12,4 +13,12 @@ import (
 func init() {
 	customerFields := schema.Customer{}.Fields()
 	_ = customerFields
+	// customerDescIDCurrency is the schema descriptor for id_currency field.
+	customerDescIDCurrency := customerFields[2].Descriptor()
+	// customer.DefaultIDCurrency holds the default value on creation for the id_currency field.
+	customer.DefaultIDCurrency = customerDescIDCurrency.Default.(int)
+	// customerDescIDCountry is the schema descriptor for id_country field.
+	customerDescIDCountry := customerFields[3].Descriptor()
+	// customer.DefaultIDCountry holds the default value on creation for the id_country field.
+	customer.DefaultIDCountry = customerDescIDCountry.Default.(int)
 }

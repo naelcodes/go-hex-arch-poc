@@ -37,9 +37,25 @@ func (cc *CustomerCreate) SetIDCurrency(i int) *CustomerCreate {
 	return cc
 }
 
+// SetNillableIDCurrency sets the "id_currency" field if the given value is not nil.
+func (cc *CustomerCreate) SetNillableIDCurrency(i *int) *CustomerCreate {
+	if i != nil {
+		cc.SetIDCurrency(*i)
+	}
+	return cc
+}
+
 // SetIDCountry sets the "id_country" field.
 func (cc *CustomerCreate) SetIDCountry(i int) *CustomerCreate {
 	cc.mutation.SetIDCountry(i)
+	return cc
+}
+
+// SetNillableIDCountry sets the "id_country" field if the given value is not nil.
+func (cc *CustomerCreate) SetNillableIDCountry(i *int) *CustomerCreate {
+	if i != nil {
+		cc.SetIDCountry(*i)
+	}
 	return cc
 }
 
@@ -52,6 +68,20 @@ func (cc *CustomerCreate) SetAlias(s string) *CustomerCreate {
 // SetAbKey sets the "ab_key" field.
 func (cc *CustomerCreate) SetAbKey(s string) *CustomerCreate {
 	cc.mutation.SetAbKey(s)
+	return cc
+}
+
+// SetState sets the "state" field.
+func (cc *CustomerCreate) SetState(s string) *CustomerCreate {
+	cc.mutation.SetState(s)
+	return cc
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (cc *CustomerCreate) SetNillableState(s *string) *CustomerCreate {
+	if s != nil {
+		cc.SetState(*s)
+	}
 	return cc
 }
 
@@ -110,6 +140,14 @@ func (cc *CustomerCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (cc *CustomerCreate) defaults() {
+	if _, ok := cc.mutation.IDCurrency(); !ok {
+		v := customer.DefaultIDCurrency
+		cc.mutation.SetIDCurrency(v)
+	}
+	if _, ok := cc.mutation.IDCountry(); !ok {
+		v := customer.DefaultIDCountry
+		cc.mutation.SetIDCountry(v)
+	}
 	if _, ok := cc.mutation.Tag(); !ok {
 		v := customer.DefaultTag
 		cc.mutation.SetTag(v)
@@ -196,6 +234,10 @@ func (cc *CustomerCreate) createSpec() (*Customer, *sqlgraph.CreateSpec) {
 	if value, ok := cc.mutation.AbKey(); ok {
 		_spec.SetField(customer.FieldAbKey, field.TypeString, value)
 		_node.AbKey = value
+	}
+	if value, ok := cc.mutation.State(); ok {
+		_spec.SetField(customer.FieldState, field.TypeString, value)
+		_node.State = value
 	}
 	if value, ok := cc.mutation.TmcClientNumber(); ok {
 		_spec.SetField(customer.FieldTmcClientNumber, field.TypeString, value)
