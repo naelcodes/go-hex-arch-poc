@@ -19,7 +19,7 @@ func main() {
 
 	globalContext := new(common.GlobalContext)
 
-	globalContext.Database = database.PostgresConnection(context)
+	globalContext.Database = database.PostgresConnection(context, appEngine.GetLogger())
 	globalContext.AppEngine = appEngine
 	globalContext.Context = context
 

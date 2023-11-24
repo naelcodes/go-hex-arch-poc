@@ -9,11 +9,10 @@ require (
 
 require (
 	ariga.io/atlas v0.14.1-0.20230918065911-83ad451a4935 // indirect
-	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/jackc/puddle/v2 v2.2.1 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/sync v0.1.0 // indirect
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
+	github.com/rs/zerolog v1.31.0 // indirect
 )
 
 require (
@@ -22,9 +21,8 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.4.0
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
-	github.com/jackc/pgx/v5 v5.5.0
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-colorable v0.1.13 // indirect
