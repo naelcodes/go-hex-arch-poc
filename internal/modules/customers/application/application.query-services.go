@@ -28,6 +28,16 @@ func (application *CustomerApplication) GetAllCustomersService(queryParams *comm
 		return nil, err
 	}
 
+	if queryParams == nil || queryParams.PageNumber == nil && queryParams.PageSize == nil {
+		if queryParams == nil {
+			queryParams = new(common.GetQueryParams)
+		}
+		queryParams.PageNumber = new(int)
+		queryParams.PageSize = new(int)
+		*queryParams.PageNumber = 0
+		*queryParams.PageSize = 0
+	}
+
 	getCustomersDTO := &dto.GetAllCustomersDTO{
 		Data:          customers,
 		PageNumber:    *queryParams.PageNumber,

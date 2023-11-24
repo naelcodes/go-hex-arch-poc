@@ -58,7 +58,7 @@ func (repo *CustomerReadRepository) GetAll(query *common.GetQueryParams) ([]*dto
 }
 
 func (repo *CustomerReadRepository) Count() (*int, error) {
-	totalRowCount, err := repo.Database.Customer.Query().Count(repo.Context)
+	totalRowCount, err := repo.Database.Customer.Query().Where(customer.TagEQ(customer.Tag3)).Count(repo.Context)
 
 	if err != nil {
 		return nil, err

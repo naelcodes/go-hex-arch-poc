@@ -1,5 +1,7 @@
 package common
 
+import "errors"
+
 type Currency string
 type Money struct {
 	currency Currency
@@ -7,8 +9,8 @@ type Money struct {
 }
 
 var (
-	INVALID_MONETARY_VALUE = GenericError{nil, "monetary value can't be less than zero"}
-	INVALID_CURRENCY       = GenericError{nil, "monetary operations can't be done with monetary value of different currencies"}
+	INVALID_MONETARY_VALUE = errors.New("monetary value can't be less than zero")
+	INVALID_CURRENCY       = errors.New("monetary operations can't be done with monetary value of different currencies")
 )
 
 func (m *Money) New(currency string, amount float32) error {

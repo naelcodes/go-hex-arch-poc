@@ -6,12 +6,14 @@ import (
 
 	"github.com/naelcodes/ab-backend/internal/bootstrap"
 	"github.com/naelcodes/ab-backend/internal/common"
+	"github.com/naelcodes/ab-backend/internal/configs"
 	"github.com/naelcodes/ab-backend/internal/configs/database"
 	"github.com/naelcodes/ab-backend/internal/pkg/server"
 )
 
 func main() {
 
+	configs.LoadEnvironmentConfig()
 	context := context.Background()
 
 	appEngine := new(server.AppEngine)
