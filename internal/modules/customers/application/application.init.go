@@ -9,8 +9,6 @@ import (
 type CustomerApplication struct {
 	WriteRepository ports.ICustomerWriteRepository
 	ReadRepository  ports.ICustomerReadRepository
-	ports.ICustomerCommandService
-	ports.ICustomerQueryService
 }
 
 func (application *CustomerApplication) Init(globalContext *common.GlobalContext) {
@@ -21,12 +19,9 @@ func (application *CustomerApplication) Init(globalContext *common.GlobalContext
 	application.WriteRepository = customerWriteRepository
 	application.ReadRepository = customerReadRepository
 
-	customerCommandApplication := new(CustomerCommandApplication)
-	customerCommandApplication.CommandRepository = customerWriteRepository
-	customerQueryApplication := new(CustomerQueryApplication)
-	customerQueryApplication.QueryRepository = customerReadRepository
+	customerApplication := new(CustomerApplication)
 
-	application.Command = customerCommandApplication
-	application.Query = customerQueryApplication
+	customerApplication.ReadRepository = customerReadRepository
+	customerApplication.WriteRepository = customerWriteRepository
 
 }

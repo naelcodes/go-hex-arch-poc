@@ -14,7 +14,7 @@ func (controller *CostumerRestController) GetAllCustomersHandler() fiber.Handler
 		queryParams := new(common.GetQueryParams)
 		c.QueryParser(queryParams)
 
-		result, err := controller.Application.Query.GetAllCustomersService(queryParams)
+		result, err := controller.Application.GetAllCustomersService(queryParams)
 
 		if err != nil {
 			fmt.Println("error", err)

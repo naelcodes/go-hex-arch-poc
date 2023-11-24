@@ -17,3 +17,8 @@ type ICustomerQueryService interface {
 	GetCustomerOpenPaymentsService(id common.EID) (*dto.GetCustomerOpenPaymentsDTO, error)
 	GetCustomerUnPaidInvoicesService(id common.EID) (*dto.GetCustomerUnpaidInvoicesDTO, error)
 }
+
+type ICustomerApplication interface {
+	ICustomerCommandService
+	ICustomerQueryService
+}
