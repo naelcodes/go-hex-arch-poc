@@ -9,13 +9,13 @@ import (
 
 type Event struct {
 	Type          string
-	Data          any
+	Data          interface{}
 	CorrelationID string
 }
 
 type Subscriber struct {
 	EventType    string
-	Handler      func(eventData any) error
+	Handler      func(eventData interface{}) error
 	ErrorHandler func(err error, broker *Broker)
 }
 
@@ -25,8 +25,6 @@ type Broker struct {
 	mutex       sync.RWMutex
 }
 
-type any = interface{}
-
 func NewBroker() *Broker {
 	return &Broker{
 		subscribers: make(map[string][]*Subscriber),
@@ -34,7 +32,7 @@ func NewBroker() *Broker {
 	}
 }
 
-func (b *Broker) Subscribe(eventType string, handler func(eventData any) error, errorHandler func(err error, broker *Broker)) error {
+func (b *Broker) Subscribe(eventType string, handler func(eventData interface{}) error, errorHandler func(err error, broker *Broker)) error {
 	if handler == nil {
 		return errors.New("handler function cannot be nil")
 	}
@@ -67,7 +65,7 @@ func (b *Broker) UnsubscribeAll() {
 	b.subscribers = make(map[string][]*Subscriber)
 }
 
-func (b *Broker) Publish(eventType string, eventData any) {
+func (b *Broker) Publish(eventType string, eventData interface{}) {
 	correlationID := generateCorrelationID()
 
 	event := &Event{
@@ -79,7 +77,6 @@ func (b *Broker) Publish(eventType string, eventData any) {
 	b.mutex.RLock()
 
 	subscribers := b.subscribers[eventType]
-	subscriberCount := len(subscribers)
 
 	b.mutex.RUnlock()
 
@@ -87,17 +84,23 @@ func (b *Broker) Publish(eventType string, eventData any) {
 	b.store[correlationID] = event // Store event with correlation ID
 	b.mutex.Unlock()
 
-	var wg sync.WaitGroup
-	wg.Add(subscriberCount)
-
 	for _, subscriber := range subscribers {
 		go func(subscriber *Subscriber) {
-			defer wg.Done()
 			b.notifySubscriber(subscriber, event)
 		}(subscriber)
 	}
+}
 
-	wg.Wait()
+func (b *Broker) PublishBatch(events []*Event) {
+	for _, event := range events {
+		if subscribers, ok := b.subscribers[event.Type]; ok {
+			for _, subscriber := range subscribers {
+				go func(subscriber *Subscriber) {
+					b.notifySubscriber(subscriber, event)
+				}(subscriber)
+			}
+		}
+	}
 }
 
 func (b *Broker) RetrieveEvent(correlationID string) (*Event, bool) {
@@ -106,6 +109,20 @@ func (b *Broker) RetrieveEvent(correlationID string) (*Event, bool) {
 
 	event, ok := b.store[correlationID]
 	return event, ok
+}
+
+func (b *Broker) ClearEvent(correlationID string) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
+	delete(b.store, correlationID)
+}
+
+func (b *Broker) ClearAllEvents() {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
+	b.store = make(map[string]*Event)
 }
 
 func (b *Broker) notifySubscriber(subscriber *Subscriber, event *Event) {
