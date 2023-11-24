@@ -14,6 +14,14 @@ type Tx struct {
 	config
 	// Customer is the client for interacting with the Customer builders.
 	Customer *CustomerClient
+	// Imputation is the client for interacting with the Imputation builders.
+	Imputation *ImputationClient
+	// Invoice is the client for interacting with the Invoice builders.
+	Invoice *InvoiceClient
+	// Payment is the client for interacting with the Payment builders.
+	Payment *PaymentClient
+	// TravelItem is the client for interacting with the TravelItem builders.
+	TravelItem *TravelItemClient
 
 	// lazily loaded.
 	client     *Client
@@ -146,6 +154,10 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Customer = NewCustomerClient(tx.config)
+	tx.Imputation = NewImputationClient(tx.config)
+	tx.Invoice = NewInvoiceClient(tx.config)
+	tx.Payment = NewPaymentClient(tx.config)
+	tx.TravelItem = NewTravelItemClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

@@ -13,6 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/naelcodes/ab-backend/internal/ent/customer"
+	"github.com/naelcodes/ab-backend/internal/ent/imputation"
+	"github.com/naelcodes/ab-backend/internal/ent/invoice"
+	"github.com/naelcodes/ab-backend/internal/ent/payment"
+	"github.com/naelcodes/ab-backend/internal/ent/travelitem"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -73,7 +77,11 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			customer.Table: customer.ValidColumn,
+			customer.Table:   customer.ValidColumn,
+			imputation.Table: imputation.ValidColumn,
+			invoice.Table:    invoice.ValidColumn,
+			payment.Table:    payment.ValidColumn,
+			travelitem.Table: travelitem.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

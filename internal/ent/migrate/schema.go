@@ -28,14 +28,147 @@ var (
 		Columns:    CustomerColumns,
 		PrimaryKey: []*schema.Column{CustomerColumns[0]},
 	}
+	// InvoicePaymentReceivedColumns holds the columns for the "invoice_payment_received" table.
+	InvoicePaymentReceivedColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "amount_apply", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "payment_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "invoice_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "tag", Type: field.TypeEnum, Enums: []string{"1", "2", "3"}, Default: "3"},
+		{Name: "id_invoice", Type: field.TypeInt},
+		{Name: "id_payment_received", Type: field.TypeInt},
+	}
+	// InvoicePaymentReceivedTable holds the schema information for the "invoice_payment_received" table.
+	InvoicePaymentReceivedTable = &schema.Table{
+		Name:       "invoice_payment_received",
+		Columns:    InvoicePaymentReceivedColumns,
+		PrimaryKey: []*schema.Column{InvoicePaymentReceivedColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "invoice_payment_received_invoice_imputations",
+				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[5]},
+				RefColumns: []*schema.Column{InvoiceColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "invoice_payment_received_payment_received_imputations",
+				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[6]},
+				RefColumns: []*schema.Column{PaymentReceivedColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// InvoiceColumns holds the columns for the "invoice" table.
+	InvoiceColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "creation_date", Type: field.TypeString, SchemaType: map[string]string{"postgres": "timestamp without timezone"}},
+		{Name: "invoice_number", Type: field.TypeString, Unique: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "paid", "overdue", "unpaid", "void"}, Default: "unpaid"},
+		{Name: "due_date", Type: field.TypeString, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "balance", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "credit_apply", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "tag", Type: field.TypeEnum, Enums: []string{"1", "2", "3"}, Default: "3"},
+		{Name: "id_customer", Type: field.TypeInt},
+	}
+	// InvoiceTable holds the schema information for the "invoice" table.
+	InvoiceTable = &schema.Table{
+		Name:       "invoice",
+		Columns:    InvoiceColumns,
+		PrimaryKey: []*schema.Column{InvoiceColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "invoice_customer_invoices",
+				Columns:    []*schema.Column{InvoiceColumns[9]},
+				RefColumns: []*schema.Column{CustomerColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// PaymentReceivedColumns holds the columns for the "payment_received" table.
+	PaymentReceivedColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "number", Type: field.TypeString, Unique: true},
+		{Name: "date", Type: field.TypeString, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "balance", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "fop", Type: field.TypeEnum, Enums: []string{"cash", "check", "bank_transfer"}, Default: "cash"},
+		{Name: "used_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"open", "used", "void"}, Default: "open"},
+		{Name: "id_charts_of_accounts", Type: field.TypeInt, Default: 39},
+		{Name: "id_currency", Type: field.TypeInt, Default: 550},
+		{Name: "tag", Type: field.TypeEnum, Enums: []string{"1", "2", "3"}, Default: "3"},
+		{Name: "id_payment_received", Type: field.TypeInt, Nullable: true},
+		{Name: "id_customer", Type: field.TypeInt},
+	}
+	// PaymentReceivedTable holds the schema information for the "payment_received" table.
+	PaymentReceivedTable = &schema.Table{
+		Name:       "payment_received",
+		Columns:    PaymentReceivedColumns,
+		PrimaryKey: []*schema.Column{PaymentReceivedColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "payment_received_customer_payments",
+				Columns:    []*schema.Column{PaymentReceivedColumns[12]},
+				RefColumns: []*schema.Column{CustomerColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// AirBookingColumns holds the columns for the "air_booking" table.
+	AirBookingColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "total_price", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "itinerary", Type: field.TypeString},
+		{Name: "traveler_name", Type: field.TypeString},
+		{Name: "ticket_number", Type: field.TypeString},
+		{Name: "conjunction_number", Type: field.TypeInt},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "invoiced", "void", "receipted"}, Default: "pending"},
+		{Name: "id_invoice", Type: field.TypeInt},
+	}
+	// AirBookingTable holds the schema information for the "air_booking" table.
+	AirBookingTable = &schema.Table{
+		Name:       "air_booking",
+		Columns:    AirBookingColumns,
+		PrimaryKey: []*schema.Column{AirBookingColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "air_booking_invoice_travel_items",
+				Columns:    []*schema.Column{AirBookingColumns[7]},
+				RefColumns: []*schema.Column{InvoiceColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CustomerTable,
+		InvoicePaymentReceivedTable,
+		InvoiceTable,
+		PaymentReceivedTable,
+		AirBookingTable,
 	}
 )
 
 func init() {
 	CustomerTable.Annotation = &entsql.Annotation{
 		Table: "customer",
+	}
+	InvoicePaymentReceivedTable.ForeignKeys[0].RefTable = InvoiceTable
+	InvoicePaymentReceivedTable.ForeignKeys[1].RefTable = PaymentReceivedTable
+	InvoicePaymentReceivedTable.Annotation = &entsql.Annotation{
+		Table: "invoice_payment_received",
+	}
+	InvoiceTable.ForeignKeys[0].RefTable = CustomerTable
+	InvoiceTable.Annotation = &entsql.Annotation{
+		Table: "invoice",
+	}
+	PaymentReceivedTable.ForeignKeys[0].RefTable = CustomerTable
+	PaymentReceivedTable.Annotation = &entsql.Annotation{
+		Table: "payment_received",
+	}
+	AirBookingTable.ForeignKeys[0].RefTable = InvoiceTable
+	AirBookingTable.Annotation = &entsql.Annotation{
+		Table: "air_booking",
 	}
 }

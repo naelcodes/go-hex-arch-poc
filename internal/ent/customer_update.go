@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/naelcodes/ab-backend/internal/ent/customer"
+	"github.com/naelcodes/ab-backend/internal/ent/invoice"
+	"github.com/naelcodes/ab-backend/internal/ent/payment"
 	"github.com/naelcodes/ab-backend/internal/ent/predicate"
 )
 
@@ -159,13 +161,13 @@ func (cu *CustomerUpdate) SetNillableTmcClientNumber(s *string) *CustomerUpdate 
 	return cu
 }
 
-// SetTag sets the "Tag" field.
+// SetTag sets the "tag" field.
 func (cu *CustomerUpdate) SetTag(c customer.Tag) *CustomerUpdate {
 	cu.mutation.SetTag(c)
 	return cu
 }
 
-// SetNillableTag sets the "Tag" field if the given value is not nil.
+// SetNillableTag sets the "tag" field if the given value is not nil.
 func (cu *CustomerUpdate) SetNillableTag(c *customer.Tag) *CustomerUpdate {
 	if c != nil {
 		cu.SetTag(*c)
@@ -173,9 +175,81 @@ func (cu *CustomerUpdate) SetNillableTag(c *customer.Tag) *CustomerUpdate {
 	return cu
 }
 
+// AddInvoiceIDs adds the "invoices" edge to the Invoice entity by IDs.
+func (cu *CustomerUpdate) AddInvoiceIDs(ids ...int) *CustomerUpdate {
+	cu.mutation.AddInvoiceIDs(ids...)
+	return cu
+}
+
+// AddInvoices adds the "invoices" edges to the Invoice entity.
+func (cu *CustomerUpdate) AddInvoices(i ...*Invoice) *CustomerUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return cu.AddInvoiceIDs(ids...)
+}
+
+// AddPaymentIDs adds the "payments" edge to the Payment entity by IDs.
+func (cu *CustomerUpdate) AddPaymentIDs(ids ...int) *CustomerUpdate {
+	cu.mutation.AddPaymentIDs(ids...)
+	return cu
+}
+
+// AddPayments adds the "payments" edges to the Payment entity.
+func (cu *CustomerUpdate) AddPayments(p ...*Payment) *CustomerUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cu.AddPaymentIDs(ids...)
+}
+
 // Mutation returns the CustomerMutation object of the builder.
 func (cu *CustomerUpdate) Mutation() *CustomerMutation {
 	return cu.mutation
+}
+
+// ClearInvoices clears all "invoices" edges to the Invoice entity.
+func (cu *CustomerUpdate) ClearInvoices() *CustomerUpdate {
+	cu.mutation.ClearInvoices()
+	return cu
+}
+
+// RemoveInvoiceIDs removes the "invoices" edge to Invoice entities by IDs.
+func (cu *CustomerUpdate) RemoveInvoiceIDs(ids ...int) *CustomerUpdate {
+	cu.mutation.RemoveInvoiceIDs(ids...)
+	return cu
+}
+
+// RemoveInvoices removes "invoices" edges to Invoice entities.
+func (cu *CustomerUpdate) RemoveInvoices(i ...*Invoice) *CustomerUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return cu.RemoveInvoiceIDs(ids...)
+}
+
+// ClearPayments clears all "payments" edges to the Payment entity.
+func (cu *CustomerUpdate) ClearPayments() *CustomerUpdate {
+	cu.mutation.ClearPayments()
+	return cu
+}
+
+// RemovePaymentIDs removes the "payments" edge to Payment entities by IDs.
+func (cu *CustomerUpdate) RemovePaymentIDs(ids ...int) *CustomerUpdate {
+	cu.mutation.RemovePaymentIDs(ids...)
+	return cu
+}
+
+// RemovePayments removes "payments" edges to Payment entities.
+func (cu *CustomerUpdate) RemovePayments(p ...*Payment) *CustomerUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cu.RemovePaymentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -207,9 +281,29 @@ func (cu *CustomerUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (cu *CustomerUpdate) check() error {
+	if v, ok := cu.mutation.AccountNumber(); ok {
+		if err := customer.AccountNumberValidator(v); err != nil {
+			return &ValidationError{Name: "account_number", err: fmt.Errorf(`ent: validator failed for field "Customer.account_number": %w`, err)}
+		}
+	}
+	if v, ok := cu.mutation.Alias(); ok {
+		if err := customer.AliasValidator(v); err != nil {
+			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Customer.alias": %w`, err)}
+		}
+	}
+	if v, ok := cu.mutation.AbKey(); ok {
+		if err := customer.AbKeyValidator(v); err != nil {
+			return &ValidationError{Name: "ab_key", err: fmt.Errorf(`ent: validator failed for field "Customer.ab_key": %w`, err)}
+		}
+	}
+	if v, ok := cu.mutation.TmcClientNumber(); ok {
+		if err := customer.TmcClientNumberValidator(v); err != nil {
+			return &ValidationError{Name: "tmc_client_number", err: fmt.Errorf(`ent: validator failed for field "Customer.tmc_client_number": %w`, err)}
+		}
+	}
 	if v, ok := cu.mutation.Tag(); ok {
 		if err := customer.TagValidator(v); err != nil {
-			return &ValidationError{Name: "Tag", err: fmt.Errorf(`ent: validator failed for field "Customer.Tag": %w`, err)}
+			return &ValidationError{Name: "tag", err: fmt.Errorf(`ent: validator failed for field "Customer.tag": %w`, err)}
 		}
 	}
 	return nil
@@ -262,6 +356,96 @@ func (cu *CustomerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := cu.mutation.Tag(); ok {
 		_spec.SetField(customer.FieldTag, field.TypeEnum, value)
+	}
+	if cu.mutation.InvoicesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.InvoicesTable,
+			Columns: []string{customer.InvoicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invoice.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedInvoicesIDs(); len(nodes) > 0 && !cu.mutation.InvoicesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.InvoicesTable,
+			Columns: []string{customer.InvoicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invoice.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.InvoicesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.InvoicesTable,
+			Columns: []string{customer.InvoicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invoice.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cu.mutation.PaymentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.PaymentsTable,
+			Columns: []string{customer.PaymentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(payment.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedPaymentsIDs(); len(nodes) > 0 && !cu.mutation.PaymentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.PaymentsTable,
+			Columns: []string{customer.PaymentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(payment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.PaymentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.PaymentsTable,
+			Columns: []string{customer.PaymentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(payment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -415,13 +599,13 @@ func (cuo *CustomerUpdateOne) SetNillableTmcClientNumber(s *string) *CustomerUpd
 	return cuo
 }
 
-// SetTag sets the "Tag" field.
+// SetTag sets the "tag" field.
 func (cuo *CustomerUpdateOne) SetTag(c customer.Tag) *CustomerUpdateOne {
 	cuo.mutation.SetTag(c)
 	return cuo
 }
 
-// SetNillableTag sets the "Tag" field if the given value is not nil.
+// SetNillableTag sets the "tag" field if the given value is not nil.
 func (cuo *CustomerUpdateOne) SetNillableTag(c *customer.Tag) *CustomerUpdateOne {
 	if c != nil {
 		cuo.SetTag(*c)
@@ -429,9 +613,81 @@ func (cuo *CustomerUpdateOne) SetNillableTag(c *customer.Tag) *CustomerUpdateOne
 	return cuo
 }
 
+// AddInvoiceIDs adds the "invoices" edge to the Invoice entity by IDs.
+func (cuo *CustomerUpdateOne) AddInvoiceIDs(ids ...int) *CustomerUpdateOne {
+	cuo.mutation.AddInvoiceIDs(ids...)
+	return cuo
+}
+
+// AddInvoices adds the "invoices" edges to the Invoice entity.
+func (cuo *CustomerUpdateOne) AddInvoices(i ...*Invoice) *CustomerUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return cuo.AddInvoiceIDs(ids...)
+}
+
+// AddPaymentIDs adds the "payments" edge to the Payment entity by IDs.
+func (cuo *CustomerUpdateOne) AddPaymentIDs(ids ...int) *CustomerUpdateOne {
+	cuo.mutation.AddPaymentIDs(ids...)
+	return cuo
+}
+
+// AddPayments adds the "payments" edges to the Payment entity.
+func (cuo *CustomerUpdateOne) AddPayments(p ...*Payment) *CustomerUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cuo.AddPaymentIDs(ids...)
+}
+
 // Mutation returns the CustomerMutation object of the builder.
 func (cuo *CustomerUpdateOne) Mutation() *CustomerMutation {
 	return cuo.mutation
+}
+
+// ClearInvoices clears all "invoices" edges to the Invoice entity.
+func (cuo *CustomerUpdateOne) ClearInvoices() *CustomerUpdateOne {
+	cuo.mutation.ClearInvoices()
+	return cuo
+}
+
+// RemoveInvoiceIDs removes the "invoices" edge to Invoice entities by IDs.
+func (cuo *CustomerUpdateOne) RemoveInvoiceIDs(ids ...int) *CustomerUpdateOne {
+	cuo.mutation.RemoveInvoiceIDs(ids...)
+	return cuo
+}
+
+// RemoveInvoices removes "invoices" edges to Invoice entities.
+func (cuo *CustomerUpdateOne) RemoveInvoices(i ...*Invoice) *CustomerUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return cuo.RemoveInvoiceIDs(ids...)
+}
+
+// ClearPayments clears all "payments" edges to the Payment entity.
+func (cuo *CustomerUpdateOne) ClearPayments() *CustomerUpdateOne {
+	cuo.mutation.ClearPayments()
+	return cuo
+}
+
+// RemovePaymentIDs removes the "payments" edge to Payment entities by IDs.
+func (cuo *CustomerUpdateOne) RemovePaymentIDs(ids ...int) *CustomerUpdateOne {
+	cuo.mutation.RemovePaymentIDs(ids...)
+	return cuo
+}
+
+// RemovePayments removes "payments" edges to Payment entities.
+func (cuo *CustomerUpdateOne) RemovePayments(p ...*Payment) *CustomerUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cuo.RemovePaymentIDs(ids...)
 }
 
 // Where appends a list predicates to the CustomerUpdate builder.
@@ -476,9 +732,29 @@ func (cuo *CustomerUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (cuo *CustomerUpdateOne) check() error {
+	if v, ok := cuo.mutation.AccountNumber(); ok {
+		if err := customer.AccountNumberValidator(v); err != nil {
+			return &ValidationError{Name: "account_number", err: fmt.Errorf(`ent: validator failed for field "Customer.account_number": %w`, err)}
+		}
+	}
+	if v, ok := cuo.mutation.Alias(); ok {
+		if err := customer.AliasValidator(v); err != nil {
+			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Customer.alias": %w`, err)}
+		}
+	}
+	if v, ok := cuo.mutation.AbKey(); ok {
+		if err := customer.AbKeyValidator(v); err != nil {
+			return &ValidationError{Name: "ab_key", err: fmt.Errorf(`ent: validator failed for field "Customer.ab_key": %w`, err)}
+		}
+	}
+	if v, ok := cuo.mutation.TmcClientNumber(); ok {
+		if err := customer.TmcClientNumberValidator(v); err != nil {
+			return &ValidationError{Name: "tmc_client_number", err: fmt.Errorf(`ent: validator failed for field "Customer.tmc_client_number": %w`, err)}
+		}
+	}
 	if v, ok := cuo.mutation.Tag(); ok {
 		if err := customer.TagValidator(v); err != nil {
-			return &ValidationError{Name: "Tag", err: fmt.Errorf(`ent: validator failed for field "Customer.Tag": %w`, err)}
+			return &ValidationError{Name: "tag", err: fmt.Errorf(`ent: validator failed for field "Customer.tag": %w`, err)}
 		}
 	}
 	return nil
@@ -548,6 +824,96 @@ func (cuo *CustomerUpdateOne) sqlSave(ctx context.Context) (_node *Customer, err
 	}
 	if value, ok := cuo.mutation.Tag(); ok {
 		_spec.SetField(customer.FieldTag, field.TypeEnum, value)
+	}
+	if cuo.mutation.InvoicesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.InvoicesTable,
+			Columns: []string{customer.InvoicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invoice.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedInvoicesIDs(); len(nodes) > 0 && !cuo.mutation.InvoicesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.InvoicesTable,
+			Columns: []string{customer.InvoicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invoice.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.InvoicesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.InvoicesTable,
+			Columns: []string{customer.InvoicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invoice.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.PaymentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.PaymentsTable,
+			Columns: []string{customer.PaymentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(payment.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedPaymentsIDs(); len(nodes) > 0 && !cuo.mutation.PaymentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.PaymentsTable,
+			Columns: []string{customer.PaymentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(payment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.PaymentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.PaymentsTable,
+			Columns: []string{customer.PaymentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(payment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Customer{config: cuo.config}
 	_spec.Assign = _node.assignValues

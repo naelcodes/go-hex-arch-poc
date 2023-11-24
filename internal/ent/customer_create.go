@@ -10,6 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/naelcodes/ab-backend/internal/ent/customer"
+	"github.com/naelcodes/ab-backend/internal/ent/invoice"
+	"github.com/naelcodes/ab-backend/internal/ent/payment"
 )
 
 // CustomerCreate is the builder for creating a Customer entity.
@@ -91,18 +93,48 @@ func (cc *CustomerCreate) SetTmcClientNumber(s string) *CustomerCreate {
 	return cc
 }
 
-// SetTag sets the "Tag" field.
+// SetTag sets the "tag" field.
 func (cc *CustomerCreate) SetTag(c customer.Tag) *CustomerCreate {
 	cc.mutation.SetTag(c)
 	return cc
 }
 
-// SetNillableTag sets the "Tag" field if the given value is not nil.
+// SetNillableTag sets the "tag" field if the given value is not nil.
 func (cc *CustomerCreate) SetNillableTag(c *customer.Tag) *CustomerCreate {
 	if c != nil {
 		cc.SetTag(*c)
 	}
 	return cc
+}
+
+// AddInvoiceIDs adds the "invoices" edge to the Invoice entity by IDs.
+func (cc *CustomerCreate) AddInvoiceIDs(ids ...int) *CustomerCreate {
+	cc.mutation.AddInvoiceIDs(ids...)
+	return cc
+}
+
+// AddInvoices adds the "invoices" edges to the Invoice entity.
+func (cc *CustomerCreate) AddInvoices(i ...*Invoice) *CustomerCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return cc.AddInvoiceIDs(ids...)
+}
+
+// AddPaymentIDs adds the "payments" edge to the Payment entity by IDs.
+func (cc *CustomerCreate) AddPaymentIDs(ids ...int) *CustomerCreate {
+	cc.mutation.AddPaymentIDs(ids...)
+	return cc
+}
+
+// AddPayments adds the "payments" edges to the Payment entity.
+func (cc *CustomerCreate) AddPayments(p ...*Payment) *CustomerCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cc.AddPaymentIDs(ids...)
 }
 
 // Mutation returns the CustomerMutation object of the builder.
@@ -162,6 +194,11 @@ func (cc *CustomerCreate) check() error {
 	if _, ok := cc.mutation.AccountNumber(); !ok {
 		return &ValidationError{Name: "account_number", err: errors.New(`ent: missing required field "Customer.account_number"`)}
 	}
+	if v, ok := cc.mutation.AccountNumber(); ok {
+		if err := customer.AccountNumberValidator(v); err != nil {
+			return &ValidationError{Name: "account_number", err: fmt.Errorf(`ent: validator failed for field "Customer.account_number": %w`, err)}
+		}
+	}
 	if _, ok := cc.mutation.IDCurrency(); !ok {
 		return &ValidationError{Name: "id_currency", err: errors.New(`ent: missing required field "Customer.id_currency"`)}
 	}
@@ -171,18 +208,33 @@ func (cc *CustomerCreate) check() error {
 	if _, ok := cc.mutation.Alias(); !ok {
 		return &ValidationError{Name: "alias", err: errors.New(`ent: missing required field "Customer.alias"`)}
 	}
+	if v, ok := cc.mutation.Alias(); ok {
+		if err := customer.AliasValidator(v); err != nil {
+			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Customer.alias": %w`, err)}
+		}
+	}
 	if _, ok := cc.mutation.AbKey(); !ok {
 		return &ValidationError{Name: "ab_key", err: errors.New(`ent: missing required field "Customer.ab_key"`)}
+	}
+	if v, ok := cc.mutation.AbKey(); ok {
+		if err := customer.AbKeyValidator(v); err != nil {
+			return &ValidationError{Name: "ab_key", err: fmt.Errorf(`ent: validator failed for field "Customer.ab_key": %w`, err)}
+		}
 	}
 	if _, ok := cc.mutation.TmcClientNumber(); !ok {
 		return &ValidationError{Name: "tmc_client_number", err: errors.New(`ent: missing required field "Customer.tmc_client_number"`)}
 	}
+	if v, ok := cc.mutation.TmcClientNumber(); ok {
+		if err := customer.TmcClientNumberValidator(v); err != nil {
+			return &ValidationError{Name: "tmc_client_number", err: fmt.Errorf(`ent: validator failed for field "Customer.tmc_client_number": %w`, err)}
+		}
+	}
 	if _, ok := cc.mutation.Tag(); !ok {
-		return &ValidationError{Name: "Tag", err: errors.New(`ent: missing required field "Customer.Tag"`)}
+		return &ValidationError{Name: "tag", err: errors.New(`ent: missing required field "Customer.tag"`)}
 	}
 	if v, ok := cc.mutation.Tag(); ok {
 		if err := customer.TagValidator(v); err != nil {
-			return &ValidationError{Name: "Tag", err: fmt.Errorf(`ent: validator failed for field "Customer.Tag": %w`, err)}
+			return &ValidationError{Name: "tag", err: fmt.Errorf(`ent: validator failed for field "Customer.tag": %w`, err)}
 		}
 	}
 	return nil
@@ -246,6 +298,38 @@ func (cc *CustomerCreate) createSpec() (*Customer, *sqlgraph.CreateSpec) {
 	if value, ok := cc.mutation.Tag(); ok {
 		_spec.SetField(customer.FieldTag, field.TypeEnum, value)
 		_node.Tag = value
+	}
+	if nodes := cc.mutation.InvoicesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.InvoicesTable,
+			Columns: []string{customer.InvoicesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invoice.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.PaymentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   customer.PaymentsTable,
+			Columns: []string{customer.PaymentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(payment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

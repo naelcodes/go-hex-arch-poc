@@ -8,3 +8,15 @@ import (
 
 // Customer is the predicate function for customer builders.
 type Customer func(*sql.Selector)
+
+// Imputation is the predicate function for imputation builders.
+type Imputation func(*sql.Selector)
+
+// Invoice is the predicate function for invoice builders.
+type Invoice func(*sql.Selector)
+
+// Payment is the predicate function for payment builders.
+type Payment func(*sql.Selector)
+
+// TravelItem is the predicate function for travelitem builders.
+type TravelItem func(*sql.Selector)

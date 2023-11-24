@@ -32,9 +32,41 @@ type Customer struct {
 	State string `json:"state,omitempty"`
 	// TmcClientNumber holds the value of the "tmc_client_number" field.
 	TmcClientNumber string `json:"tmc_client_number,omitempty"`
-	// Tag holds the value of the "Tag" field.
-	Tag          customer.Tag `json:"Tag,omitempty"`
+	// Tag holds the value of the "tag" field.
+	Tag customer.Tag `json:"tag,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the CustomerQuery when eager-loading is set.
+	Edges        CustomerEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// CustomerEdges holds the relations/edges for other nodes in the graph.
+type CustomerEdges struct {
+	// Invoices holds the value of the invoices edge.
+	Invoices []*Invoice `json:"invoices,omitempty"`
+	// Payments holds the value of the payments edge.
+	Payments []*Payment `json:"payments,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// InvoicesOrErr returns the Invoices value or an error if the edge
+// was not loaded in eager-loading.
+func (e CustomerEdges) InvoicesOrErr() ([]*Invoice, error) {
+	if e.loadedTypes[0] {
+		return e.Invoices, nil
+	}
+	return nil, &NotLoadedError{edge: "invoices"}
+}
+
+// PaymentsOrErr returns the Payments value or an error if the edge
+// was not loaded in eager-loading.
+func (e CustomerEdges) PaymentsOrErr() ([]*Payment, error) {
+	if e.loadedTypes[1] {
+		return e.Payments, nil
+	}
+	return nil, &NotLoadedError{edge: "payments"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -117,7 +149,7 @@ func (c *Customer) assignValues(columns []string, values []any) error {
 			}
 		case customer.FieldTag:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field Tag", values[i])
+				return fmt.Errorf("unexpected type %T for field tag", values[i])
 			} else if value.Valid {
 				c.Tag = customer.Tag(value.String)
 			}
@@ -132,6 +164,16 @@ func (c *Customer) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (c *Customer) Value(name string) (ent.Value, error) {
 	return c.selectValues.Get(name)
+}
+
+// QueryInvoices queries the "invoices" edge of the Customer entity.
+func (c *Customer) QueryInvoices() *InvoiceQuery {
+	return NewCustomerClient(c.config).QueryInvoices(c)
+}
+
+// QueryPayments queries the "payments" edge of the Customer entity.
+func (c *Customer) QueryPayments() *PaymentQuery {
+	return NewCustomerClient(c.config).QueryPayments(c)
 }
 
 // Update returns a builder for updating this Customer.
@@ -181,7 +223,7 @@ func (c *Customer) String() string {
 	builder.WriteString("tmc_client_number=")
 	builder.WriteString(c.TmcClientNumber)
 	builder.WriteString(", ")
-	builder.WriteString("Tag=")
+	builder.WriteString("tag=")
 	builder.WriteString(fmt.Sprintf("%v", c.Tag))
 	builder.WriteByte(')')
 	return builder.String()

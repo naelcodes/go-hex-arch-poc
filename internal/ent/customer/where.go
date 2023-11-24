@@ -4,6 +4,7 @@ package customer
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/naelcodes/ab-backend/internal/ent/predicate"
 )
 
@@ -572,24 +573,70 @@ func TmcClientNumberContainsFold(v string) predicate.Customer {
 	return predicate.Customer(sql.FieldContainsFold(FieldTmcClientNumber, v))
 }
 
-// TagEQ applies the EQ predicate on the "Tag" field.
+// TagEQ applies the EQ predicate on the "tag" field.
 func TagEQ(v Tag) predicate.Customer {
 	return predicate.Customer(sql.FieldEQ(FieldTag, v))
 }
 
-// TagNEQ applies the NEQ predicate on the "Tag" field.
+// TagNEQ applies the NEQ predicate on the "tag" field.
 func TagNEQ(v Tag) predicate.Customer {
 	return predicate.Customer(sql.FieldNEQ(FieldTag, v))
 }
 
-// TagIn applies the In predicate on the "Tag" field.
+// TagIn applies the In predicate on the "tag" field.
 func TagIn(vs ...Tag) predicate.Customer {
 	return predicate.Customer(sql.FieldIn(FieldTag, vs...))
 }
 
-// TagNotIn applies the NotIn predicate on the "Tag" field.
+// TagNotIn applies the NotIn predicate on the "tag" field.
 func TagNotIn(vs ...Tag) predicate.Customer {
 	return predicate.Customer(sql.FieldNotIn(FieldTag, vs...))
+}
+
+// HasInvoices applies the HasEdge predicate on the "invoices" edge.
+func HasInvoices() predicate.Customer {
+	return predicate.Customer(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InvoicesTable, InvoicesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInvoicesWith applies the HasEdge predicate on the "invoices" edge with a given conditions (other predicates).
+func HasInvoicesWith(preds ...predicate.Invoice) predicate.Customer {
+	return predicate.Customer(func(s *sql.Selector) {
+		step := newInvoicesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasPayments applies the HasEdge predicate on the "payments" edge.
+func HasPayments() predicate.Customer {
+	return predicate.Customer(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PaymentsTable, PaymentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPaymentsWith applies the HasEdge predicate on the "payments" edge with a given conditions (other predicates).
+func HasPaymentsWith(preds ...predicate.Payment) predicate.Customer {
+	return predicate.Customer(func(s *sql.Selector) {
+		step := newPaymentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

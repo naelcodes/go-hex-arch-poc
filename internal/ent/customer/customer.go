@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -31,8 +32,26 @@ const (
 	FieldTmcClientNumber = "tmc_client_number"
 	// FieldTag holds the string denoting the tag field in the database.
 	FieldTag = "tag"
+	// EdgeInvoices holds the string denoting the invoices edge name in mutations.
+	EdgeInvoices = "invoices"
+	// EdgePayments holds the string denoting the payments edge name in mutations.
+	EdgePayments = "payments"
 	// Table holds the table name of the customer in the database.
 	Table = "customer"
+	// InvoicesTable is the table that holds the invoices relation/edge.
+	InvoicesTable = "invoice"
+	// InvoicesInverseTable is the table name for the Invoice entity.
+	// It exists in this package in order to avoid circular dependency with the "invoice" package.
+	InvoicesInverseTable = "invoice"
+	// InvoicesColumn is the table column denoting the invoices relation/edge.
+	InvoicesColumn = "id_customer"
+	// PaymentsTable is the table that holds the payments relation/edge.
+	PaymentsTable = "payment_received"
+	// PaymentsInverseTable is the table name for the Payment entity.
+	// It exists in this package in order to avoid circular dependency with the "payment" package.
+	PaymentsInverseTable = "payment_received"
+	// PaymentsColumn is the table column denoting the payments relation/edge.
+	PaymentsColumn = "id_customer"
 )
 
 // Columns holds all SQL columns for customer fields.
@@ -60,13 +79,21 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// AccountNumberValidator is a validator for the "account_number" field. It is called by the builders before save.
+	AccountNumberValidator func(string) error
 	// DefaultIDCurrency holds the default value on creation for the "id_currency" field.
 	DefaultIDCurrency int
 	// DefaultIDCountry holds the default value on creation for the "id_country" field.
 	DefaultIDCountry int
+	// AliasValidator is a validator for the "alias" field. It is called by the builders before save.
+	AliasValidator func(string) error
+	// AbKeyValidator is a validator for the "ab_key" field. It is called by the builders before save.
+	AbKeyValidator func(string) error
+	// TmcClientNumberValidator is a validator for the "tmc_client_number" field. It is called by the builders before save.
+	TmcClientNumberValidator func(string) error
 )
 
-// Tag defines the type for the "Tag" enum field.
+// Tag defines the type for the "tag" enum field.
 type Tag string
 
 // Tag3 is the default value of the Tag enum.
@@ -79,17 +106,17 @@ const (
 	Tag3 Tag = "3"
 )
 
-func (_tag Tag) String() string {
-	return string(_tag)
+func (t Tag) String() string {
+	return string(t)
 }
 
-// TagValidator is a validator for the "Tag" field enum values. It is called by the builders before save.
-func TagValidator(_tag Tag) error {
-	switch _tag {
+// TagValidator is a validator for the "tag" field enum values. It is called by the builders before save.
+func TagValidator(t Tag) error {
+	switch t {
 	case Tag1, Tag2, Tag3:
 		return nil
 	default:
-		return fmt.Errorf("customer: invalid enum value for Tag field: %q", _tag)
+		return fmt.Errorf("customer: invalid enum value for tag field: %q", t)
 	}
 }
 
@@ -141,7 +168,49 @@ func ByTmcClientNumber(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTmcClientNumber, opts...).ToFunc()
 }
 
-// ByTag orders the results by the Tag field.
+// ByTag orders the results by the tag field.
 func ByTag(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTag, opts...).ToFunc()
+}
+
+// ByInvoicesCount orders the results by invoices count.
+func ByInvoicesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newInvoicesStep(), opts...)
+	}
+}
+
+// ByInvoices orders the results by invoices terms.
+func ByInvoices(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInvoicesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByPaymentsCount orders the results by payments count.
+func ByPaymentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPaymentsStep(), opts...)
+	}
+}
+
+// ByPayments orders the results by payments terms.
+func ByPayments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPaymentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newInvoicesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(InvoicesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InvoicesTable, InvoicesColumn),
+	)
+}
+func newPaymentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PaymentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PaymentsTable, PaymentsColumn),
+	)
 }
