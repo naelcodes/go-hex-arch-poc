@@ -5,27 +5,23 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/naelcodes/ab-backend/internal/configs"
 	"github.com/naelcodes/ab-backend/internal/ent"
+	"github.com/naelcodes/ab-backend/internal/pkg/logger"
 
 	_ "github.com/lib/pq"
 )
 
-func PostgresConnection(context context.Context) *ent.Client {
+func PostgresConnection(context context.Context, logger *logger.Logger) *ent.Client {
 
-	client, err := ent.Open("postgres", "host=ab.cjyodqyuof30.us-east-1.rds.amazonaws.com port=5432 user=postgres dbname=airbooks password=Neema_2023")
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s", configs.POSTGRES_DB_HOST, configs.POSTGRES_DB_PORT, configs.POSTGRES_DB_USER, configs.POSTGRES_DB_NAME, configs.POSTGRES_DB_PASSWORD)
+
+	client, err := ent.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
-	//defer client.Close()
 
-	// // Run the auto migration tool.
-	// fmt.Println("Running Migrations ....")
-
-	// if err := client.Debug().Schema.Create(context); err != nil {
-	// 	log.Fatalf("failed creating schema resources: %v", err)
-	// }
-
-	fmt.Println("Database Connected ....")
+	logger.Info("Database Connected ....")
 
 	return client
 }
