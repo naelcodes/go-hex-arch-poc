@@ -9,13 +9,13 @@ import (
 
 type Event struct {
 	Type          string
-	Data          interface{}
+	Data          any
 	CorrelationID string
 }
 
 type Subscriber struct {
 	EventType    string
-	Handler      func(eventData interface{}) error
+	Handler      func(eventData any) error
 	ErrorHandler func(err error, broker *Broker)
 }
 
@@ -32,7 +32,7 @@ func NewBroker() *Broker {
 	}
 }
 
-func (b *Broker) Subscribe(eventType string, handler func(eventData interface{}) error, errorHandler func(err error, broker *Broker)) error {
+func (b *Broker) Subscribe(eventType string, handler func(eventData any) error, errorHandler func(err error, broker *Broker)) error {
 	if handler == nil {
 		return errors.New("handler function cannot be nil")
 	}
@@ -65,7 +65,7 @@ func (b *Broker) UnsubscribeAll() {
 	b.subscribers = make(map[string][]*Subscriber)
 }
 
-func (b *Broker) Publish(eventType string, eventData interface{}) {
+func (b *Broker) Publish(eventType string, eventData any) {
 	correlationID := generateCorrelationID()
 
 	event := &Event{
