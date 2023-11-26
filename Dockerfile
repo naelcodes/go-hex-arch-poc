@@ -10,8 +10,7 @@ COPY . .
 # Download and install any required dependencies
 RUN go mod download
 
-#Move to app entry directory
-RUN cd cmd/ab-backend
+WORKDIR /app/cmd/ab-backend
 
 # Build the Go app
 RUN go build 
