@@ -12,8 +12,8 @@ type ICustomerRepository interface {
 	GetById(types.EID) (*dto.GetCustomerDTO, error)
 	GetCustomerOpenPayments(id types.EID) (*dto.GetCustomerOpenPaymentsDTO, error)
 	GetCustomerUnPaidInvoices(id types.EID) (*dto.GetCustomerUnpaidInvoicesDTO, error)
-	Save(CustomerAggregate) error
-	Update(CustomerAggregate) error
+	Save(*CustomerAggregate) error
+	Update(*CustomerAggregate) error
 	Delete(types.EID) error
 }
 

@@ -10,7 +10,7 @@ type RestController struct {
 	ApplicationService *application.Application
 }
 
-func (controller *RestController) Init(globalContext types.GlobalContext) {
+func (controller *RestController) Init(globalContext *types.GlobalContext) {
 	appEngine := globalContext.AppEngine
 
 	baseRouter := appEngine.GetServer().Group("/api/v1")
