@@ -10,11 +10,14 @@ COPY . .
 # Download and install any required dependencies
 RUN go mod download
 
+#Move to app entry directory
+RUN cd cmd/ab-backend
+
 # Build the Go app
-RUN go build -o ./bin 
+RUN go build 
 
 # Expose port 3000 for incoming traffic
 EXPOSE 3000
 
 # Define the command to run the app when the container starts
-CMD ["./bin"]
+CMD ["./ab-backend"]
