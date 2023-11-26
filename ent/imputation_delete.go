@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/naelcodes/ab-backend/internal/ent/imputation"
-	"github.com/naelcodes/ab-backend/internal/ent/predicate"
+	"github.com/naelcodes/ab-backend/ent/imputation"
+	"github.com/naelcodes/ab-backend/ent/predicate"
 )
 
 // ImputationDelete is the builder for deleting a Imputation entity.

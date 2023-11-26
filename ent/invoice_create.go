@@ -9,10 +9,10 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/naelcodes/ab-backend/internal/ent/customer"
-	"github.com/naelcodes/ab-backend/internal/ent/imputation"
-	"github.com/naelcodes/ab-backend/internal/ent/invoice"
-	"github.com/naelcodes/ab-backend/internal/ent/travelitem"
+	"github.com/naelcodes/ab-backend/ent/customer"
+	"github.com/naelcodes/ab-backend/ent/imputation"
+	"github.com/naelcodes/ab-backend/ent/invoice"
+	"github.com/naelcodes/ab-backend/ent/travelitem"
 )
 
 // InvoiceCreate is the builder for creating a Invoice entity.

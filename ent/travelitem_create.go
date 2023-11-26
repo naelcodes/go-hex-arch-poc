@@ -9,8 +9,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/naelcodes/ab-backend/internal/ent/invoice"
-	"github.com/naelcodes/ab-backend/internal/ent/travelitem"
+	"github.com/naelcodes/ab-backend/ent/invoice"
+	"github.com/naelcodes/ab-backend/ent/travelitem"
 )
 
 // TravelItemCreate is the builder for creating a TravelItem entity.

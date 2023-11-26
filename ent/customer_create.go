@@ -9,9 +9,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/naelcodes/ab-backend/internal/ent/customer"
-	"github.com/naelcodes/ab-backend/internal/ent/invoice"
-	"github.com/naelcodes/ab-backend/internal/ent/payment"
+	"github.com/naelcodes/ab-backend/ent/customer"
+	"github.com/naelcodes/ab-backend/ent/invoice"
+	"github.com/naelcodes/ab-backend/ent/payment"
 )
 
 // CustomerCreate is the builder for creating a Customer entity.

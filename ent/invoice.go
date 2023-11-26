@@ -8,8 +8,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/naelcodes/ab-backend/internal/ent/customer"
-	"github.com/naelcodes/ab-backend/internal/ent/invoice"
+	"github.com/naelcodes/ab-backend/ent/customer"
+	"github.com/naelcodes/ab-backend/ent/invoice"
 )
 
 // Invoice is the model entity for the Invoice schema.

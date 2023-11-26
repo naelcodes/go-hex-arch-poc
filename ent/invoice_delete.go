@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/naelcodes/ab-backend/internal/ent/invoice"
-	"github.com/naelcodes/ab-backend/internal/ent/predicate"
+	"github.com/naelcodes/ab-backend/ent/invoice"
+	"github.com/naelcodes/ab-backend/ent/predicate"
 )
 
 // InvoiceDelete is the builder for deleting a Invoice entity.

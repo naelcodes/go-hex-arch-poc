@@ -3,12 +3,12 @@
 package ent
 
 import (
-	"github.com/naelcodes/ab-backend/internal/ent/customer"
-	"github.com/naelcodes/ab-backend/internal/ent/imputation"
-	"github.com/naelcodes/ab-backend/internal/ent/invoice"
-	"github.com/naelcodes/ab-backend/internal/ent/payment"
-	"github.com/naelcodes/ab-backend/internal/ent/schema"
-	"github.com/naelcodes/ab-backend/internal/ent/travelitem"
+	"github.com/naelcodes/ab-backend/ent/customer"
+	"github.com/naelcodes/ab-backend/ent/imputation"
+	"github.com/naelcodes/ab-backend/ent/invoice"
+	"github.com/naelcodes/ab-backend/ent/payment"
+	"github.com/naelcodes/ab-backend/ent/schema"
+	"github.com/naelcodes/ab-backend/ent/travelitem"
 )
 
 // The init function reads all schema descriptors with runtime code

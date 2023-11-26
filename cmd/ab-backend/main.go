@@ -4,33 +4,25 @@ import (
 	"context"
 	"log"
 
+	"github.com/naelcodes/ab-backend/config"
 	"github.com/naelcodes/ab-backend/config/database"
-	"github.com/naelcodes/ab-backend/ent"
-	"github.com/naelcodes/ab-backend/internal/pkg/server"
-	"github.com/naelcodes/ab-backend/pkg/common"
+	"github.com/naelcodes/ab-backend/pkg/server"
+	"github.com/naelcodes/ab-backend/pkg/types"
 )
-
-type GlobalContext struct {
-	Database  *ent.Client
-	Context   context.Context
-	AppEngine *server.AppEngine
-}
 
 func main() {
 
-	configs.LoadEnvironmentConfig()
-	context := context.Background()
+	config.LoadEnvironmentConfig()
 
 	appEngine := new(server.AppEngine)
 	appEngine.Init()
 
-	globalContext := new(common.GlobalContext)
+	context := context.Background()
+	globalContext := new(types.GlobalContext)
 
 	globalContext.Database = database.PostgresConnection(context, appEngine.GetLogger())
 	globalContext.AppEngine = appEngine
 	globalContext.Context = context
 
-	bootstrap.InitModules(globalContext)
-
-	log.Fatal(appEngine.Serve())
+	log.Fatal(appEngine.Start())
 }

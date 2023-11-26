@@ -9,9 +9,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/naelcodes/ab-backend/internal/ent/customer"
-	"github.com/naelcodes/ab-backend/internal/ent/imputation"
-	"github.com/naelcodes/ab-backend/internal/ent/payment"
+	"github.com/naelcodes/ab-backend/ent/customer"
+	"github.com/naelcodes/ab-backend/ent/imputation"
+	"github.com/naelcodes/ab-backend/ent/payment"
 )
 
 // PaymentCreate is the builder for creating a Payment entity.

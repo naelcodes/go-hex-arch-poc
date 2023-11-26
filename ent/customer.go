@@ -8,7 +8,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/naelcodes/ab-backend/internal/ent/customer"
+	"github.com/naelcodes/ab-backend/ent/customer"
 )
 
 // Customer is the model entity for the Customer schema.

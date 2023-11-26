@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/naelcodes/ab-backend/internal/ent"
+	"github.com/naelcodes/ab-backend/ent"
 )
 
 // The CustomerFunc type is an adapter to allow the use of ordinary

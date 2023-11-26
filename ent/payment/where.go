@@ -5,7 +5,7 @@ package payment
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/naelcodes/ab-backend/internal/ent/predicate"
+	"github.com/naelcodes/ab-backend/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

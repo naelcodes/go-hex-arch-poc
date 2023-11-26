@@ -1,5 +1,12 @@
 package types
 
+import (
+	"context"
+
+	"github.com/naelcodes/ab-backend/ent"
+	"github.com/naelcodes/ab-backend/pkg/server"
+)
+
 type EID uint
 
 type BaseEntity struct {
@@ -18,4 +25,10 @@ type GetQueryParams struct {
 	PageNumber *int      `query:"page"`
 	Fields     *[]string `query:"fields"`
 	Embed      *string   `query:"embed"`
+}
+
+type GlobalContext struct {
+	Database  *ent.Client
+	Context   context.Context
+	AppEngine *server.AppEngine
 }

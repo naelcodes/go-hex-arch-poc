@@ -21,7 +21,7 @@ func (appEngine *AppEngine) Init() {
 
 }
 
-func (appEngine *AppEngine) Serve() error {
+func (appEngine *AppEngine) Start() error {
 	appEngine.logger.Info(fmt.Sprintf("Server Running on port :%v....", config.APP_ENGINE_SERVER_PORT))
 	return appEngine.server.Listen(fmt.Sprintf(":%v", config.APP_ENGINE_SERVER_PORT))
 }

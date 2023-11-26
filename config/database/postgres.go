@@ -5,16 +5,15 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/naelcodes/ab-backend/internal/configs"
-	"github.com/naelcodes/ab-backend/internal/ent"
-	"github.com/naelcodes/ab-backend/internal/pkg/logger"
-
 	_ "github.com/lib/pq"
+	"github.com/naelcodes/ab-backend/config"
+	"github.com/naelcodes/ab-backend/ent"
+	"github.com/naelcodes/ab-backend/pkg/logger"
 )
 
 func PostgresConnection(context context.Context, logger *logger.Logger) *ent.Client {
 
-	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s", configs.POSTGRES_DB_HOST, configs.POSTGRES_DB_PORT, configs.POSTGRES_DB_USER, configs.POSTGRES_DB_NAME, configs.POSTGRES_DB_PASSWORD)
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s", config.POSTGRES_DB_HOST, config.POSTGRES_DB_PORT, config.POSTGRES_DB_USER, config.POSTGRES_DB_NAME, config.POSTGRES_DB_PASSWORD)
 
 	client, err := ent.Open("postgres", connectionString)
 	if err != nil {

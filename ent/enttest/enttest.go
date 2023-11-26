@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"github.com/naelcodes/ab-backend/internal/ent"
+	"github.com/naelcodes/ab-backend/ent"
 	// required by schema hooks.
-	_ "github.com/naelcodes/ab-backend/internal/ent/runtime"
+	_ "github.com/naelcodes/ab-backend/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"github.com/naelcodes/ab-backend/internal/ent/migrate"
+	"github.com/naelcodes/ab-backend/ent/migrate"
 )
 
 type (
