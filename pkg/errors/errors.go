@@ -17,43 +17,45 @@ const (
 )
 
 type CustomError struct {
-	Type string
-	Err  error
+	Type      string
+	Err       error
+	Operation string
 }
 
 func (c *CustomError) Error() string {
 	return c.Err.Error()
 }
 
-func NewServiceError(err error) *CustomError {
+func ServiceError(err error, operation string) *CustomError {
 	return &CustomError{
-		Err:  err,
-		Type: "ServiceError",
+		Err:       err,
+		Type:      "ServiceError",
+		Operation: operation,
 	}
 }
 
-func NewDomainError(err error) *CustomError {
+func DomainError(err error) *CustomError {
 	return &CustomError{
 		Err:  err,
 		Type: "DomainError",
 	}
 }
 
-func NewRepositoryError(err error) *CustomError {
+func RepositoryError(err error) *CustomError {
 	return &CustomError{
 		Err:  err,
 		Type: "RepositoryError",
 	}
 }
 
-func NewValidationError(err error) *CustomError {
+func ValidationError(err error) *CustomError {
 	return &CustomError{
 		Err:  err,
 		Type: "ValidationError",
 	}
 }
 
-func NewUnknownError(err error) *CustomError {
+func UnknownError(err error) *CustomError {
 	return &CustomError{
 		Err:  err,
 		Type: "UnknownError",
@@ -67,6 +69,23 @@ func NewServerError(err error) *CustomError {
 	}
 }
 
+type GlobalErrorResponse struct {
+	Success   bool   `json:"success,omitempty"`
+	ErrorType string `json:"errorType,omitempty"`
+	Error     string `json:"error,omitempty"`
+	Operation string `json:"operation,omitempty"`
+}
+
+func ErrorResponse(code int, customError *CustomError, ctx *fiber.Ctx) error {
+	return ctx.Status(code).JSON(GlobalErrorResponse{
+		Success:   false,
+		ErrorType: customError.Type,
+		Error:     customError.Err.Error(),
+		Operation: customError.Operation,
+	})
+
+}
+
 func GlobalErrorHandler(ctx *fiber.Ctx, err error) error {
 
 	var fiberError *fiber.Error
@@ -74,25 +93,31 @@ func GlobalErrorHandler(ctx *fiber.Ctx, err error) error {
 
 		switch customError.Type {
 		case "ValidationError":
-			return ctx.Status(fiber.StatusBadRequest).JSON(customError.Err)
+			return ErrorResponse(fiber.StatusBadRequest, customError, ctx)
 		case "RepositoryError":
-			return ctx.Status(fiber.StatusInternalServerError).JSON(customError.Err)
+			return ErrorResponse(fiber.StatusInternalServerError, customError, ctx)
 		case "DomainError":
-			return ctx.Status(fiber.StatusBadRequest).JSON(customError.Err)
+			return ErrorResponse(fiber.StatusBadRequest, customError, ctx)
 		case "ServiceError":
-			return ctx.Status(fiber.StatusInternalServerError).JSON(customError.Err)
+			return ErrorResponse(fiber.StatusInternalServerError, customError, ctx)
 		case "ServerError":
-			return ctx.Status(fiber.StatusInternalServerError).JSON(customError.Err)
+			return ErrorResponse(fiber.StatusInternalServerError, customError, ctx)
 		case "UnknownError":
-			return ctx.Status(fiber.StatusInternalServerError).JSON(customError.Err)
-		default:
-			return ctx.Status(fiber.StatusInternalServerError).JSON(customError.Err)
+			return ErrorResponse(fiber.StatusInternalServerError, customError, ctx)
 		}
 
 	} else if errors.As(err, &fiberError) {
-
-		return ctx.Status(fiberError.Code).JSON(fiberError)
+		return ctx.Status(fiberError.Code).JSON(GlobalErrorResponse{
+			Success: false,
+			Error:   fiberError.Error(),
+		})
 	} else {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(GlobalErrorResponse{
+			Success: false,
+			Error:   err.Error(),
+		})
 	}
+
+	return nil
+
 }
