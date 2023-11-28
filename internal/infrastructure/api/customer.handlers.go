@@ -33,6 +33,20 @@ func (controller *RestController) GetCustomerHandler() fiber.Handler {
 	}
 }
 
+func (controller *RestController) GetCustomerPaymentsHandler() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		return c.Status(200).JSON("/getCustomerPayment")
+
+	}
+}
+
+func (controller *RestController) GetCustomerInvoicesHandler() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		return c.Status(200).JSON("/getCustomerInvoices")
+
+	}
+}
+
 func (controller *RestController) CreateCustomerHandler() fiber.Handler {
 
 	return func(c *fiber.Ctx) error {
