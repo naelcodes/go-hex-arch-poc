@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/naelcodes/ab-backend/config"
+	"github.com/naelcodes/ab-backend/pkg/errors"
 	"github.com/naelcodes/ab-backend/pkg/logger"
 )
 
@@ -15,7 +16,9 @@ type AppEngine struct {
 
 func (appEngine *AppEngine) Init() {
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ErrorHandler: errors.GlobalErrorHandler,
+	})
 	appEngine.server = app
 	appEngine.logger = logger.NewLogger()
 
