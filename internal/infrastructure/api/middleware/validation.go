@@ -1,62 +1,81 @@
 package middleware
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/naelcodes/ab-backend/internal/modules/customers/dto"
+	"github.com/naelcodes/ab-backend/pkg/types"
+
+	CustomErr "github.com/naelcodes/ab-backend/pkg/errors"
 )
 
-func CustomerValidationMiddleware() fiber.Handler {
+type DtoValidator interface {
+	Validate() error
+}
+
+func PayloadValidator(createDTO DtoValidator, updateDTO DtoValidator) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		switch c.Method() {
 
-		case fiber.MethodGet:
-			return c.Next()
-
 		case fiber.MethodPost:
-			payload := new(dto.CreateCustomerDTO)
-			if err := c.BodyParser(payload); err != nil {
-				return c.Status(fiber.StatusBadRequest).JSON(&fiber.Map{
-					"success": false,
-					"error":   err.Error(),
-				})
+
+			payload := createDTO
+			if err := validatePayload(c, payload); err != nil {
+				return err
 			}
 
-			//validate payload
-			if err := payload.Validate(); err != nil {
-				return c.Status(fiber.StatusBadRequest).JSON(&fiber.Map{
-					"success": false,
-					"error":   err.Error(),
-				})
-			}
-
-			// store validate DTO in the context
-			c.Locals("customer_dto", payload)
+			c.Locals("payload", payload)
 			return c.Next()
 
 		case fiber.MethodPatch:
-			payload := new(dto.UpdateCustomerDTO)
-			if err := c.BodyParser(payload); err != nil {
-				return c.Status(fiber.StatusBadRequest).JSON(&fiber.Map{
-					"success": false,
-					"error":   err.Error(),
-				})
+			payload := updateDTO
+			if err := validatePayload(c, payload); err != nil {
+				return err
 			}
-
-			//validate payload
-			if err := payload.Validate(); err != nil {
-				return c.Status(fiber.StatusBadRequest).JSON(&fiber.Map{
-					"success": false,
-					"error":   err.Error(),
-				})
-			}
-
-			// store validate DTO in the context
-			c.Locals("customer_dto", payload)
+			c.Locals("payload", payload)
 			return c.Next()
-			
-		case fiber.MethodDelete:
-			return c.Next()
+
 		}
 		return c.Next()
 	}
+}
+
+func QueryValidator() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		queryParams := new(types.GetQueryParams)
+		c.QueryParser(queryParams)
+
+		if c.Method() == fiber.MethodGet {
+			if queryParams.PageNumber != nil && queryParams.PageSize == nil {
+				return CustomErr.ValidationError(errors.New("page size should be provided with page number"))
+			}
+
+			if queryParams.PageSize != nil && queryParams.PageNumber == nil {
+				return CustomErr.ValidationError(errors.New("page number should be provided with page size"))
+			}
+
+			if queryParams.PageSize != nil && queryParams.PageNumber != nil {
+				if *queryParams.PageSize <= 0 || *queryParams.PageNumber <= 0 {
+					return CustomErr.ValidationError(errors.New("page number and page size should be greater than 0"))
+				}
+			}
+		}
+
+		c.Locals("queryParams", queryParams)
+
+		return c.Next()
+	}
+}
+
+func validatePayload(c *fiber.Ctx, payload DtoValidator) error {
+	if err := c.BodyParser(payload); err != nil {
+		return CustomErr.ServiceError(err, "JSON Parsing")
+	}
+
+	//validate payload
+	if err := payload.Validate(); err != nil {
+		return CustomErr.ValidationError(err)
+	}
+
+	return nil
 }
