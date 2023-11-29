@@ -53,14 +53,14 @@ type GetCustomerDTO struct {
 	Tmc_client_number string `json:"tmcClientNumber,omitempty"`
 }
 
-type CustomerOpenPayments struct {
+type CustomerPayments struct {
 	IdCustomer int
 	Payments   []GetPaymentDTO
 }
-type CustomerUnpaidInvoice struct {
+type CustomerInvoice struct {
 	IdCustomer int
 	Invoices   []GetInvoiceDTO
 }
 type GetAllCustomersDTO types.GetAllDTO[[]*GetCustomerDTO]
-type GetCustomerOpenPaymentsDTO types.GetAllDTO[*CustomerOpenPayments]
-type GetCustomerUnpaidInvoicesDTO types.GetAllDTO[*CustomerUnpaidInvoice]
+type GetCustomerPaymentsDTO types.GetAllDTO[*CustomerPayments]
+type GetCustomerInvoicesDTO types.GetAllDTO[*CustomerInvoice]
