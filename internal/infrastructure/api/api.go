@@ -22,6 +22,7 @@ func (controller *RestController) Init(globalContext *types.GlobalContext) {
 	controller.attachCustomerRoutesHandlers(apiV1Router.Group("/customers"))
 	controller.attachTravelItemsRoutesHandlers(apiV1Router.Group("/travel-items"))
 	controller.attachInvoiceRoutesHandlers(apiV1Router.Group("/invoices"))
+	controller.attachInvoiceImputationRoutesHandlers(apiV1Router.Group("/invoices"))
 	controller.attachPaymentRoutesHandlers(apiV1Router.Group("/payments"))
 }
 
@@ -30,15 +31,38 @@ func (controller *RestController) attachCustomerRoutesHandlers(router fiber.Rout
 	router.Use(middleware.PayloadValidator(new(dto.CreateCustomerDTO), new(dto.UpdateCustomerDTO)))
 	router.Get("", controller.GetAllCustomersHandler())
 	router.Get("/:id", controller.GetCustomerHandler())
+	// router.Get("/:id/payments", controller.GetCustomerPaymentsHandler())
+	// router.Get("/:id/invoices", controller.GetCustomerInvoicesHandler())
 	router.Post("", controller.CreateCustomerHandler())
-	router.Put("/:id", controller.UpdateCustomerHandler())
+	router.Patch("/:id", controller.UpdateCustomerHandler())
 	router.Delete("/:id", controller.DeleteCustomerHandler())
 }
 
 func (controller *RestController) attachTravelItemsRoutesHandlers(router fiber.Router) {
-
+	router.Get("", controller.GetAllTravelItemsHandler())
 }
 
-func (controller *RestController) attachInvoiceRoutesHandlers(router fiber.Router) {}
+func (controller *RestController) attachInvoiceRoutesHandlers(router fiber.Router) {
+	router.Get("", controller.GetAllInvoiceHandler())
+	router.Get("/:id", controller.GetInvoiceHandler())
+	router.Post("", controller.CreateInvoiceHandler())
+	router.Patch("/:id", controller.UpdateInvoiceHandler())
+	router.Delete("/:id", controller.DeleteInvoiceHandler())
+}
 
-func (controller *RestController) attachPaymentRoutesHandlers(router fiber.Router) {}
+func (controller *RestController) attachInvoiceImputationRoutesHandlers(router fiber.Router) {
+
+	router.Get("/:id/imputations", controller.GetInvoiceImputationsHandler())
+	router.Post(":id/imputations", controller.AddInvoiceImputationHandler())
+	router.Patch("/:id/imputations", controller.UpdateInvoiceImputationsHandler())
+}
+
+func (controller *RestController) attachPaymentRoutesHandlers(router fiber.Router) {
+
+	router.Get("", controller.GetAllPaymentsHandler())
+	router.Get("/:id", controller.GetPaymentHandler())
+	router.Post("", controller.CreatePaymentHandler())
+	router.Patch("/:id", controller.UpdatePaymentHandler())
+	router.Delete("/:id", controller.DeletePaymentHandler())
+
+}

@@ -1,10 +1,9 @@
 package api
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
+	"github.com/naelcodes/ab-backend/pkg/errors"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
@@ -12,15 +11,18 @@ func (controller *RestController) GetAllCustomersHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
 		queryParams := new(types.GetQueryParams)
-		c.QueryParser(queryParams)
-
-		result, err := controller.ApplicationService.GetAllCustomersService(queryParams)
+		err := c.QueryParser(queryParams)
 
 		if err != nil {
-			fmt.Println("error", err)
-			return c.Status(500).JSON(err)
+			return errors.ServiceError(err, "Parsing query params")
 		}
-		return c.Status(200).JSON(result)
+
+		getAllCustomersDTO, err := controller.ApplicationService.GetAllCustomersService(queryParams)
+
+		if err != nil {
+			return err
+		}
+		return c.Status(fiber.StatusOK).JSON(getAllCustomersDTO)
 
 	}
 
@@ -28,21 +30,15 @@ func (controller *RestController) GetAllCustomersHandler() fiber.Handler {
 
 func (controller *RestController) GetCustomerHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		return c.Status(200).JSON("/getAllCustomerHandler")
-
-	}
-}
-
-func (controller *RestController) GetCustomerPaymentsHandler() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		return c.Status(200).JSON("/getCustomerPayment")
-
-	}
-}
-
-func (controller *RestController) GetCustomerInvoicesHandler() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		return c.Status(200).JSON("/getCustomerInvoices")
+		id, err := c.ParamsInt("id")
+		if err != nil {
+			return errors.ServiceError(err, "Id Parsing in URL parameter")
+		}
+		customerDTO, err := controller.ApplicationService.GetCustomerService(types.EID(id))
+		if err != nil {
+			return err
+		}
+		return c.Status(fiber.StatusOK).JSON(customerDTO)
 
 	}
 }
@@ -50,28 +46,44 @@ func (controller *RestController) GetCustomerInvoicesHandler() fiber.Handler {
 func (controller *RestController) CreateCustomerHandler() fiber.Handler {
 
 	return func(c *fiber.Ctx) error {
-		customer_dto := c.Locals("customer_dto").(*dto.CreateCustomerDTO)
-		id, err := controller.ApplicationService.CreateCustomerService(customer_dto)
+		createCustomerDto := c.Locals("payload").(*dto.CreateCustomerDTO)
+		newCustomerDTO, err := controller.ApplicationService.CreateCustomerService(createCustomerDto)
 		if err != nil {
-			return c.Status(500).JSON(err)
+			return err
 		}
-		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-			"id": id,
-		})
+		return c.Status(fiber.StatusCreated).JSON(newCustomerDTO)
 	}
 
 }
 
 func (controller *RestController) UpdateCustomerHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		return c.Status(200).JSON("/getAllCustomerHandler")
+		updateCustomerDto := c.Locals("payload").(*dto.UpdateCustomerDTO)
+		RecordWasUpdated, err := controller.ApplicationService.UpdateCustomerService(updateCustomerDto)
+		if err != nil {
+			return err
+		}
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"success": RecordWasUpdated,
+		})
 
 	}
 }
 
 func (controller *RestController) DeleteCustomerHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		return c.Status(200).JSON("\\delete handler")
+
+		id, err := c.ParamsInt("id")
+		if err != nil {
+			return errors.ServiceError(err, "Id Parsing in URL parameter")
+		}
+		RecordWasDeleted, err := controller.ApplicationService.DeleteCustomerService(types.EID(id))
+		if err != nil {
+			return err
+		}
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"success": RecordWasDeleted,
+		})
 
 	}
 

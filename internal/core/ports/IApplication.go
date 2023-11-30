@@ -11,6 +11,6 @@ type IApplication interface {
 	DeleteCustomerService(types.EID) (bool, error)
 	GetAllCustomersService(*types.GetQueryParams) (*dto.GetAllCustomersDTO, error)
 	GetCustomerService(types.EID) (*dto.GetCustomerDTO, error)
-	GetCustomerOpenPaymentsService(id types.EID) (*dto.GetCustomerOpenPaymentsDTO, error)
-	GetCustomerUnPaidInvoicesService(id types.EID) (*dto.GetCustomerUnpaidInvoicesDTO, error)
+	GetCustomerPaymentsService(id types.EID) (*dto.GetCustomerPaymentsDTO, error)
+	GetCustomerInvoicesService(id types.EID) (*dto.GetCustomerInvoicesDTO, error)
 }

@@ -1,6 +1,8 @@
 package application
 
 import (
+	builder "github.com/naelcodes/ab-backend/internal/core/application/builders"
+	"github.com/naelcodes/ab-backend/internal/core/domains"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
@@ -49,27 +51,42 @@ func (application *Application) GetAllCustomersService(queryParams *types.GetQue
 
 }
 
-func (application *Application) GetCustomerOpenPaymentsService(id types.EID) (*dto.GetCustomerOpenPaymentsDTO, error) {
-	// TODO
-	return nil, nil
+func (application *Application) CreateCustomerService(customerDTO *dto.CreateCustomerDTO) (*dto.GetCustomerDTO, error) {
+
+	customerAggregateBuilder := builder.NewCustomerAggregateBuilder()
+	customerAggregateBuilder.SetCustomerName(customerDTO.CustomerName)
+	customerAggregateBuilder.SetAlias(customerDTO.Alias)
+	customerAggregateBuilder.SetAbKey()
+	customerAggregateBuilder.SetTmcClientNumber(customerDTO.TmcClientNumber)
+	customerAggregateBuilder.SetAccountNumber(customerDTO.AccountNumber)
+	customerAggregateBuilder.SetState(customerDTO.State)
+	customerAggregate := customerAggregateBuilder.Build()
+
+	newCustomerDTO, err := application.customerRepository.Save(customerAggregate)
+
+	if err != nil {
+		return nil, err
+	}
+	return newCustomerDTO, nil
 }
 
-func (application *Application) GetCustomerUnPaidInvoicesService(id types.EID) (*dto.GetCustomerUnpaidInvoicesDTO, error) {
-	// TODO
-	return nil, nil
-}
+func (application *Application) UpdateCustomerService(customerDTO *dto.UpdateCustomerDTO) (bool, error) {
 
-func (application *Application) CreateCustomerService(customer *dto.CreateCustomerDTO) (types.EID, error) {
-	// TODO
-	return 0, nil
-}
+	err := application.customerRepository.Update(customerDTO)
 
-func (application *Application) UpdateCustomerService(customer *dto.UpdateCustomerDTO) (bool, error) {
-	// TODO
-	return false, nil
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (application *Application) DeleteCustomerService(id types.EID) (bool, error) {
-	// TODO
-	return false, nil
+	domainService := new(domains.DomainService)
+	err := domainService.RemoveCustomer(id, application.customerRepository, application.invoiceRepository, application.paymentRepository)
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
