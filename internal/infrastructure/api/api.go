@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/naelcodes/ab-backend/internal/core/application"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	"github.com/naelcodes/ab-backend/internal/infrastructure/api/middleware"
@@ -15,6 +16,7 @@ type RestController struct {
 func (controller *RestController) Init(globalContext *types.GlobalContext) {
 	server := globalContext.AppEngine.GetServer()
 
+	server.Use(recover.New())
 	server.Use(middleware.Cors())
 	server.Use(middleware.QueryValidator())
 
