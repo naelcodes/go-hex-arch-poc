@@ -37,7 +37,7 @@ func (application *Application) GetAllCustomersService(queryParams *types.GetQue
 		queryParams.PageNumber = new(int)
 		queryParams.PageSize = new(int)
 		*queryParams.PageNumber = 0
-		*queryParams.PageSize = 0
+		*queryParams.PageSize = *totalRowCount
 	}
 
 	getCustomersDTO := &dto.GetAllCustomersDTO{
