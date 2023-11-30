@@ -6,20 +6,20 @@ import (
 )
 
 type CreateCustomerDTO struct {
-	Customer_name     string `json:"customerName"`
-	State             string `json:"state"`
-	Account_number    string `json:"accountNumber"`
-	Alias             string `json:"alias"`
-	Tmc_client_number string `json:"tmcClientNumber"`
+	CustomerName    string `json:"customerName"`
+	State           string `json:"state"`
+	AccountNumber   string `json:"accountNumber"`
+	Alias           string `json:"alias"`
+	TmcClientNumber string `json:"tmcClientNumber"`
 }
 
 func (c CreateCustomerDTO) Validate() error {
 	return validation.ValidateStruct(&c,
-		validation.Field(&c.Customer_name, validation.Required),
+		validation.Field(&c.CustomerName, validation.Required),
 		validation.Field(&c.State, validation.Required),
-		validation.Field(&c.Account_number, validation.Required),
+		validation.Field(&c.AccountNumber, validation.Required),
 		validation.Field(&c.Alias, validation.Required),
-		validation.Field(&c.Tmc_client_number, validation.Required),
+		validation.Field(&c.TmcClientNumber, validation.Required),
 	)
 }
 
