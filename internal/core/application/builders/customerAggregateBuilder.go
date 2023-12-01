@@ -2,6 +2,7 @@ package builder
 
 import (
 	customerDomain "github.com/naelcodes/ab-backend/internal/core/domains/customer-domain"
+	"github.com/naelcodes/ab-backend/pkg/types"
 	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
@@ -12,6 +13,11 @@ type CustomerAggregateBuilder struct {
 func NewCustomerAggregateBuilder() *CustomerAggregateBuilder {
 	builder := new(CustomerAggregateBuilder)
 	builder.customerAggregate = new(customerDomain.CustomerAggregate)
+	return builder
+}
+
+func (builder *CustomerAggregateBuilder) SetId(id types.EID) *CustomerAggregateBuilder {
+	builder.customerAggregate.Id = id
 	return builder
 }
 

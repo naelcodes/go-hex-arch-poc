@@ -59,7 +59,13 @@ func (controller *RestController) CreateCustomerHandler() fiber.Handler {
 func (controller *RestController) UpdateCustomerHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		updateCustomerDto := c.Locals("payload").(*dto.UpdateCustomerDTO)
-		RecordWasUpdated, err := controller.ApplicationService.UpdateCustomerService(updateCustomerDto)
+		id, err := c.ParamsInt("id")
+
+		if err != nil {
+			return errors.ServiceError(err, "Id Parsing in URL parameter")
+		}
+		RecordWasUpdated, err := controller.ApplicationService.UpdateCustomerService(id, updateCustomerDto)
+
 		if err != nil {
 			return err
 		}

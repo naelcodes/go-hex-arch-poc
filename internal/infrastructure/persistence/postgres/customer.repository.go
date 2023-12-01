@@ -84,28 +84,27 @@ func (repo *CustomerRepository) Save(customer *customerDomain.CustomerAggregate)
 	customerDTO := CustomerModelToDTO(customerRecord)
 	return customerDTO, nil
 }
-func (repo *CustomerRepository) Update(customer *dto.UpdateCustomerDTO) error {
+func (repo *CustomerRepository) Update(customer *customerDomain.CustomerAggregate) error {
 
 	UpdateQueryBuilder := repo.Database.Customer.UpdateOneID(int(customer.Id))
 
-	if customer.Customer_name != nil {
-		UpdateQueryBuilder.SetCustomerName(*customer.Customer_name)
+	if customer.CustomerName != "" {
+		UpdateQueryBuilder.SetCustomerName(customer.CustomerName)
 	}
-
-	if customer.Alias != nil {
-		UpdateQueryBuilder.SetAlias(*customer.Alias)
+	if customer.AbKey != "" {
+		UpdateQueryBuilder.SetAbKey(customer.AbKey)
 	}
-
-	if customer.Tmc_client_number != nil {
-		UpdateQueryBuilder.SetTmcClientNumber(*customer.Tmc_client_number)
+	if customer.Alias != "" {
+		UpdateQueryBuilder.SetAlias(customer.Alias)
 	}
-
-	if customer.Account_number != nil {
-		UpdateQueryBuilder.SetAccountNumber(*customer.Account_number)
+	if customer.TmcClientNumber != "" {
+		UpdateQueryBuilder.SetTmcClientNumber(customer.TmcClientNumber)
 	}
-
-	if customer.State != nil {
-		UpdateQueryBuilder.SetState(*customer.State)
+	if customer.AccountNumber != "" {
+		UpdateQueryBuilder.SetAccountNumber(customer.AccountNumber)
+	}
+	if customer.State != "" {
+		UpdateQueryBuilder.SetState(customer.State)
 	}
 
 	_, err := UpdateQueryBuilder.Save(repo.Context)

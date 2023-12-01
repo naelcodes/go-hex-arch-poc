@@ -2,7 +2,7 @@ package application
 
 import (
 	builder "github.com/naelcodes/ab-backend/internal/core/application/builders"
-	"github.com/naelcodes/ab-backend/internal/core/domains"
+	customerDomain "github.com/naelcodes/ab-backend/internal/core/domains/customer-domain"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
@@ -70,9 +70,33 @@ func (application *Application) CreateCustomerService(customerDTO *dto.CreateCus
 	return newCustomerDTO, nil
 }
 
-func (application *Application) UpdateCustomerService(customerDTO *dto.UpdateCustomerDTO) (bool, error) {
+func (application *Application) UpdateCustomerService(id int, customerDTO *dto.UpdateCustomerDTO) (bool, error) {
 
-	err := application.customerRepository.Update(customerDTO)
+	customerAggregateBuilder := builder.NewCustomerAggregateBuilder()
+
+	customerAggregateBuilder.SetId(types.EID(id))
+	if customerDTO.Customer_name != nil {
+		customerAggregateBuilder.SetCustomerName(*customerDTO.Customer_name)
+	}
+
+	if customerDTO.Alias != nil {
+		customerAggregateBuilder.SetAlias(*customerDTO.Alias)
+	}
+
+	if customerDTO.Tmc_client_number != nil {
+		customerAggregateBuilder.SetTmcClientNumber(*customerDTO.Tmc_client_number)
+	}
+
+	if customerDTO.Account_number != nil {
+		customerAggregateBuilder.SetAccountNumber(*customerDTO.Account_number)
+	}
+
+	if customerDTO.State != nil {
+		customerAggregateBuilder.SetState(*customerDTO.State)
+	}
+
+	customerAggregate := customerAggregateBuilder.Build()
+	err := application.customerRepository.Update(customerAggregate)
 
 	if err != nil {
 		return false, err
@@ -81,8 +105,12 @@ func (application *Application) UpdateCustomerService(customerDTO *dto.UpdateCus
 }
 
 func (application *Application) DeleteCustomerService(id types.EID) (bool, error) {
-	domainService := new(domains.DomainService)
-	err := domainService.RemoveCustomer(id, application.customerRepository, application.invoiceRepository, application.paymentRepository)
+	CustomerDomainService := &customerDomain.CustomerDomainService{
+		CustomerRepository: application.customerRepository,
+		InvoiceRepository:  application.invoiceRepository,
+		PaymentRepository:  application.paymentRepository,
+	}
+	err := CustomerDomainService.RemoveCustomer(id)
 
 	if err != nil {
 		return false, err
