@@ -24,7 +24,6 @@ func (c CreateCustomerDTO) Validate() error {
 }
 
 type UpdateCustomerDTO struct {
-	Id                int     `json:"id"`
 	Customer_name     *string `json:"customerName,omitempty"`
 	State             *string `json:"state,omitempty"`
 	Account_number    *string `json:"accountNumber,omitempty"`
@@ -34,7 +33,6 @@ type UpdateCustomerDTO struct {
 
 func (u UpdateCustomerDTO) Validate() error {
 	return validation.ValidateStruct(&u,
-		validation.Field(&u.Id, validation.Required),
 		validation.Field(&u.Customer_name, validation.NilOrNotEmpty),
 		validation.Field(&u.State, validation.NilOrNotEmpty),
 		validation.Field(&u.Account_number, validation.NilOrNotEmpty),

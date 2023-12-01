@@ -1,20 +1,23 @@
-package domains
+package customerDomain
 
 import (
 	"errors"
 
-	customerDomain "github.com/naelcodes/ab-backend/internal/core/domains/customer-domain"
 	invoiceDomain "github.com/naelcodes/ab-backend/internal/core/domains/invoice-domain"
 	paymentDomain "github.com/naelcodes/ab-backend/internal/core/domains/payment-domain"
 	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
-type DomainService struct{}
+type CustomerDomainService struct {
+	CustomerRepository ICustomerRepository
+	InvoiceRepository  invoiceDomain.IInvoiceRepository
+	PaymentRepository  paymentDomain.IPaymentRepository
+}
 
-func (domainService *DomainService) RemoveCustomer(IdCustomer types.EID, CustomerRepository customerDomain.ICustomerRepository, InvoiceRepository invoiceDomain.IInvoiceRepository, PaymentRepository paymentDomain.IPaymentRepository) error {
+func (service *CustomerDomainService) RemoveCustomer(IdCustomer types.EID) error {
 
-	customerInvoiceCount, err := InvoiceRepository.CountByCustomerId(types.EID(IdCustomer))
+	customerInvoiceCount, err := service.InvoiceRepository.CountByCustomerId(types.EID(IdCustomer))
 
 	if err != nil {
 		return CustomErrors.RepositoryError(err)
@@ -24,7 +27,7 @@ func (domainService *DomainService) RemoveCustomer(IdCustomer types.EID, Custome
 		return CustomErrors.DomainError(errors.New("cannot remove customer  with invoices"))
 	}
 
-	customerPaymentCount, err := PaymentRepository.CountByCustomerID(types.EID(IdCustomer))
+	customerPaymentCount, err := service.PaymentRepository.CountByCustomerID(types.EID(IdCustomer))
 
 	if err != nil {
 		return CustomErrors.RepositoryError(err)
@@ -34,7 +37,7 @@ func (domainService *DomainService) RemoveCustomer(IdCustomer types.EID, Custome
 		return CustomErrors.DomainError(errors.New("cannot remove customer  with payments"))
 	}
 
-	err = CustomerRepository.Delete(types.EID(IdCustomer))
+	err = service.CustomerRepository.Delete(types.EID(IdCustomer))
 	if err != nil {
 		return CustomErrors.RepositoryError(err)
 	}

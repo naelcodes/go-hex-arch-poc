@@ -10,6 +10,6 @@ type ICustomerRepository interface {
 	GetAll(*types.GetQueryParams) ([]*dto.GetCustomerDTO, error)
 	GetById(types.EID) (*dto.GetCustomerDTO, error)
 	Save(*CustomerAggregate) (*dto.GetCustomerDTO, error)
-	Update(*dto.UpdateCustomerDTO) error
+	Update(*CustomerAggregate) error
 	Delete(types.EID) error
 }
