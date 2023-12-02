@@ -29,13 +29,12 @@ type CreatePaymentDTO struct {
 func (c CreatePaymentDTO) Validate() error {
 	return validation.ValidateStruct(&c,
 		validation.Field(&c.IdCustomer, validation.Required),
-		validation.Field(&c.Amount, validation.Required),
-		validation.Field(&c.PaymentMode, validation.Required),
+		validation.Field(&c.Amount, validation.Required, validation.Min(0)),
+		validation.Field(&c.PaymentMode, validation.Required, validation.In("cash", "check", "bank_transfer")),
 	)
 }
 
 type UpdatePaymentDTO struct {
-	Id          int      `json:"id"`
 	IdCustomer  *int     `json:"idCustomer,omitempty"`
 	Amount      *float64 `json:"amount,omitempty"`
 	PaymentMode *string  `json:"paymentMode,omitempty"`
@@ -43,9 +42,8 @@ type UpdatePaymentDTO struct {
 
 func (u UpdatePaymentDTO) Validate() error {
 	return validation.ValidateStruct(&u,
-		validation.Field(&u.Id, validation.Required),
 		validation.Field(&u.IdCustomer, validation.NilOrNotEmpty),
-		validation.Field(&u.Amount, validation.NilOrNotEmpty),
-		validation.Field(&u.PaymentMode, validation.NilOrNotEmpty),
+		validation.Field(&u.Amount, validation.NilOrNotEmpty, validation.Min(0)),
+		validation.Field(&u.PaymentMode, validation.NilOrNotEmpty, validation.In("cash", "check", "bank_transfer")),
 	)
 }
