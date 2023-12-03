@@ -19,4 +19,4 @@ RUN go build
 EXPOSE 3000
 
 # Define the command to run the app when the container starts
-CMD ["./ab-backend","-stage production"]
+CMD ["./ab-backend","-stage","production"]
