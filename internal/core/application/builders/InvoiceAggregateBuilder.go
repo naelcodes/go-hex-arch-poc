@@ -1,10 +1,9 @@
 package builder
 
 import (
-	"fmt"
-
 	invoiceDomain "github.com/naelcodes/ab-backend/internal/core/domains/invoice-domain"
 	"github.com/naelcodes/ab-backend/pkg/types"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 type InvoiceAggregateBuilder struct {
@@ -18,19 +17,7 @@ func (i *InvoiceAggregateBuilder) SetCreationDate(creationDate string) *InvoiceA
 
 func (i *InvoiceAggregateBuilder) SetInvoiceNumber(invoiceCount int) *InvoiceAggregateBuilder {
 
-	var invoiceNumber string
-
-	if invoiceCount >= 0 && invoiceCount < 10 {
-		invoiceNumber = fmt.Sprintf("INV-000%d", invoiceCount+1)
-	} else if invoiceCount >= 10 && invoiceCount < 100 {
-		invoiceNumber = fmt.Sprintf("INV-00%d", invoiceCount+1)
-	} else if invoiceCount >= 100 && invoiceCount < 1000 {
-		invoiceNumber = fmt.Sprintf("INV-0%d", invoiceCount+1)
-	} else {
-		invoiceNumber = fmt.Sprintf("INV-%d", invoiceCount+1)
-	}
-
-	i.invoiceAggregate.InvoiceNumber = invoiceNumber
+	i.invoiceAggregate.InvoiceNumber = utils.GenerateCode("INV", invoiceCount+1)
 	return i
 }
 
@@ -59,16 +46,6 @@ func (i *InvoiceAggregateBuilder) SetIdCustomer(idCustomer types.EID) *InvoiceAg
 	i.invoiceAggregate.IdCustomer = idCustomer
 	return i
 }
-
-// func (i *InvoiceAggregateBuilder) SetTravelItem(travelItems []TravelItem) *InvoiceAggregateBuilder {
-// 	i.invoiceAggregate.TravelItems = travelItems
-// 	return i
-// }
-
-// func (i *InvoiceAggregateBuilder) SetImputation(imputations []Imputation) *InvoiceAggregateBuilder {
-// 	i.invoiceAggregate.Imputations = imputations
-// 	return i
-// }
 
 func (i *InvoiceAggregateBuilder) Build() *invoiceDomain.InvoiceAggregate {
 	return i.invoiceAggregate

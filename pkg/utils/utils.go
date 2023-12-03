@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -18,19 +19,19 @@ func GenerateRandomString(length int) string {
 }
 
 func GenerateCode(prefix string, number int) string {
-	var code string
 	UpperCasePrefix := strings.ToUpper(prefix)
+	var suffix string
 
 	if number < 10 {
-		code = UpperCasePrefix + "000" + strconv.Itoa(number)
+		suffix = "000" + strconv.Itoa(number)
 	} else if number < 100 {
-		code = UpperCasePrefix + "00" + strconv.Itoa(number)
+		suffix = "00" + strconv.Itoa(number)
 	} else if number < 1000 {
-		code = UpperCasePrefix + "0" + strconv.Itoa(number)
+		suffix = "0" + strconv.Itoa(number)
 	} else {
-		code = UpperCasePrefix + strconv.Itoa(number)
+		suffix = strconv.Itoa(number)
 	}
-	return code
+	return fmt.Sprintf("%s-%s", UpperCasePrefix, suffix)
 
 }
 
