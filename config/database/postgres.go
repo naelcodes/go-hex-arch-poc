@@ -6,6 +6,7 @@ import (
 	"log"
 
 	_ "github.com/lib/pq"
+
 	"github.com/naelcodes/ab-backend/config"
 	"github.com/naelcodes/ab-backend/ent"
 	"github.com/naelcodes/ab-backend/pkg/logger"
