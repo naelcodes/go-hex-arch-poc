@@ -35,34 +35,6 @@ func (ic *ImputationCreate) SetNillableAmountApply(f *float64) *ImputationCreate
 	return ic
 }
 
-// SetPaymentAmount sets the "payment_amount" field.
-func (ic *ImputationCreate) SetPaymentAmount(f float64) *ImputationCreate {
-	ic.mutation.SetPaymentAmount(f)
-	return ic
-}
-
-// SetNillablePaymentAmount sets the "payment_amount" field if the given value is not nil.
-func (ic *ImputationCreate) SetNillablePaymentAmount(f *float64) *ImputationCreate {
-	if f != nil {
-		ic.SetPaymentAmount(*f)
-	}
-	return ic
-}
-
-// SetInvoiceAmount sets the "invoice_amount" field.
-func (ic *ImputationCreate) SetInvoiceAmount(f float64) *ImputationCreate {
-	ic.mutation.SetInvoiceAmount(f)
-	return ic
-}
-
-// SetNillableInvoiceAmount sets the "invoice_amount" field if the given value is not nil.
-func (ic *ImputationCreate) SetNillableInvoiceAmount(f *float64) *ImputationCreate {
-	if f != nil {
-		ic.SetInvoiceAmount(*f)
-	}
-	return ic
-}
-
 // SetTag sets the "tag" field.
 func (ic *ImputationCreate) SetTag(i imputation.Tag) *ImputationCreate {
 	ic.mutation.SetTag(i)
@@ -138,14 +110,6 @@ func (ic *ImputationCreate) defaults() {
 		v := imputation.DefaultAmountApply
 		ic.mutation.SetAmountApply(v)
 	}
-	if _, ok := ic.mutation.PaymentAmount(); !ok {
-		v := imputation.DefaultPaymentAmount
-		ic.mutation.SetPaymentAmount(v)
-	}
-	if _, ok := ic.mutation.InvoiceAmount(); !ok {
-		v := imputation.DefaultInvoiceAmount
-		ic.mutation.SetInvoiceAmount(v)
-	}
 	if _, ok := ic.mutation.Tag(); !ok {
 		v := imputation.DefaultTag
 		ic.mutation.SetTag(v)
@@ -160,22 +124,6 @@ func (ic *ImputationCreate) check() error {
 	if v, ok := ic.mutation.AmountApply(); ok {
 		if err := imputation.AmountApplyValidator(v); err != nil {
 			return &ValidationError{Name: "amount_apply", err: fmt.Errorf(`ent: validator failed for field "Imputation.amount_apply": %w`, err)}
-		}
-	}
-	if _, ok := ic.mutation.PaymentAmount(); !ok {
-		return &ValidationError{Name: "payment_amount", err: errors.New(`ent: missing required field "Imputation.payment_amount"`)}
-	}
-	if v, ok := ic.mutation.PaymentAmount(); ok {
-		if err := imputation.PaymentAmountValidator(v); err != nil {
-			return &ValidationError{Name: "payment_amount", err: fmt.Errorf(`ent: validator failed for field "Imputation.payment_amount": %w`, err)}
-		}
-	}
-	if _, ok := ic.mutation.InvoiceAmount(); !ok {
-		return &ValidationError{Name: "invoice_amount", err: errors.New(`ent: missing required field "Imputation.invoice_amount"`)}
-	}
-	if v, ok := ic.mutation.InvoiceAmount(); ok {
-		if err := imputation.InvoiceAmountValidator(v); err != nil {
-			return &ValidationError{Name: "invoice_amount", err: fmt.Errorf(`ent: validator failed for field "Imputation.invoice_amount": %w`, err)}
 		}
 	}
 	if _, ok := ic.mutation.Tag(); !ok {
@@ -199,7 +147,10 @@ func (ic *ImputationCreate) sqlSave(ctx context.Context) (*Imputation, error) {
 	if err := ic.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ic.createSpec()
+	_node, _spec, err := ic.createSpec()
+	if err != nil {
+		return nil, err
+	}
 	if err := sqlgraph.CreateNode(ctx, ic.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
@@ -213,22 +164,18 @@ func (ic *ImputationCreate) sqlSave(ctx context.Context) (*Imputation, error) {
 	return _node, nil
 }
 
-func (ic *ImputationCreate) createSpec() (*Imputation, *sqlgraph.CreateSpec) {
+func (ic *ImputationCreate) createSpec() (*Imputation, *sqlgraph.CreateSpec, error) {
 	var (
 		_node = &Imputation{config: ic.config}
 		_spec = sqlgraph.NewCreateSpec(imputation.Table, sqlgraph.NewFieldSpec(imputation.FieldID, field.TypeInt))
 	)
 	if value, ok := ic.mutation.AmountApply(); ok {
-		_spec.SetField(imputation.FieldAmountApply, field.TypeFloat64, value)
+		vv, err := imputation.ValueScanner.AmountApply.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(imputation.FieldAmountApply, field.TypeFloat64, vv)
 		_node.AmountApply = value
-	}
-	if value, ok := ic.mutation.PaymentAmount(); ok {
-		_spec.SetField(imputation.FieldPaymentAmount, field.TypeFloat64, value)
-		_node.PaymentAmount = value
-	}
-	if value, ok := ic.mutation.InvoiceAmount(); ok {
-		_spec.SetField(imputation.FieldInvoiceAmount, field.TypeFloat64, value)
-		_node.InvoiceAmount = value
 	}
 	if value, ok := ic.mutation.Tag(); ok {
 		_spec.SetField(imputation.FieldTag, field.TypeEnum, value)
@@ -268,7 +215,7 @@ func (ic *ImputationCreate) createSpec() (*Imputation, *sqlgraph.CreateSpec) {
 		_node.id_payment_received = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return _node, _spec
+	return _node, _spec, nil
 }
 
 // ImputationCreateBulk is the builder for creating many Imputation entities in bulk.
@@ -300,7 +247,10 @@ func (icb *ImputationCreateBulk) Save(ctx context.Context) ([]*Imputation, error
 				}
 				builder.mutation = mutation
 				var err error
-				nodes[i], specs[i] = builder.createSpec()
+				nodes[i], specs[i], err = builder.createSpec()
+				if err != nil {
+					return nil, err
+				}
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, icb.builders[i+1].mutation)
 				} else {

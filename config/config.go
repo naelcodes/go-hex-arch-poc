@@ -42,11 +42,11 @@ func LoadEnvironmentConfig() {
 	APP_ENGINE_SERVER_PORT = os.Getenv("APP_ENGINE_SERVER_PORT")
 
 	// Print environment variables
-	log.Printf("POSTGRES_DB_HOST: %s", POSTGRES_DB_HOST)
-	log.Printf("POSTGRES_DB_USER: %s", POSTGRES_DB_USER)
-	log.Printf("POSTGRES_DB_PASSWORD: %s", POSTGRES_DB_PASSWORD)
-	log.Printf("POSTGRES_DB_NAME: %s", POSTGRES_DB_NAME)
-	log.Printf("POSTGRES_DB_PORT: %s", POSTGRES_DB_PORT)
-	log.Printf("APP_ENGINE_SERVER_PORT: %s", APP_ENGINE_SERVER_PORT)
+	// log.Printf("POSTGRES_DB_HOST: %s", POSTGRES_DB_HOST)
+	// log.Printf("POSTGRES_DB_USER: %s", POSTGRES_DB_USER)
+	// log.Printf("POSTGRES_DB_PASSWORD: %s", POSTGRES_DB_PASSWORD)
+	// log.Printf("POSTGRES_DB_NAME: %s", POSTGRES_DB_NAME)
+	// log.Printf("POSTGRES_DB_PORT: %s", POSTGRES_DB_PORT)
+	// log.Printf("APP_ENGINE_SERVER_PORT: %s", APP_ENGINE_SERVER_PORT)
 
 }

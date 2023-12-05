@@ -27,6 +27,10 @@ type TravelItem struct {
 	TicketNumber string `json:"ticket_number,omitempty"`
 	// ConjunctionNumber holds the value of the "conjunction_number" field.
 	ConjunctionNumber int `json:"conjunction_number,omitempty"`
+	// TransactionType holds the value of the "transaction_type" field.
+	TransactionType string `json:"transaction_type,omitempty"`
+	// ProductType holds the value of the "product_type" field.
+	ProductType string `json:"product_type,omitempty"`
 	// Status holds the value of the "status" field.
 	Status travelitem.Status `json:"status,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -63,12 +67,12 @@ func (*TravelItem) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case travelitem.FieldTotalPrice:
-			values[i] = new(sql.NullFloat64)
 		case travelitem.FieldID, travelitem.FieldConjunctionNumber:
 			values[i] = new(sql.NullInt64)
-		case travelitem.FieldItinerary, travelitem.FieldTravelerName, travelitem.FieldTicketNumber, travelitem.FieldStatus:
+		case travelitem.FieldItinerary, travelitem.FieldTravelerName, travelitem.FieldTicketNumber, travelitem.FieldTransactionType, travelitem.FieldProductType, travelitem.FieldStatus:
 			values[i] = new(sql.NullString)
+		case travelitem.FieldTotalPrice:
+			values[i] = travelitem.ValueScanner.TotalPrice.ScanValue()
 		case travelitem.ForeignKeys[0]: // id_invoice
 			values[i] = new(sql.NullInt64)
 		default:
@@ -93,10 +97,10 @@ func (ti *TravelItem) assignValues(columns []string, values []any) error {
 			}
 			ti.ID = int(value.Int64)
 		case travelitem.FieldTotalPrice:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field total_price", values[i])
-			} else if value.Valid {
-				ti.TotalPrice = value.Float64
+			if value, err := travelitem.ValueScanner.TotalPrice.FromValue(values[i]); err != nil {
+				return err
+			} else {
+				ti.TotalPrice = value
 			}
 		case travelitem.FieldItinerary:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -121,6 +125,18 @@ func (ti *TravelItem) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field conjunction_number", values[i])
 			} else if value.Valid {
 				ti.ConjunctionNumber = int(value.Int64)
+			}
+		case travelitem.FieldTransactionType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field transaction_type", values[i])
+			} else if value.Valid {
+				ti.TransactionType = value.String
+			}
+		case travelitem.FieldProductType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field product_type", values[i])
+			} else if value.Valid {
+				ti.ProductType = value.String
 			}
 		case travelitem.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -190,6 +206,12 @@ func (ti *TravelItem) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("conjunction_number=")
 	builder.WriteString(fmt.Sprintf("%v", ti.ConjunctionNumber))
+	builder.WriteString(", ")
+	builder.WriteString("transaction_type=")
+	builder.WriteString(ti.TransactionType)
+	builder.WriteString(", ")
+	builder.WriteString("product_type=")
+	builder.WriteString(ti.ProductType)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", ti.Status))

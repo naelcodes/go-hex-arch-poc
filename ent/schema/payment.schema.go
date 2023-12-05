@@ -20,22 +20,34 @@ func (Payment) Fields() []ent.Field {
 		field.String("date").SchemaType(map[string]string{
 			dialect.Postgres: "date",
 		}).NotEmpty(),
-		field.Float("balance").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
-		field.Float("amount").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
+		field.Float("balance").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
+		field.Float("amount").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
+		field.Float("base_amount").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
+		field.Float("used_amount").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
+
+		field.Enum("type").Values("supplier_refund", "transfer_from_account", "other_income", "customer_payment", "sales_receipt").Default("customer_payment"),
 		field.Enum("fop").Values("cash", "check", "bank_transfer").Default("cash"),
-		field.Float("used_amount").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
+
 		field.Enum("status").Values("open", "used", "void").Default("open"),
-		field.Int("id_charts_of_accounts").Default(39),
+		field.Int("id_chart_of_accounts").Default(39),
 		field.Int("id_currency").Default(550),
 		field.Enum("Tag").Values("1", "2", "3").Default("3"),
-
-		field.Int("id_payment_received").Optional(),
 	}
 
 }

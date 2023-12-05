@@ -29,7 +29,8 @@ func CustomerModelListToDTOList(customers []*ent.Customer) []*dto.GetCustomerDTO
 	return customerDTOList
 }
 
-func PaymentModelToDTO(payment *ent.Payment, embedCustomer bool) *dto.GetPaymentDTO {
+func PaymentModelToDTO(payment *ent.Payment, embedCustomer bool, idCustomer *int) *dto.GetPaymentDTO {
+
 	paymentDTO := new(dto.GetPaymentDTO)
 	paymentDTO.Id = payment.ID
 	paymentDTO.Amount = payment.Amount
@@ -44,18 +45,50 @@ func PaymentModelToDTO(payment *ent.Payment, embedCustomer bool) *dto.GetPayment
 		paymentDTO.IdCUstomer = nil
 		paymentDTO.Customer = CustomerModelToDTO(payment.Edges.Customer)
 	} else {
-		paymentDTO.IdCUstomer = &payment.Edges.Customer.ID
+		if payment.Edges.Customer != nil {
+			paymentDTO.IdCUstomer = &payment.Edges.Customer.ID
+		} else {
+			paymentDTO.IdCUstomer = idCustomer
+		}
 	}
 
 	return paymentDTO
 }
 
-func PaymentModelListToDTOList(payments []*ent.Payment, embedCustomer bool) []*dto.GetPaymentDTO {
+func PaymentModelListToDTOList(payments []*ent.Payment, embedCustomer bool, idCustomer *int) []*dto.GetPaymentDTO {
 	paymentDTOList := make([]*dto.GetPaymentDTO, 0)
 
 	for _, payment := range payments {
-		paymentDTOList = append(paymentDTOList, PaymentModelToDTO(payment, embedCustomer))
+		paymentDTOList = append(paymentDTOList, PaymentModelToDTO(payment, embedCustomer, idCustomer))
 	}
 
 	return paymentDTOList
+}
+
+func TravelItemModelToDTO(travelItem *ent.TravelItem) *dto.TravelItemDTO {
+	travelItemDTO := new(dto.TravelItemDTO)
+
+	travelItemDTO.Id = travelItem.ID
+	travelItemDTO.TotalPrice = travelItem.TotalPrice
+
+	travelItemDTO.Itinerary = new(string)
+	*travelItemDTO.Itinerary = travelItem.Itinerary
+
+	travelItemDTO.TravelerName = new(string)
+	*travelItemDTO.TravelerName = travelItem.TravelerName
+
+	travelItemDTO.TicketNumber = new(string)
+	*travelItemDTO.TicketNumber = travelItem.TicketNumber
+
+	return travelItemDTO
+}
+
+func TravelItemModelListToDTOList(travelItems []*ent.TravelItem) []*dto.TravelItemDTO {
+	travelItemDTOList := make([]*dto.TravelItemDTO, 0)
+
+	for _, travelItem := range travelItems {
+		travelItemDTOList = append(travelItemDTOList, TravelItemModelToDTO(travelItem))
+	}
+
+	return travelItemDTOList
 }

@@ -99,17 +99,24 @@ func (pu *PaymentUpdate) AddAmount(f float64) *PaymentUpdate {
 	return pu
 }
 
-// SetFop sets the "fop" field.
-func (pu *PaymentUpdate) SetFop(pa payment.Fop) *PaymentUpdate {
-	pu.mutation.SetFop(pa)
+// SetBaseAmount sets the "base_amount" field.
+func (pu *PaymentUpdate) SetBaseAmount(f float64) *PaymentUpdate {
+	pu.mutation.ResetBaseAmount()
+	pu.mutation.SetBaseAmount(f)
 	return pu
 }
 
-// SetNillableFop sets the "fop" field if the given value is not nil.
-func (pu *PaymentUpdate) SetNillableFop(pa *payment.Fop) *PaymentUpdate {
-	if pa != nil {
-		pu.SetFop(*pa)
+// SetNillableBaseAmount sets the "base_amount" field if the given value is not nil.
+func (pu *PaymentUpdate) SetNillableBaseAmount(f *float64) *PaymentUpdate {
+	if f != nil {
+		pu.SetBaseAmount(*f)
 	}
+	return pu
+}
+
+// AddBaseAmount adds f to the "base_amount" field.
+func (pu *PaymentUpdate) AddBaseAmount(f float64) *PaymentUpdate {
+	pu.mutation.AddBaseAmount(f)
 	return pu
 }
 
@@ -134,6 +141,34 @@ func (pu *PaymentUpdate) AddUsedAmount(f float64) *PaymentUpdate {
 	return pu
 }
 
+// SetType sets the "type" field.
+func (pu *PaymentUpdate) SetType(pa payment.Type) *PaymentUpdate {
+	pu.mutation.SetType(pa)
+	return pu
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (pu *PaymentUpdate) SetNillableType(pa *payment.Type) *PaymentUpdate {
+	if pa != nil {
+		pu.SetType(*pa)
+	}
+	return pu
+}
+
+// SetFop sets the "fop" field.
+func (pu *PaymentUpdate) SetFop(pa payment.Fop) *PaymentUpdate {
+	pu.mutation.SetFop(pa)
+	return pu
+}
+
+// SetNillableFop sets the "fop" field if the given value is not nil.
+func (pu *PaymentUpdate) SetNillableFop(pa *payment.Fop) *PaymentUpdate {
+	if pa != nil {
+		pu.SetFop(*pa)
+	}
+	return pu
+}
+
 // SetStatus sets the "status" field.
 func (pu *PaymentUpdate) SetStatus(pa payment.Status) *PaymentUpdate {
 	pu.mutation.SetStatus(pa)
@@ -148,24 +183,24 @@ func (pu *PaymentUpdate) SetNillableStatus(pa *payment.Status) *PaymentUpdate {
 	return pu
 }
 
-// SetIDChartsOfAccounts sets the "id_charts_of_accounts" field.
-func (pu *PaymentUpdate) SetIDChartsOfAccounts(i int) *PaymentUpdate {
-	pu.mutation.ResetIDChartsOfAccounts()
-	pu.mutation.SetIDChartsOfAccounts(i)
+// SetIDChartOfAccounts sets the "id_chart_of_accounts" field.
+func (pu *PaymentUpdate) SetIDChartOfAccounts(i int) *PaymentUpdate {
+	pu.mutation.ResetIDChartOfAccounts()
+	pu.mutation.SetIDChartOfAccounts(i)
 	return pu
 }
 
-// SetNillableIDChartsOfAccounts sets the "id_charts_of_accounts" field if the given value is not nil.
-func (pu *PaymentUpdate) SetNillableIDChartsOfAccounts(i *int) *PaymentUpdate {
+// SetNillableIDChartOfAccounts sets the "id_chart_of_accounts" field if the given value is not nil.
+func (pu *PaymentUpdate) SetNillableIDChartOfAccounts(i *int) *PaymentUpdate {
 	if i != nil {
-		pu.SetIDChartsOfAccounts(*i)
+		pu.SetIDChartOfAccounts(*i)
 	}
 	return pu
 }
 
-// AddIDChartsOfAccounts adds i to the "id_charts_of_accounts" field.
-func (pu *PaymentUpdate) AddIDChartsOfAccounts(i int) *PaymentUpdate {
-	pu.mutation.AddIDChartsOfAccounts(i)
+// AddIDChartOfAccounts adds i to the "id_chart_of_accounts" field.
+func (pu *PaymentUpdate) AddIDChartOfAccounts(i int) *PaymentUpdate {
+	pu.mutation.AddIDChartOfAccounts(i)
 	return pu
 }
 
@@ -201,33 +236,6 @@ func (pu *PaymentUpdate) SetNillableTag(pa *payment.Tag) *PaymentUpdate {
 	if pa != nil {
 		pu.SetTag(*pa)
 	}
-	return pu
-}
-
-// SetIDPaymentReceived sets the "id_payment_received" field.
-func (pu *PaymentUpdate) SetIDPaymentReceived(i int) *PaymentUpdate {
-	pu.mutation.ResetIDPaymentReceived()
-	pu.mutation.SetIDPaymentReceived(i)
-	return pu
-}
-
-// SetNillableIDPaymentReceived sets the "id_payment_received" field if the given value is not nil.
-func (pu *PaymentUpdate) SetNillableIDPaymentReceived(i *int) *PaymentUpdate {
-	if i != nil {
-		pu.SetIDPaymentReceived(*i)
-	}
-	return pu
-}
-
-// AddIDPaymentReceived adds i to the "id_payment_received" field.
-func (pu *PaymentUpdate) AddIDPaymentReceived(i int) *PaymentUpdate {
-	pu.mutation.AddIDPaymentReceived(i)
-	return pu
-}
-
-// ClearIDPaymentReceived clears the value of the "id_payment_received" field.
-func (pu *PaymentUpdate) ClearIDPaymentReceived() *PaymentUpdate {
-	pu.mutation.ClearIDPaymentReceived()
 	return pu
 }
 
@@ -338,14 +346,24 @@ func (pu *PaymentUpdate) check() error {
 			return &ValidationError{Name: "amount", err: fmt.Errorf(`ent: validator failed for field "Payment.amount": %w`, err)}
 		}
 	}
-	if v, ok := pu.mutation.Fop(); ok {
-		if err := payment.FopValidator(v); err != nil {
-			return &ValidationError{Name: "fop", err: fmt.Errorf(`ent: validator failed for field "Payment.fop": %w`, err)}
+	if v, ok := pu.mutation.BaseAmount(); ok {
+		if err := payment.BaseAmountValidator(v); err != nil {
+			return &ValidationError{Name: "base_amount", err: fmt.Errorf(`ent: validator failed for field "Payment.base_amount": %w`, err)}
 		}
 	}
 	if v, ok := pu.mutation.UsedAmount(); ok {
 		if err := payment.UsedAmountValidator(v); err != nil {
 			return &ValidationError{Name: "used_amount", err: fmt.Errorf(`ent: validator failed for field "Payment.used_amount": %w`, err)}
+		}
+	}
+	if v, ok := pu.mutation.GetType(); ok {
+		if err := payment.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Payment.type": %w`, err)}
+		}
+	}
+	if v, ok := pu.mutation.Fop(); ok {
+		if err := payment.FopValidator(v); err != nil {
+			return &ValidationError{Name: "fop", err: fmt.Errorf(`ent: validator failed for field "Payment.fop": %w`, err)}
 		}
 	}
 	if v, ok := pu.mutation.Status(); ok {
@@ -383,34 +401,75 @@ func (pu *PaymentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(payment.FieldDate, field.TypeString, value)
 	}
 	if value, ok := pu.mutation.Balance(); ok {
-		_spec.SetField(payment.FieldBalance, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(payment.FieldBalance, field.TypeFloat64, vv)
 	}
 	if value, ok := pu.mutation.AddedBalance(); ok {
-		_spec.AddField(payment.FieldBalance, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(payment.FieldBalance, field.TypeFloat64, vv)
 	}
 	if value, ok := pu.mutation.Amount(); ok {
-		_spec.SetField(payment.FieldAmount, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(payment.FieldAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := pu.mutation.AddedAmount(); ok {
-		_spec.AddField(payment.FieldAmount, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(payment.FieldAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := pu.mutation.BaseAmount(); ok {
+		vv, err := payment.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(payment.FieldBaseAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := pu.mutation.AddedBaseAmount(); ok {
+		vv, err := payment.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(payment.FieldBaseAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := pu.mutation.UsedAmount(); ok {
+		vv, err := payment.ValueScanner.UsedAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(payment.FieldUsedAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := pu.mutation.AddedUsedAmount(); ok {
+		vv, err := payment.ValueScanner.UsedAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(payment.FieldUsedAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := pu.mutation.GetType(); ok {
+		_spec.SetField(payment.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := pu.mutation.Fop(); ok {
 		_spec.SetField(payment.FieldFop, field.TypeEnum, value)
 	}
-	if value, ok := pu.mutation.UsedAmount(); ok {
-		_spec.SetField(payment.FieldUsedAmount, field.TypeFloat64, value)
-	}
-	if value, ok := pu.mutation.AddedUsedAmount(); ok {
-		_spec.AddField(payment.FieldUsedAmount, field.TypeFloat64, value)
-	}
 	if value, ok := pu.mutation.Status(); ok {
 		_spec.SetField(payment.FieldStatus, field.TypeEnum, value)
 	}
-	if value, ok := pu.mutation.IDChartsOfAccounts(); ok {
-		_spec.SetField(payment.FieldIDChartsOfAccounts, field.TypeInt, value)
+	if value, ok := pu.mutation.IDChartOfAccounts(); ok {
+		_spec.SetField(payment.FieldIDChartOfAccounts, field.TypeInt, value)
 	}
-	if value, ok := pu.mutation.AddedIDChartsOfAccounts(); ok {
-		_spec.AddField(payment.FieldIDChartsOfAccounts, field.TypeInt, value)
+	if value, ok := pu.mutation.AddedIDChartOfAccounts(); ok {
+		_spec.AddField(payment.FieldIDChartOfAccounts, field.TypeInt, value)
 	}
 	if value, ok := pu.mutation.IDCurrency(); ok {
 		_spec.SetField(payment.FieldIDCurrency, field.TypeInt, value)
@@ -420,15 +479,6 @@ func (pu *PaymentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.Tag(); ok {
 		_spec.SetField(payment.FieldTag, field.TypeEnum, value)
-	}
-	if value, ok := pu.mutation.IDPaymentReceived(); ok {
-		_spec.SetField(payment.FieldIDPaymentReceived, field.TypeInt, value)
-	}
-	if value, ok := pu.mutation.AddedIDPaymentReceived(); ok {
-		_spec.AddField(payment.FieldIDPaymentReceived, field.TypeInt, value)
-	}
-	if pu.mutation.IDPaymentReceivedCleared() {
-		_spec.ClearField(payment.FieldIDPaymentReceived, field.TypeInt)
 	}
 	if pu.mutation.CustomerCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -594,17 +644,24 @@ func (puo *PaymentUpdateOne) AddAmount(f float64) *PaymentUpdateOne {
 	return puo
 }
 
-// SetFop sets the "fop" field.
-func (puo *PaymentUpdateOne) SetFop(pa payment.Fop) *PaymentUpdateOne {
-	puo.mutation.SetFop(pa)
+// SetBaseAmount sets the "base_amount" field.
+func (puo *PaymentUpdateOne) SetBaseAmount(f float64) *PaymentUpdateOne {
+	puo.mutation.ResetBaseAmount()
+	puo.mutation.SetBaseAmount(f)
 	return puo
 }
 
-// SetNillableFop sets the "fop" field if the given value is not nil.
-func (puo *PaymentUpdateOne) SetNillableFop(pa *payment.Fop) *PaymentUpdateOne {
-	if pa != nil {
-		puo.SetFop(*pa)
+// SetNillableBaseAmount sets the "base_amount" field if the given value is not nil.
+func (puo *PaymentUpdateOne) SetNillableBaseAmount(f *float64) *PaymentUpdateOne {
+	if f != nil {
+		puo.SetBaseAmount(*f)
 	}
+	return puo
+}
+
+// AddBaseAmount adds f to the "base_amount" field.
+func (puo *PaymentUpdateOne) AddBaseAmount(f float64) *PaymentUpdateOne {
+	puo.mutation.AddBaseAmount(f)
 	return puo
 }
 
@@ -629,6 +686,34 @@ func (puo *PaymentUpdateOne) AddUsedAmount(f float64) *PaymentUpdateOne {
 	return puo
 }
 
+// SetType sets the "type" field.
+func (puo *PaymentUpdateOne) SetType(pa payment.Type) *PaymentUpdateOne {
+	puo.mutation.SetType(pa)
+	return puo
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (puo *PaymentUpdateOne) SetNillableType(pa *payment.Type) *PaymentUpdateOne {
+	if pa != nil {
+		puo.SetType(*pa)
+	}
+	return puo
+}
+
+// SetFop sets the "fop" field.
+func (puo *PaymentUpdateOne) SetFop(pa payment.Fop) *PaymentUpdateOne {
+	puo.mutation.SetFop(pa)
+	return puo
+}
+
+// SetNillableFop sets the "fop" field if the given value is not nil.
+func (puo *PaymentUpdateOne) SetNillableFop(pa *payment.Fop) *PaymentUpdateOne {
+	if pa != nil {
+		puo.SetFop(*pa)
+	}
+	return puo
+}
+
 // SetStatus sets the "status" field.
 func (puo *PaymentUpdateOne) SetStatus(pa payment.Status) *PaymentUpdateOne {
 	puo.mutation.SetStatus(pa)
@@ -643,24 +728,24 @@ func (puo *PaymentUpdateOne) SetNillableStatus(pa *payment.Status) *PaymentUpdat
 	return puo
 }
 
-// SetIDChartsOfAccounts sets the "id_charts_of_accounts" field.
-func (puo *PaymentUpdateOne) SetIDChartsOfAccounts(i int) *PaymentUpdateOne {
-	puo.mutation.ResetIDChartsOfAccounts()
-	puo.mutation.SetIDChartsOfAccounts(i)
+// SetIDChartOfAccounts sets the "id_chart_of_accounts" field.
+func (puo *PaymentUpdateOne) SetIDChartOfAccounts(i int) *PaymentUpdateOne {
+	puo.mutation.ResetIDChartOfAccounts()
+	puo.mutation.SetIDChartOfAccounts(i)
 	return puo
 }
 
-// SetNillableIDChartsOfAccounts sets the "id_charts_of_accounts" field if the given value is not nil.
-func (puo *PaymentUpdateOne) SetNillableIDChartsOfAccounts(i *int) *PaymentUpdateOne {
+// SetNillableIDChartOfAccounts sets the "id_chart_of_accounts" field if the given value is not nil.
+func (puo *PaymentUpdateOne) SetNillableIDChartOfAccounts(i *int) *PaymentUpdateOne {
 	if i != nil {
-		puo.SetIDChartsOfAccounts(*i)
+		puo.SetIDChartOfAccounts(*i)
 	}
 	return puo
 }
 
-// AddIDChartsOfAccounts adds i to the "id_charts_of_accounts" field.
-func (puo *PaymentUpdateOne) AddIDChartsOfAccounts(i int) *PaymentUpdateOne {
-	puo.mutation.AddIDChartsOfAccounts(i)
+// AddIDChartOfAccounts adds i to the "id_chart_of_accounts" field.
+func (puo *PaymentUpdateOne) AddIDChartOfAccounts(i int) *PaymentUpdateOne {
+	puo.mutation.AddIDChartOfAccounts(i)
 	return puo
 }
 
@@ -696,33 +781,6 @@ func (puo *PaymentUpdateOne) SetNillableTag(pa *payment.Tag) *PaymentUpdateOne {
 	if pa != nil {
 		puo.SetTag(*pa)
 	}
-	return puo
-}
-
-// SetIDPaymentReceived sets the "id_payment_received" field.
-func (puo *PaymentUpdateOne) SetIDPaymentReceived(i int) *PaymentUpdateOne {
-	puo.mutation.ResetIDPaymentReceived()
-	puo.mutation.SetIDPaymentReceived(i)
-	return puo
-}
-
-// SetNillableIDPaymentReceived sets the "id_payment_received" field if the given value is not nil.
-func (puo *PaymentUpdateOne) SetNillableIDPaymentReceived(i *int) *PaymentUpdateOne {
-	if i != nil {
-		puo.SetIDPaymentReceived(*i)
-	}
-	return puo
-}
-
-// AddIDPaymentReceived adds i to the "id_payment_received" field.
-func (puo *PaymentUpdateOne) AddIDPaymentReceived(i int) *PaymentUpdateOne {
-	puo.mutation.AddIDPaymentReceived(i)
-	return puo
-}
-
-// ClearIDPaymentReceived clears the value of the "id_payment_received" field.
-func (puo *PaymentUpdateOne) ClearIDPaymentReceived() *PaymentUpdateOne {
-	puo.mutation.ClearIDPaymentReceived()
 	return puo
 }
 
@@ -846,14 +904,24 @@ func (puo *PaymentUpdateOne) check() error {
 			return &ValidationError{Name: "amount", err: fmt.Errorf(`ent: validator failed for field "Payment.amount": %w`, err)}
 		}
 	}
-	if v, ok := puo.mutation.Fop(); ok {
-		if err := payment.FopValidator(v); err != nil {
-			return &ValidationError{Name: "fop", err: fmt.Errorf(`ent: validator failed for field "Payment.fop": %w`, err)}
+	if v, ok := puo.mutation.BaseAmount(); ok {
+		if err := payment.BaseAmountValidator(v); err != nil {
+			return &ValidationError{Name: "base_amount", err: fmt.Errorf(`ent: validator failed for field "Payment.base_amount": %w`, err)}
 		}
 	}
 	if v, ok := puo.mutation.UsedAmount(); ok {
 		if err := payment.UsedAmountValidator(v); err != nil {
 			return &ValidationError{Name: "used_amount", err: fmt.Errorf(`ent: validator failed for field "Payment.used_amount": %w`, err)}
+		}
+	}
+	if v, ok := puo.mutation.GetType(); ok {
+		if err := payment.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Payment.type": %w`, err)}
+		}
+	}
+	if v, ok := puo.mutation.Fop(); ok {
+		if err := payment.FopValidator(v); err != nil {
+			return &ValidationError{Name: "fop", err: fmt.Errorf(`ent: validator failed for field "Payment.fop": %w`, err)}
 		}
 	}
 	if v, ok := puo.mutation.Status(); ok {
@@ -908,34 +976,75 @@ func (puo *PaymentUpdateOne) sqlSave(ctx context.Context) (_node *Payment, err e
 		_spec.SetField(payment.FieldDate, field.TypeString, value)
 	}
 	if value, ok := puo.mutation.Balance(); ok {
-		_spec.SetField(payment.FieldBalance, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(payment.FieldBalance, field.TypeFloat64, vv)
 	}
 	if value, ok := puo.mutation.AddedBalance(); ok {
-		_spec.AddField(payment.FieldBalance, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(payment.FieldBalance, field.TypeFloat64, vv)
 	}
 	if value, ok := puo.mutation.Amount(); ok {
-		_spec.SetField(payment.FieldAmount, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(payment.FieldAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := puo.mutation.AddedAmount(); ok {
-		_spec.AddField(payment.FieldAmount, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(payment.FieldAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := puo.mutation.BaseAmount(); ok {
+		vv, err := payment.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(payment.FieldBaseAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := puo.mutation.AddedBaseAmount(); ok {
+		vv, err := payment.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(payment.FieldBaseAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := puo.mutation.UsedAmount(); ok {
+		vv, err := payment.ValueScanner.UsedAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(payment.FieldUsedAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := puo.mutation.AddedUsedAmount(); ok {
+		vv, err := payment.ValueScanner.UsedAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(payment.FieldUsedAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := puo.mutation.GetType(); ok {
+		_spec.SetField(payment.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := puo.mutation.Fop(); ok {
 		_spec.SetField(payment.FieldFop, field.TypeEnum, value)
 	}
-	if value, ok := puo.mutation.UsedAmount(); ok {
-		_spec.SetField(payment.FieldUsedAmount, field.TypeFloat64, value)
-	}
-	if value, ok := puo.mutation.AddedUsedAmount(); ok {
-		_spec.AddField(payment.FieldUsedAmount, field.TypeFloat64, value)
-	}
 	if value, ok := puo.mutation.Status(); ok {
 		_spec.SetField(payment.FieldStatus, field.TypeEnum, value)
 	}
-	if value, ok := puo.mutation.IDChartsOfAccounts(); ok {
-		_spec.SetField(payment.FieldIDChartsOfAccounts, field.TypeInt, value)
+	if value, ok := puo.mutation.IDChartOfAccounts(); ok {
+		_spec.SetField(payment.FieldIDChartOfAccounts, field.TypeInt, value)
 	}
-	if value, ok := puo.mutation.AddedIDChartsOfAccounts(); ok {
-		_spec.AddField(payment.FieldIDChartsOfAccounts, field.TypeInt, value)
+	if value, ok := puo.mutation.AddedIDChartOfAccounts(); ok {
+		_spec.AddField(payment.FieldIDChartOfAccounts, field.TypeInt, value)
 	}
 	if value, ok := puo.mutation.IDCurrency(); ok {
 		_spec.SetField(payment.FieldIDCurrency, field.TypeInt, value)
@@ -945,15 +1054,6 @@ func (puo *PaymentUpdateOne) sqlSave(ctx context.Context) (_node *Payment, err e
 	}
 	if value, ok := puo.mutation.Tag(); ok {
 		_spec.SetField(payment.FieldTag, field.TypeEnum, value)
-	}
-	if value, ok := puo.mutation.IDPaymentReceived(); ok {
-		_spec.SetField(payment.FieldIDPaymentReceived, field.TypeInt, value)
-	}
-	if value, ok := puo.mutation.AddedIDPaymentReceived(); ok {
-		_spec.AddField(payment.FieldIDPaymentReceived, field.TypeInt, value)
-	}
-	if puo.mutation.IDPaymentReceivedCleared() {
-		_spec.ClearField(payment.FieldIDPaymentReceived, field.TypeInt)
 	}
 	if puo.mutation.CustomerCleared() {
 		edge := &sqlgraph.EdgeSpec{

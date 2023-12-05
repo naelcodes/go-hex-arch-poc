@@ -65,32 +65,36 @@ func Date(v string) predicate.Payment {
 
 // Balance applies equality check predicate on the "balance" field. It's identical to BalanceEQ.
 func Balance(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.PaymentOrErr(sql.FieldEQ(FieldBalance, vc), err)
 }
 
 // Amount applies equality check predicate on the "amount" field. It's identical to AmountEQ.
 func Amount(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldEQ(FieldAmount, vc), err)
+}
+
+// BaseAmount applies equality check predicate on the "base_amount" field. It's identical to BaseAmountEQ.
+func BaseAmount(v float64) predicate.Payment {
+	vc, err := ValueScanner.BaseAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldEQ(FieldBaseAmount, vc), err)
 }
 
 // UsedAmount applies equality check predicate on the "used_amount" field. It's identical to UsedAmountEQ.
 func UsedAmount(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldUsedAmount, v))
+	vc, err := ValueScanner.UsedAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldEQ(FieldUsedAmount, vc), err)
 }
 
-// IDChartsOfAccounts applies equality check predicate on the "id_charts_of_accounts" field. It's identical to IDChartsOfAccountsEQ.
-func IDChartsOfAccounts(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldIDChartsOfAccounts, v))
+// IDChartOfAccounts applies equality check predicate on the "id_chart_of_accounts" field. It's identical to IDChartOfAccountsEQ.
+func IDChartOfAccounts(v int) predicate.Payment {
+	return predicate.Payment(sql.FieldEQ(FieldIDChartOfAccounts, v))
 }
 
 // IDCurrency applies equality check predicate on the "id_currency" field. It's identical to IDCurrencyEQ.
 func IDCurrency(v int) predicate.Payment {
 	return predicate.Payment(sql.FieldEQ(FieldIDCurrency, v))
-}
-
-// IDPaymentReceived applies equality check predicate on the "id_payment_received" field. It's identical to IDPaymentReceivedEQ.
-func IDPaymentReceived(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldIDPaymentReceived, v))
 }
 
 // NumberEQ applies the EQ predicate on the "number" field.
@@ -225,82 +229,278 @@ func DateContainsFold(v string) predicate.Payment {
 
 // BalanceEQ applies the EQ predicate on the "balance" field.
 func BalanceEQ(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.PaymentOrErr(sql.FieldEQ(FieldBalance, vc), err)
 }
 
 // BalanceNEQ applies the NEQ predicate on the "balance" field.
 func BalanceNEQ(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldNEQ(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.PaymentOrErr(sql.FieldNEQ(FieldBalance, vc), err)
 }
 
 // BalanceIn applies the In predicate on the "balance" field.
 func BalanceIn(vs ...float64) predicate.Payment {
-	return predicate.Payment(sql.FieldIn(FieldBalance, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.Balance.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.PaymentOrErr(sql.FieldIn(FieldBalance, v...), err)
 }
 
 // BalanceNotIn applies the NotIn predicate on the "balance" field.
 func BalanceNotIn(vs ...float64) predicate.Payment {
-	return predicate.Payment(sql.FieldNotIn(FieldBalance, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.Balance.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.PaymentOrErr(sql.FieldNotIn(FieldBalance, v...), err)
 }
 
 // BalanceGT applies the GT predicate on the "balance" field.
 func BalanceGT(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldGT(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.PaymentOrErr(sql.FieldGT(FieldBalance, vc), err)
 }
 
 // BalanceGTE applies the GTE predicate on the "balance" field.
 func BalanceGTE(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldGTE(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.PaymentOrErr(sql.FieldGTE(FieldBalance, vc), err)
 }
 
 // BalanceLT applies the LT predicate on the "balance" field.
 func BalanceLT(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldLT(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.PaymentOrErr(sql.FieldLT(FieldBalance, vc), err)
 }
 
 // BalanceLTE applies the LTE predicate on the "balance" field.
 func BalanceLTE(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldLTE(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.PaymentOrErr(sql.FieldLTE(FieldBalance, vc), err)
 }
 
 // AmountEQ applies the EQ predicate on the "amount" field.
 func AmountEQ(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldEQ(FieldAmount, vc), err)
 }
 
 // AmountNEQ applies the NEQ predicate on the "amount" field.
 func AmountNEQ(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldNEQ(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldNEQ(FieldAmount, vc), err)
 }
 
 // AmountIn applies the In predicate on the "amount" field.
 func AmountIn(vs ...float64) predicate.Payment {
-	return predicate.Payment(sql.FieldIn(FieldAmount, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.Amount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.PaymentOrErr(sql.FieldIn(FieldAmount, v...), err)
 }
 
 // AmountNotIn applies the NotIn predicate on the "amount" field.
 func AmountNotIn(vs ...float64) predicate.Payment {
-	return predicate.Payment(sql.FieldNotIn(FieldAmount, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.Amount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.PaymentOrErr(sql.FieldNotIn(FieldAmount, v...), err)
 }
 
 // AmountGT applies the GT predicate on the "amount" field.
 func AmountGT(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldGT(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldGT(FieldAmount, vc), err)
 }
 
 // AmountGTE applies the GTE predicate on the "amount" field.
 func AmountGTE(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldGTE(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldGTE(FieldAmount, vc), err)
 }
 
 // AmountLT applies the LT predicate on the "amount" field.
 func AmountLT(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldLT(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldLT(FieldAmount, vc), err)
 }
 
 // AmountLTE applies the LTE predicate on the "amount" field.
 func AmountLTE(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldLTE(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldLTE(FieldAmount, vc), err)
+}
+
+// BaseAmountEQ applies the EQ predicate on the "base_amount" field.
+func BaseAmountEQ(v float64) predicate.Payment {
+	vc, err := ValueScanner.BaseAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldEQ(FieldBaseAmount, vc), err)
+}
+
+// BaseAmountNEQ applies the NEQ predicate on the "base_amount" field.
+func BaseAmountNEQ(v float64) predicate.Payment {
+	vc, err := ValueScanner.BaseAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldNEQ(FieldBaseAmount, vc), err)
+}
+
+// BaseAmountIn applies the In predicate on the "base_amount" field.
+func BaseAmountIn(vs ...float64) predicate.Payment {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.BaseAmount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.PaymentOrErr(sql.FieldIn(FieldBaseAmount, v...), err)
+}
+
+// BaseAmountNotIn applies the NotIn predicate on the "base_amount" field.
+func BaseAmountNotIn(vs ...float64) predicate.Payment {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.BaseAmount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.PaymentOrErr(sql.FieldNotIn(FieldBaseAmount, v...), err)
+}
+
+// BaseAmountGT applies the GT predicate on the "base_amount" field.
+func BaseAmountGT(v float64) predicate.Payment {
+	vc, err := ValueScanner.BaseAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldGT(FieldBaseAmount, vc), err)
+}
+
+// BaseAmountGTE applies the GTE predicate on the "base_amount" field.
+func BaseAmountGTE(v float64) predicate.Payment {
+	vc, err := ValueScanner.BaseAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldGTE(FieldBaseAmount, vc), err)
+}
+
+// BaseAmountLT applies the LT predicate on the "base_amount" field.
+func BaseAmountLT(v float64) predicate.Payment {
+	vc, err := ValueScanner.BaseAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldLT(FieldBaseAmount, vc), err)
+}
+
+// BaseAmountLTE applies the LTE predicate on the "base_amount" field.
+func BaseAmountLTE(v float64) predicate.Payment {
+	vc, err := ValueScanner.BaseAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldLTE(FieldBaseAmount, vc), err)
+}
+
+// UsedAmountEQ applies the EQ predicate on the "used_amount" field.
+func UsedAmountEQ(v float64) predicate.Payment {
+	vc, err := ValueScanner.UsedAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldEQ(FieldUsedAmount, vc), err)
+}
+
+// UsedAmountNEQ applies the NEQ predicate on the "used_amount" field.
+func UsedAmountNEQ(v float64) predicate.Payment {
+	vc, err := ValueScanner.UsedAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldNEQ(FieldUsedAmount, vc), err)
+}
+
+// UsedAmountIn applies the In predicate on the "used_amount" field.
+func UsedAmountIn(vs ...float64) predicate.Payment {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.UsedAmount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.PaymentOrErr(sql.FieldIn(FieldUsedAmount, v...), err)
+}
+
+// UsedAmountNotIn applies the NotIn predicate on the "used_amount" field.
+func UsedAmountNotIn(vs ...float64) predicate.Payment {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.UsedAmount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.PaymentOrErr(sql.FieldNotIn(FieldUsedAmount, v...), err)
+}
+
+// UsedAmountGT applies the GT predicate on the "used_amount" field.
+func UsedAmountGT(v float64) predicate.Payment {
+	vc, err := ValueScanner.UsedAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldGT(FieldUsedAmount, vc), err)
+}
+
+// UsedAmountGTE applies the GTE predicate on the "used_amount" field.
+func UsedAmountGTE(v float64) predicate.Payment {
+	vc, err := ValueScanner.UsedAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldGTE(FieldUsedAmount, vc), err)
+}
+
+// UsedAmountLT applies the LT predicate on the "used_amount" field.
+func UsedAmountLT(v float64) predicate.Payment {
+	vc, err := ValueScanner.UsedAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldLT(FieldUsedAmount, vc), err)
+}
+
+// UsedAmountLTE applies the LTE predicate on the "used_amount" field.
+func UsedAmountLTE(v float64) predicate.Payment {
+	vc, err := ValueScanner.UsedAmount.Value(v)
+	return predicate.PaymentOrErr(sql.FieldLTE(FieldUsedAmount, vc), err)
+}
+
+// TypeEQ applies the EQ predicate on the "type" field.
+func TypeEQ(v Type) predicate.Payment {
+	return predicate.Payment(sql.FieldEQ(FieldType, v))
+}
+
+// TypeNEQ applies the NEQ predicate on the "type" field.
+func TypeNEQ(v Type) predicate.Payment {
+	return predicate.Payment(sql.FieldNEQ(FieldType, v))
+}
+
+// TypeIn applies the In predicate on the "type" field.
+func TypeIn(vs ...Type) predicate.Payment {
+	return predicate.Payment(sql.FieldIn(FieldType, vs...))
+}
+
+// TypeNotIn applies the NotIn predicate on the "type" field.
+func TypeNotIn(vs ...Type) predicate.Payment {
+	return predicate.Payment(sql.FieldNotIn(FieldType, vs...))
 }
 
 // FopEQ applies the EQ predicate on the "fop" field.
@@ -323,46 +523,6 @@ func FopNotIn(vs ...Fop) predicate.Payment {
 	return predicate.Payment(sql.FieldNotIn(FieldFop, vs...))
 }
 
-// UsedAmountEQ applies the EQ predicate on the "used_amount" field.
-func UsedAmountEQ(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldUsedAmount, v))
-}
-
-// UsedAmountNEQ applies the NEQ predicate on the "used_amount" field.
-func UsedAmountNEQ(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldNEQ(FieldUsedAmount, v))
-}
-
-// UsedAmountIn applies the In predicate on the "used_amount" field.
-func UsedAmountIn(vs ...float64) predicate.Payment {
-	return predicate.Payment(sql.FieldIn(FieldUsedAmount, vs...))
-}
-
-// UsedAmountNotIn applies the NotIn predicate on the "used_amount" field.
-func UsedAmountNotIn(vs ...float64) predicate.Payment {
-	return predicate.Payment(sql.FieldNotIn(FieldUsedAmount, vs...))
-}
-
-// UsedAmountGT applies the GT predicate on the "used_amount" field.
-func UsedAmountGT(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldGT(FieldUsedAmount, v))
-}
-
-// UsedAmountGTE applies the GTE predicate on the "used_amount" field.
-func UsedAmountGTE(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldGTE(FieldUsedAmount, v))
-}
-
-// UsedAmountLT applies the LT predicate on the "used_amount" field.
-func UsedAmountLT(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldLT(FieldUsedAmount, v))
-}
-
-// UsedAmountLTE applies the LTE predicate on the "used_amount" field.
-func UsedAmountLTE(v float64) predicate.Payment {
-	return predicate.Payment(sql.FieldLTE(FieldUsedAmount, v))
-}
-
 // StatusEQ applies the EQ predicate on the "status" field.
 func StatusEQ(v Status) predicate.Payment {
 	return predicate.Payment(sql.FieldEQ(FieldStatus, v))
@@ -383,44 +543,44 @@ func StatusNotIn(vs ...Status) predicate.Payment {
 	return predicate.Payment(sql.FieldNotIn(FieldStatus, vs...))
 }
 
-// IDChartsOfAccountsEQ applies the EQ predicate on the "id_charts_of_accounts" field.
-func IDChartsOfAccountsEQ(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldIDChartsOfAccounts, v))
+// IDChartOfAccountsEQ applies the EQ predicate on the "id_chart_of_accounts" field.
+func IDChartOfAccountsEQ(v int) predicate.Payment {
+	return predicate.Payment(sql.FieldEQ(FieldIDChartOfAccounts, v))
 }
 
-// IDChartsOfAccountsNEQ applies the NEQ predicate on the "id_charts_of_accounts" field.
-func IDChartsOfAccountsNEQ(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldNEQ(FieldIDChartsOfAccounts, v))
+// IDChartOfAccountsNEQ applies the NEQ predicate on the "id_chart_of_accounts" field.
+func IDChartOfAccountsNEQ(v int) predicate.Payment {
+	return predicate.Payment(sql.FieldNEQ(FieldIDChartOfAccounts, v))
 }
 
-// IDChartsOfAccountsIn applies the In predicate on the "id_charts_of_accounts" field.
-func IDChartsOfAccountsIn(vs ...int) predicate.Payment {
-	return predicate.Payment(sql.FieldIn(FieldIDChartsOfAccounts, vs...))
+// IDChartOfAccountsIn applies the In predicate on the "id_chart_of_accounts" field.
+func IDChartOfAccountsIn(vs ...int) predicate.Payment {
+	return predicate.Payment(sql.FieldIn(FieldIDChartOfAccounts, vs...))
 }
 
-// IDChartsOfAccountsNotIn applies the NotIn predicate on the "id_charts_of_accounts" field.
-func IDChartsOfAccountsNotIn(vs ...int) predicate.Payment {
-	return predicate.Payment(sql.FieldNotIn(FieldIDChartsOfAccounts, vs...))
+// IDChartOfAccountsNotIn applies the NotIn predicate on the "id_chart_of_accounts" field.
+func IDChartOfAccountsNotIn(vs ...int) predicate.Payment {
+	return predicate.Payment(sql.FieldNotIn(FieldIDChartOfAccounts, vs...))
 }
 
-// IDChartsOfAccountsGT applies the GT predicate on the "id_charts_of_accounts" field.
-func IDChartsOfAccountsGT(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldGT(FieldIDChartsOfAccounts, v))
+// IDChartOfAccountsGT applies the GT predicate on the "id_chart_of_accounts" field.
+func IDChartOfAccountsGT(v int) predicate.Payment {
+	return predicate.Payment(sql.FieldGT(FieldIDChartOfAccounts, v))
 }
 
-// IDChartsOfAccountsGTE applies the GTE predicate on the "id_charts_of_accounts" field.
-func IDChartsOfAccountsGTE(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldGTE(FieldIDChartsOfAccounts, v))
+// IDChartOfAccountsGTE applies the GTE predicate on the "id_chart_of_accounts" field.
+func IDChartOfAccountsGTE(v int) predicate.Payment {
+	return predicate.Payment(sql.FieldGTE(FieldIDChartOfAccounts, v))
 }
 
-// IDChartsOfAccountsLT applies the LT predicate on the "id_charts_of_accounts" field.
-func IDChartsOfAccountsLT(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldLT(FieldIDChartsOfAccounts, v))
+// IDChartOfAccountsLT applies the LT predicate on the "id_chart_of_accounts" field.
+func IDChartOfAccountsLT(v int) predicate.Payment {
+	return predicate.Payment(sql.FieldLT(FieldIDChartOfAccounts, v))
 }
 
-// IDChartsOfAccountsLTE applies the LTE predicate on the "id_charts_of_accounts" field.
-func IDChartsOfAccountsLTE(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldLTE(FieldIDChartsOfAccounts, v))
+// IDChartOfAccountsLTE applies the LTE predicate on the "id_chart_of_accounts" field.
+func IDChartOfAccountsLTE(v int) predicate.Payment {
+	return predicate.Payment(sql.FieldLTE(FieldIDChartOfAccounts, v))
 }
 
 // IDCurrencyEQ applies the EQ predicate on the "id_currency" field.
@@ -481,56 +641,6 @@ func TagIn(vs ...Tag) predicate.Payment {
 // TagNotIn applies the NotIn predicate on the "Tag" field.
 func TagNotIn(vs ...Tag) predicate.Payment {
 	return predicate.Payment(sql.FieldNotIn(FieldTag, vs...))
-}
-
-// IDPaymentReceivedEQ applies the EQ predicate on the "id_payment_received" field.
-func IDPaymentReceivedEQ(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldEQ(FieldIDPaymentReceived, v))
-}
-
-// IDPaymentReceivedNEQ applies the NEQ predicate on the "id_payment_received" field.
-func IDPaymentReceivedNEQ(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldNEQ(FieldIDPaymentReceived, v))
-}
-
-// IDPaymentReceivedIn applies the In predicate on the "id_payment_received" field.
-func IDPaymentReceivedIn(vs ...int) predicate.Payment {
-	return predicate.Payment(sql.FieldIn(FieldIDPaymentReceived, vs...))
-}
-
-// IDPaymentReceivedNotIn applies the NotIn predicate on the "id_payment_received" field.
-func IDPaymentReceivedNotIn(vs ...int) predicate.Payment {
-	return predicate.Payment(sql.FieldNotIn(FieldIDPaymentReceived, vs...))
-}
-
-// IDPaymentReceivedGT applies the GT predicate on the "id_payment_received" field.
-func IDPaymentReceivedGT(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldGT(FieldIDPaymentReceived, v))
-}
-
-// IDPaymentReceivedGTE applies the GTE predicate on the "id_payment_received" field.
-func IDPaymentReceivedGTE(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldGTE(FieldIDPaymentReceived, v))
-}
-
-// IDPaymentReceivedLT applies the LT predicate on the "id_payment_received" field.
-func IDPaymentReceivedLT(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldLT(FieldIDPaymentReceived, v))
-}
-
-// IDPaymentReceivedLTE applies the LTE predicate on the "id_payment_received" field.
-func IDPaymentReceivedLTE(v int) predicate.Payment {
-	return predicate.Payment(sql.FieldLTE(FieldIDPaymentReceived, v))
-}
-
-// IDPaymentReceivedIsNil applies the IsNil predicate on the "id_payment_received" field.
-func IDPaymentReceivedIsNil() predicate.Payment {
-	return predicate.Payment(sql.FieldIsNull(FieldIDPaymentReceived))
-}
-
-// IDPaymentReceivedNotNil applies the NotNil predicate on the "id_payment_received" field.
-func IDPaymentReceivedNotNil() predicate.Payment {
-	return predicate.Payment(sql.FieldNotNull(FieldIDPaymentReceived))
 }
 
 // HasCustomer applies the HasEdge predicate on the "customer" edge.

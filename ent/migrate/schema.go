@@ -32,8 +32,6 @@ var (
 	InvoicePaymentReceivedColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "amount_apply", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
-		{Name: "payment_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
-		{Name: "invoice_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
 		{Name: "tag", Type: field.TypeEnum, Enums: []string{"1", "2", "3"}, Default: "3"},
 		{Name: "id_invoice", Type: field.TypeInt},
 		{Name: "id_payment_received", Type: field.TypeInt},
@@ -46,13 +44,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "invoice_payment_received_invoice_imputations",
-				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[5]},
+				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[3]},
 				RefColumns: []*schema.Column{InvoiceColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "invoice_payment_received_payment_received_imputations",
-				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[6]},
+				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[4]},
 				RefColumns: []*schema.Column{PaymentReceivedColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -92,13 +90,14 @@ var (
 		{Name: "date", Type: field.TypeString, SchemaType: map[string]string{"postgres": "date"}},
 		{Name: "balance", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
 		{Name: "amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
-		{Name: "fop", Type: field.TypeEnum, Enums: []string{"cash", "check", "bank_transfer"}, Default: "cash"},
+		{Name: "base_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
 		{Name: "used_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"supplier_refund", "transfer_from_account", "other_income", "customer_payment", "sales_receipt"}, Default: "customer_payment"},
+		{Name: "fop", Type: field.TypeEnum, Enums: []string{"cash", "check", "bank_transfer"}, Default: "cash"},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"open", "used", "void"}, Default: "open"},
-		{Name: "id_charts_of_accounts", Type: field.TypeInt, Default: 39},
+		{Name: "id_chart_of_accounts", Type: field.TypeInt, Default: 39},
 		{Name: "id_currency", Type: field.TypeInt, Default: 550},
 		{Name: "tag", Type: field.TypeEnum, Enums: []string{"1", "2", "3"}, Default: "3"},
-		{Name: "id_payment_received", Type: field.TypeInt, Nullable: true},
 		{Name: "id_customer", Type: field.TypeInt},
 	}
 	// PaymentReceivedTable holds the schema information for the "payment_received" table.
@@ -109,7 +108,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "payment_received_customer_payments",
-				Columns:    []*schema.Column{PaymentReceivedColumns[12]},
+				Columns:    []*schema.Column{PaymentReceivedColumns[13]},
 				RefColumns: []*schema.Column{CustomerColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -118,11 +117,13 @@ var (
 	// AirBookingColumns holds the columns for the "air_booking" table.
 	AirBookingColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "total_price", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "total_price", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "money"}},
 		{Name: "itinerary", Type: field.TypeString},
 		{Name: "traveler_name", Type: field.TypeString},
 		{Name: "ticket_number", Type: field.TypeString},
 		{Name: "conjunction_number", Type: field.TypeInt},
+		{Name: "transaction_type", Type: field.TypeString},
+		{Name: "product_type", Type: field.TypeString},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "invoiced", "void", "receipted"}, Default: "pending"},
 		{Name: "id_invoice", Type: field.TypeInt},
 	}
@@ -134,7 +135,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "air_booking_invoice_travel_items",
-				Columns:    []*schema.Column{AirBookingColumns[7]},
+				Columns:    []*schema.Column{AirBookingColumns[9]},
 				RefColumns: []*schema.Column{InvoiceColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

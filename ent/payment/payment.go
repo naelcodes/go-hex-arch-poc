@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 )
 
 const (
@@ -22,20 +23,22 @@ const (
 	FieldBalance = "balance"
 	// FieldAmount holds the string denoting the amount field in the database.
 	FieldAmount = "amount"
-	// FieldFop holds the string denoting the fop field in the database.
-	FieldFop = "fop"
+	// FieldBaseAmount holds the string denoting the base_amount field in the database.
+	FieldBaseAmount = "base_amount"
 	// FieldUsedAmount holds the string denoting the used_amount field in the database.
 	FieldUsedAmount = "used_amount"
+	// FieldType holds the string denoting the type field in the database.
+	FieldType = "type"
+	// FieldFop holds the string denoting the fop field in the database.
+	FieldFop = "fop"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
-	// FieldIDChartsOfAccounts holds the string denoting the id_charts_of_accounts field in the database.
-	FieldIDChartsOfAccounts = "id_charts_of_accounts"
+	// FieldIDChartOfAccounts holds the string denoting the id_chart_of_accounts field in the database.
+	FieldIDChartOfAccounts = "id_chart_of_accounts"
 	// FieldIDCurrency holds the string denoting the id_currency field in the database.
 	FieldIDCurrency = "id_currency"
 	// FieldTag holds the string denoting the tag field in the database.
 	FieldTag = "tag"
-	// FieldIDPaymentReceived holds the string denoting the id_payment_received field in the database.
-	FieldIDPaymentReceived = "id_payment_received"
 	// EdgeCustomer holds the string denoting the customer edge name in mutations.
 	EdgeCustomer = "customer"
 	// EdgeImputations holds the string denoting the imputations edge name in mutations.
@@ -65,13 +68,14 @@ var Columns = []string{
 	FieldDate,
 	FieldBalance,
 	FieldAmount,
-	FieldFop,
+	FieldBaseAmount,
 	FieldUsedAmount,
+	FieldType,
+	FieldFop,
 	FieldStatus,
-	FieldIDChartsOfAccounts,
+	FieldIDChartOfAccounts,
 	FieldIDCurrency,
 	FieldTag,
-	FieldIDPaymentReceived,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "payment_received"
@@ -108,15 +112,55 @@ var (
 	DefaultAmount float64
 	// AmountValidator is a validator for the "amount" field. It is called by the builders before save.
 	AmountValidator func(float64) error
+	// DefaultBaseAmount holds the default value on creation for the "base_amount" field.
+	DefaultBaseAmount float64
+	// BaseAmountValidator is a validator for the "base_amount" field. It is called by the builders before save.
+	BaseAmountValidator func(float64) error
 	// DefaultUsedAmount holds the default value on creation for the "used_amount" field.
 	DefaultUsedAmount float64
 	// UsedAmountValidator is a validator for the "used_amount" field. It is called by the builders before save.
 	UsedAmountValidator func(float64) error
-	// DefaultIDChartsOfAccounts holds the default value on creation for the "id_charts_of_accounts" field.
-	DefaultIDChartsOfAccounts int
+	// DefaultIDChartOfAccounts holds the default value on creation for the "id_chart_of_accounts" field.
+	DefaultIDChartOfAccounts int
 	// DefaultIDCurrency holds the default value on creation for the "id_currency" field.
 	DefaultIDCurrency int
+	// ValueScanner of all Payment fields.
+	ValueScanner struct {
+		Balance    field.TypeValueScanner[float64]
+		Amount     field.TypeValueScanner[float64]
+		BaseAmount field.TypeValueScanner[float64]
+		UsedAmount field.TypeValueScanner[float64]
+	}
 )
+
+// Type defines the type for the "type" enum field.
+type Type string
+
+// TypeCustomerPayment is the default value of the Type enum.
+const DefaultType = TypeCustomerPayment
+
+// Type values.
+const (
+	TypeSupplierRefund      Type = "supplier_refund"
+	TypeTransferFromAccount Type = "transfer_from_account"
+	TypeOtherIncome         Type = "other_income"
+	TypeCustomerPayment     Type = "customer_payment"
+	TypeSalesReceipt        Type = "sales_receipt"
+)
+
+func (_type Type) String() string {
+	return string(_type)
+}
+
+// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
+func TypeValidator(_type Type) error {
+	switch _type {
+	case TypeSupplierRefund, TypeTransferFromAccount, TypeOtherIncome, TypeCustomerPayment, TypeSalesReceipt:
+		return nil
+	default:
+		return fmt.Errorf("payment: invalid enum value for type field: %q", _type)
+	}
+}
 
 // Fop defines the type for the "fop" enum field.
 type Fop string
@@ -227,9 +271,9 @@ func ByAmount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAmount, opts...).ToFunc()
 }
 
-// ByFop orders the results by the fop field.
-func ByFop(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFop, opts...).ToFunc()
+// ByBaseAmount orders the results by the base_amount field.
+func ByBaseAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBaseAmount, opts...).ToFunc()
 }
 
 // ByUsedAmount orders the results by the used_amount field.
@@ -237,14 +281,24 @@ func ByUsedAmount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUsedAmount, opts...).ToFunc()
 }
 
+// ByType orders the results by the type field.
+func ByType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldType, opts...).ToFunc()
+}
+
+// ByFop orders the results by the fop field.
+func ByFop(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFop, opts...).ToFunc()
+}
+
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
-// ByIDChartsOfAccounts orders the results by the id_charts_of_accounts field.
-func ByIDChartsOfAccounts(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIDChartsOfAccounts, opts...).ToFunc()
+// ByIDChartOfAccounts orders the results by the id_chart_of_accounts field.
+func ByIDChartOfAccounts(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIDChartOfAccounts, opts...).ToFunc()
 }
 
 // ByIDCurrency orders the results by the id_currency field.
@@ -255,11 +309,6 @@ func ByIDCurrency(opts ...sql.OrderTermOption) OrderOption {
 // ByTag orders the results by the Tag field.
 func ByTag(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTag, opts...).ToFunc()
-}
-
-// ByIDPaymentReceived orders the results by the id_payment_received field.
-func ByIDPaymentReceived(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIDPaymentReceived, opts...).ToFunc()
 }
 
 // ByCustomerField orders the results by customer field.

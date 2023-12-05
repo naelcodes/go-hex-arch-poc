@@ -89,12 +89,16 @@ func (*Invoice) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case invoice.FieldAmount, invoice.FieldBalance, invoice.FieldCreditApply:
-			values[i] = new(sql.NullFloat64)
 		case invoice.FieldID:
 			values[i] = new(sql.NullInt64)
 		case invoice.FieldCreationDate, invoice.FieldInvoiceNumber, invoice.FieldStatus, invoice.FieldDueDate, invoice.FieldTag:
 			values[i] = new(sql.NullString)
+		case invoice.FieldAmount:
+			values[i] = invoice.ValueScanner.Amount.ScanValue()
+		case invoice.FieldBalance:
+			values[i] = invoice.ValueScanner.Balance.ScanValue()
+		case invoice.FieldCreditApply:
+			values[i] = invoice.ValueScanner.CreditApply.ScanValue()
 		case invoice.ForeignKeys[0]: // id_customer
 			values[i] = new(sql.NullInt64)
 		default:
@@ -143,22 +147,22 @@ func (i *Invoice) assignValues(columns []string, values []any) error {
 				i.DueDate = value.String
 			}
 		case invoice.FieldAmount:
-			if value, ok := values[j].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field amount", values[j])
-			} else if value.Valid {
-				i.Amount = value.Float64
+			if value, err := invoice.ValueScanner.Amount.FromValue(values[j]); err != nil {
+				return err
+			} else {
+				i.Amount = value
 			}
 		case invoice.FieldBalance:
-			if value, ok := values[j].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field balance", values[j])
-			} else if value.Valid {
-				i.Balance = value.Float64
+			if value, err := invoice.ValueScanner.Balance.FromValue(values[j]); err != nil {
+				return err
+			} else {
+				i.Balance = value
 			}
 		case invoice.FieldCreditApply:
-			if value, ok := values[j].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field credit_apply", values[j])
-			} else if value.Valid {
-				i.CreditApply = value.Float64
+			if value, err := invoice.ValueScanner.CreditApply.FromValue(values[j]); err != nil {
+				return err
+			} else {
+				i.CreditApply = value
 			}
 		case invoice.FieldTag:
 			if value, ok := values[j].(*sql.NullString); !ok {

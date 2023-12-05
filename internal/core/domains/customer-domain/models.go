@@ -4,7 +4,7 @@ import (
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
-type CustomerAggregate struct {
+type Customer struct {
 	types.BaseEntity
 	CustomerName    string
 	Alias           string

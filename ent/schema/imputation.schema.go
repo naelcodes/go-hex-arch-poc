@@ -17,15 +17,11 @@ func (Imputation) Fields() []ent.Field {
 
 	return []ent.Field{
 
-		field.Float("amount_apply").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
-		field.Float("payment_amount").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
-		field.Float("invoice_amount").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
+		field.Float("amount_apply").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
 		field.Enum("tag").Values("1", "2", "3").Default("3"),
 	}
 }

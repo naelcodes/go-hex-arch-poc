@@ -32,6 +32,7 @@ func main() {
 	restController := new(api.RestController)
 	restController.Init(globalContext)
 	restController.ApplicationService = application
+	restController.Logger = appEngine.GetLogger()
 
 	log.Fatal(appEngine.Start())
 }

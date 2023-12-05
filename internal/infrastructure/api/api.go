@@ -6,11 +6,13 @@ import (
 	"github.com/naelcodes/ab-backend/internal/core/application"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	"github.com/naelcodes/ab-backend/internal/infrastructure/api/middleware"
+	"github.com/naelcodes/ab-backend/pkg/logger"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
 type RestController struct {
 	ApplicationService *application.Application
+	Logger             *logger.Logger
 }
 
 func (controller *RestController) Init(globalContext *types.GlobalContext) {
@@ -33,8 +35,8 @@ func (controller *RestController) attachCustomerRoutesHandlers(router fiber.Rout
 	router.Use(middleware.PayloadValidator(new(dto.CreateCustomerDTO), new(dto.UpdateCustomerDTO)))
 	router.Get("", controller.GetAllCustomersHandler())
 	router.Get("/:id", controller.GetCustomerHandler())
-	// router.Get("/:id/payments", controller.GetCustomerPaymentsHandler())
-	// router.Get("/:id/invoices", controller.GetCustomerInvoicesHandler())
+	router.Get("/:id/payments", controller.GetCustomerPaymentsHandler())
+	router.Get("/:id/invoices", controller.GetCustomerInvoicesHandler())
 	router.Post("", controller.CreateCustomerHandler())
 	router.Patch("/:id", controller.UpdateCustomerHandler())
 	router.Delete("/:id", controller.DeleteCustomerHandler())
@@ -45,6 +47,8 @@ func (controller *RestController) attachTravelItemsRoutesHandlers(router fiber.R
 }
 
 func (controller *RestController) attachInvoiceRoutesHandlers(router fiber.Router) {
+
+	router.Use(middleware.PayloadValidator(new(dto.CreateInvoiceDTO), new(dto.UpdateInvoiceDTO)))
 	router.Get("", controller.GetAllInvoiceHandler())
 	router.Get("/:id", controller.GetInvoiceHandler())
 	router.Post("", controller.CreateInvoiceHandler())
@@ -61,6 +65,7 @@ func (controller *RestController) attachInvoiceImputationRoutesHandlers(router f
 
 func (controller *RestController) attachPaymentRoutesHandlers(router fiber.Router) {
 
+	router.Use(middleware.PayloadValidator(new(dto.CreatePaymentDTO), new(dto.UpdatePaymentDTO)))
 	router.Get("", controller.GetAllPaymentsHandler())
 	router.Get("/:id", controller.GetPaymentHandler())
 	router.Post("", controller.CreatePaymentHandler())

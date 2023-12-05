@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 )
 
 const (
@@ -24,6 +25,10 @@ const (
 	FieldTicketNumber = "ticket_number"
 	// FieldConjunctionNumber holds the string denoting the conjunction_number field in the database.
 	FieldConjunctionNumber = "conjunction_number"
+	// FieldTransactionType holds the string denoting the transaction_type field in the database.
+	FieldTransactionType = "transaction_type"
+	// FieldProductType holds the string denoting the product_type field in the database.
+	FieldProductType = "product_type"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// EdgeInvoice holds the string denoting the invoice edge name in mutations.
@@ -47,6 +52,8 @@ var Columns = []string{
 	FieldTravelerName,
 	FieldTicketNumber,
 	FieldConjunctionNumber,
+	FieldTransactionType,
+	FieldProductType,
 	FieldStatus,
 }
 
@@ -72,10 +79,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultTotalPrice holds the default value on creation for the "total_price" field.
-	DefaultTotalPrice float64
-	// TotalPriceValidator is a validator for the "total_price" field. It is called by the builders before save.
-	TotalPriceValidator func(float64) error
+	// ValueScanner of all TravelItem fields.
+	ValueScanner struct {
+		TotalPrice field.TypeValueScanner[float64]
+	}
 )
 
 // Status defines the type for the "status" enum field.
@@ -137,6 +144,16 @@ func ByTicketNumber(opts ...sql.OrderTermOption) OrderOption {
 // ByConjunctionNumber orders the results by the conjunction_number field.
 func ByConjunctionNumber(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldConjunctionNumber, opts...).ToFunc()
+}
+
+// ByTransactionType orders the results by the transaction_type field.
+func ByTransactionType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTransactionType, opts...).ToFunc()
+}
+
+// ByProductType orders the results by the product_type field.
+func ByProductType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProductType, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

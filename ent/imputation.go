@@ -20,10 +20,6 @@ type Imputation struct {
 	ID int `json:"id,omitempty"`
 	// AmountApply holds the value of the "amount_apply" field.
 	AmountApply float64 `json:"amount_apply,omitempty"`
-	// PaymentAmount holds the value of the "payment_amount" field.
-	PaymentAmount float64 `json:"payment_amount,omitempty"`
-	// InvoiceAmount holds the value of the "invoice_amount" field.
-	InvoiceAmount float64 `json:"invoice_amount,omitempty"`
 	// Tag holds the value of the "tag" field.
 	Tag imputation.Tag `json:"tag,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -76,12 +72,12 @@ func (*Imputation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case imputation.FieldAmountApply, imputation.FieldPaymentAmount, imputation.FieldInvoiceAmount:
-			values[i] = new(sql.NullFloat64)
 		case imputation.FieldID:
 			values[i] = new(sql.NullInt64)
 		case imputation.FieldTag:
 			values[i] = new(sql.NullString)
+		case imputation.FieldAmountApply:
+			values[i] = imputation.ValueScanner.AmountApply.ScanValue()
 		case imputation.ForeignKeys[0]: // id_invoice
 			values[i] = new(sql.NullInt64)
 		case imputation.ForeignKeys[1]: // id_payment_received
@@ -108,22 +104,10 @@ func (i *Imputation) assignValues(columns []string, values []any) error {
 			}
 			i.ID = int(value.Int64)
 		case imputation.FieldAmountApply:
-			if value, ok := values[j].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field amount_apply", values[j])
-			} else if value.Valid {
-				i.AmountApply = value.Float64
-			}
-		case imputation.FieldPaymentAmount:
-			if value, ok := values[j].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field payment_amount", values[j])
-			} else if value.Valid {
-				i.PaymentAmount = value.Float64
-			}
-		case imputation.FieldInvoiceAmount:
-			if value, ok := values[j].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field invoice_amount", values[j])
-			} else if value.Valid {
-				i.InvoiceAmount = value.Float64
+			if value, err := imputation.ValueScanner.AmountApply.FromValue(values[j]); err != nil {
+				return err
+			} else {
+				i.AmountApply = value
 			}
 		case imputation.FieldTag:
 			if value, ok := values[j].(*sql.NullString); !ok {
@@ -193,12 +177,6 @@ func (i *Imputation) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
 	builder.WriteString("amount_apply=")
 	builder.WriteString(fmt.Sprintf("%v", i.AmountApply))
-	builder.WriteString(", ")
-	builder.WriteString("payment_amount=")
-	builder.WriteString(fmt.Sprintf("%v", i.PaymentAmount))
-	builder.WriteString(", ")
-	builder.WriteString("invoice_amount=")
-	builder.WriteString(fmt.Sprintf("%v", i.InvoiceAmount))
 	builder.WriteString(", ")
 	builder.WriteString("tag=")
 	builder.WriteString(fmt.Sprintf("%v", i.Tag))

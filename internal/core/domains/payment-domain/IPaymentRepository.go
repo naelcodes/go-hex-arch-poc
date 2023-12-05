@@ -7,12 +7,13 @@ import (
 )
 
 type IPaymentRepository interface {
-	Count() (int, error)
-	CountByCustomerID(customerId types.EID) (int, error)
-	GetByCustomerID(id types.EID, queryParams types.GetQueryParams, isOpen *bool) ([]*dto.GetPaymentDTO, error)
+	Count() (*int, error)
+	CountByCustomerID(customerId types.EID) (*int, error)
+	GetByCustomerID(id types.EID, queryParams *types.GetQueryParams, isOpen *bool) ([]*dto.GetPaymentDTO, error)
 	GetById(id types.EID) (*dto.GetPaymentDTO, error)
 	GetAll(*types.GetQueryParams) ([]*dto.GetPaymentDTO, error)
-	Save(*PaymentAggregate) error
-	Update(*ent.Tx, *PaymentAggregate) error
+	Save(*Payment) (*dto.GetPaymentDTO, error)
+	Update(*Payment) error
+	SaveAllPaymentsAllocations(*ent.Tx, []*Payment)
 	Delete(id types.EID) error
 }

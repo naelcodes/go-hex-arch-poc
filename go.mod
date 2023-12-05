@@ -13,6 +13,7 @@ require (
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/rs/zerolog v1.31.0 // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
 )
 
 require (

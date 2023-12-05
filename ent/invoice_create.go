@@ -279,7 +279,10 @@ func (ic *InvoiceCreate) sqlSave(ctx context.Context) (*Invoice, error) {
 	if err := ic.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ic.createSpec()
+	_node, _spec, err := ic.createSpec()
+	if err != nil {
+		return nil, err
+	}
 	if err := sqlgraph.CreateNode(ctx, ic.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
@@ -293,7 +296,7 @@ func (ic *InvoiceCreate) sqlSave(ctx context.Context) (*Invoice, error) {
 	return _node, nil
 }
 
-func (ic *InvoiceCreate) createSpec() (*Invoice, *sqlgraph.CreateSpec) {
+func (ic *InvoiceCreate) createSpec() (*Invoice, *sqlgraph.CreateSpec, error) {
 	var (
 		_node = &Invoice{config: ic.config}
 		_spec = sqlgraph.NewCreateSpec(invoice.Table, sqlgraph.NewFieldSpec(invoice.FieldID, field.TypeInt))
@@ -315,15 +318,27 @@ func (ic *InvoiceCreate) createSpec() (*Invoice, *sqlgraph.CreateSpec) {
 		_node.DueDate = value
 	}
 	if value, ok := ic.mutation.Amount(); ok {
-		_spec.SetField(invoice.FieldAmount, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(invoice.FieldAmount, field.TypeFloat64, vv)
 		_node.Amount = value
 	}
 	if value, ok := ic.mutation.Balance(); ok {
-		_spec.SetField(invoice.FieldBalance, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(invoice.FieldBalance, field.TypeFloat64, vv)
 		_node.Balance = value
 	}
 	if value, ok := ic.mutation.CreditApply(); ok {
-		_spec.SetField(invoice.FieldCreditApply, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.CreditApply.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(invoice.FieldCreditApply, field.TypeFloat64, vv)
 		_node.CreditApply = value
 	}
 	if value, ok := ic.mutation.Tag(); ok {
@@ -379,7 +394,7 @@ func (ic *InvoiceCreate) createSpec() (*Invoice, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return _node, _spec
+	return _node, _spec, nil
 }
 
 // InvoiceCreateBulk is the builder for creating many Invoice entities in bulk.
@@ -411,7 +426,10 @@ func (icb *InvoiceCreateBulk) Save(ctx context.Context) ([]*Invoice, error) {
 				}
 				builder.mutation = mutation
 				var err error
-				nodes[i], specs[i] = builder.createSpec()
+				nodes[i], specs[i], err = builder.createSpec()
+				if err != nil {
+					return nil, err
+				}
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, icb.builders[i+1].mutation)
 				} else {

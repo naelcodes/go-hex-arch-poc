@@ -1,10 +1,28 @@
 package api
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"fmt"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/naelcodes/ab-backend/internal/core/dto"
+)
 
 func (controller *RestController) CreateInvoiceHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		return c.Status(200).JSON("\\Create Invoice handler")
+
+		createInvoiceDto := c.Locals("payload").(dto.CreateInvoiceDTO)
+
+		controller.Logger.Info(fmt.Sprintf("[CreateInvoiceHandler] - Payload: %v", createInvoiceDto))
+
+		newInvoiceDTO, err := controller.ApplicationService.CreateInvoiceService(&createInvoiceDto)
+
+		if err != nil {
+			controller.Logger.Error(fmt.Sprintf("[CreateInvoiceHandler] - Error creating invoice: %v", err))
+			return err
+		}
+
+		controller.Logger.Info(fmt.Sprintf("[CreateInvoiceHandler] - Created invoice DTO: %v", newInvoiceDTO))
+		return c.Status(fiber.StatusOK).JSON(newInvoiceDTO)
 
 	}
 }

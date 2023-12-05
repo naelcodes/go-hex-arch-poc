@@ -25,20 +25,22 @@ type Payment struct {
 	Balance float64 `json:"balance,omitempty"`
 	// Amount holds the value of the "amount" field.
 	Amount float64 `json:"amount,omitempty"`
-	// Fop holds the value of the "fop" field.
-	Fop payment.Fop `json:"fop,omitempty"`
+	// BaseAmount holds the value of the "base_amount" field.
+	BaseAmount float64 `json:"base_amount,omitempty"`
 	// UsedAmount holds the value of the "used_amount" field.
 	UsedAmount float64 `json:"used_amount,omitempty"`
+	// Type holds the value of the "type" field.
+	Type payment.Type `json:"type,omitempty"`
+	// Fop holds the value of the "fop" field.
+	Fop payment.Fop `json:"fop,omitempty"`
 	// Status holds the value of the "status" field.
 	Status payment.Status `json:"status,omitempty"`
-	// IDChartsOfAccounts holds the value of the "id_charts_of_accounts" field.
-	IDChartsOfAccounts int `json:"id_charts_of_accounts,omitempty"`
+	// IDChartOfAccounts holds the value of the "id_chart_of_accounts" field.
+	IDChartOfAccounts int `json:"id_chart_of_accounts,omitempty"`
 	// IDCurrency holds the value of the "id_currency" field.
 	IDCurrency int `json:"id_currency,omitempty"`
 	// Tag holds the value of the "Tag" field.
 	Tag payment.Tag `json:"Tag,omitempty"`
-	// IDPaymentReceived holds the value of the "id_payment_received" field.
-	IDPaymentReceived int `json:"id_payment_received,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PaymentQuery when eager-loading is set.
 	Edges        PaymentEdges `json:"edges"`
@@ -84,12 +86,18 @@ func (*Payment) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case payment.FieldBalance, payment.FieldAmount, payment.FieldUsedAmount:
-			values[i] = new(sql.NullFloat64)
-		case payment.FieldID, payment.FieldIDChartsOfAccounts, payment.FieldIDCurrency, payment.FieldIDPaymentReceived:
+		case payment.FieldID, payment.FieldIDChartOfAccounts, payment.FieldIDCurrency:
 			values[i] = new(sql.NullInt64)
-		case payment.FieldNumber, payment.FieldDate, payment.FieldFop, payment.FieldStatus, payment.FieldTag:
+		case payment.FieldNumber, payment.FieldDate, payment.FieldType, payment.FieldFop, payment.FieldStatus, payment.FieldTag:
 			values[i] = new(sql.NullString)
+		case payment.FieldBalance:
+			values[i] = payment.ValueScanner.Balance.ScanValue()
+		case payment.FieldAmount:
+			values[i] = payment.ValueScanner.Amount.ScanValue()
+		case payment.FieldBaseAmount:
+			values[i] = payment.ValueScanner.BaseAmount.ScanValue()
+		case payment.FieldUsedAmount:
+			values[i] = payment.ValueScanner.UsedAmount.ScanValue()
 		case payment.ForeignKeys[0]: // id_customer
 			values[i] = new(sql.NullInt64)
 		default:
@@ -126,16 +134,34 @@ func (pa *Payment) assignValues(columns []string, values []any) error {
 				pa.Date = value.String
 			}
 		case payment.FieldBalance:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field balance", values[i])
-			} else if value.Valid {
-				pa.Balance = value.Float64
+			if value, err := payment.ValueScanner.Balance.FromValue(values[i]); err != nil {
+				return err
+			} else {
+				pa.Balance = value
 			}
 		case payment.FieldAmount:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field amount", values[i])
+			if value, err := payment.ValueScanner.Amount.FromValue(values[i]); err != nil {
+				return err
+			} else {
+				pa.Amount = value
+			}
+		case payment.FieldBaseAmount:
+			if value, err := payment.ValueScanner.BaseAmount.FromValue(values[i]); err != nil {
+				return err
+			} else {
+				pa.BaseAmount = value
+			}
+		case payment.FieldUsedAmount:
+			if value, err := payment.ValueScanner.UsedAmount.FromValue(values[i]); err != nil {
+				return err
+			} else {
+				pa.UsedAmount = value
+			}
+		case payment.FieldType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				pa.Amount = value.Float64
+				pa.Type = payment.Type(value.String)
 			}
 		case payment.FieldFop:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -143,23 +169,17 @@ func (pa *Payment) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pa.Fop = payment.Fop(value.String)
 			}
-		case payment.FieldUsedAmount:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field used_amount", values[i])
-			} else if value.Valid {
-				pa.UsedAmount = value.Float64
-			}
 		case payment.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				pa.Status = payment.Status(value.String)
 			}
-		case payment.FieldIDChartsOfAccounts:
+		case payment.FieldIDChartOfAccounts:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field id_charts_of_accounts", values[i])
+				return fmt.Errorf("unexpected type %T for field id_chart_of_accounts", values[i])
 			} else if value.Valid {
-				pa.IDChartsOfAccounts = int(value.Int64)
+				pa.IDChartOfAccounts = int(value.Int64)
 			}
 		case payment.FieldIDCurrency:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -172,12 +192,6 @@ func (pa *Payment) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field Tag", values[i])
 			} else if value.Valid {
 				pa.Tag = payment.Tag(value.String)
-			}
-		case payment.FieldIDPaymentReceived:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field id_payment_received", values[i])
-			} else if value.Valid {
-				pa.IDPaymentReceived = int(value.Int64)
 			}
 		case payment.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -244,26 +258,29 @@ func (pa *Payment) String() string {
 	builder.WriteString("amount=")
 	builder.WriteString(fmt.Sprintf("%v", pa.Amount))
 	builder.WriteString(", ")
-	builder.WriteString("fop=")
-	builder.WriteString(fmt.Sprintf("%v", pa.Fop))
+	builder.WriteString("base_amount=")
+	builder.WriteString(fmt.Sprintf("%v", pa.BaseAmount))
 	builder.WriteString(", ")
 	builder.WriteString("used_amount=")
 	builder.WriteString(fmt.Sprintf("%v", pa.UsedAmount))
 	builder.WriteString(", ")
+	builder.WriteString("type=")
+	builder.WriteString(fmt.Sprintf("%v", pa.Type))
+	builder.WriteString(", ")
+	builder.WriteString("fop=")
+	builder.WriteString(fmt.Sprintf("%v", pa.Fop))
+	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", pa.Status))
 	builder.WriteString(", ")
-	builder.WriteString("id_charts_of_accounts=")
-	builder.WriteString(fmt.Sprintf("%v", pa.IDChartsOfAccounts))
+	builder.WriteString("id_chart_of_accounts=")
+	builder.WriteString(fmt.Sprintf("%v", pa.IDChartOfAccounts))
 	builder.WriteString(", ")
 	builder.WriteString("id_currency=")
 	builder.WriteString(fmt.Sprintf("%v", pa.IDCurrency))
 	builder.WriteString(", ")
 	builder.WriteString("Tag=")
 	builder.WriteString(fmt.Sprintf("%v", pa.Tag))
-	builder.WriteString(", ")
-	builder.WriteString("id_payment_received=")
-	builder.WriteString(fmt.Sprintf("%v", pa.IDPaymentReceived))
 	builder.WriteByte(')')
 	return builder.String()
 }

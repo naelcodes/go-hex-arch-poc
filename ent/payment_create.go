@@ -61,16 +61,16 @@ func (pc *PaymentCreate) SetNillableAmount(f *float64) *PaymentCreate {
 	return pc
 }
 
-// SetFop sets the "fop" field.
-func (pc *PaymentCreate) SetFop(pa payment.Fop) *PaymentCreate {
-	pc.mutation.SetFop(pa)
+// SetBaseAmount sets the "base_amount" field.
+func (pc *PaymentCreate) SetBaseAmount(f float64) *PaymentCreate {
+	pc.mutation.SetBaseAmount(f)
 	return pc
 }
 
-// SetNillableFop sets the "fop" field if the given value is not nil.
-func (pc *PaymentCreate) SetNillableFop(pa *payment.Fop) *PaymentCreate {
-	if pa != nil {
-		pc.SetFop(*pa)
+// SetNillableBaseAmount sets the "base_amount" field if the given value is not nil.
+func (pc *PaymentCreate) SetNillableBaseAmount(f *float64) *PaymentCreate {
+	if f != nil {
+		pc.SetBaseAmount(*f)
 	}
 	return pc
 }
@@ -89,6 +89,34 @@ func (pc *PaymentCreate) SetNillableUsedAmount(f *float64) *PaymentCreate {
 	return pc
 }
 
+// SetType sets the "type" field.
+func (pc *PaymentCreate) SetType(pa payment.Type) *PaymentCreate {
+	pc.mutation.SetType(pa)
+	return pc
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (pc *PaymentCreate) SetNillableType(pa *payment.Type) *PaymentCreate {
+	if pa != nil {
+		pc.SetType(*pa)
+	}
+	return pc
+}
+
+// SetFop sets the "fop" field.
+func (pc *PaymentCreate) SetFop(pa payment.Fop) *PaymentCreate {
+	pc.mutation.SetFop(pa)
+	return pc
+}
+
+// SetNillableFop sets the "fop" field if the given value is not nil.
+func (pc *PaymentCreate) SetNillableFop(pa *payment.Fop) *PaymentCreate {
+	if pa != nil {
+		pc.SetFop(*pa)
+	}
+	return pc
+}
+
 // SetStatus sets the "status" field.
 func (pc *PaymentCreate) SetStatus(pa payment.Status) *PaymentCreate {
 	pc.mutation.SetStatus(pa)
@@ -103,16 +131,16 @@ func (pc *PaymentCreate) SetNillableStatus(pa *payment.Status) *PaymentCreate {
 	return pc
 }
 
-// SetIDChartsOfAccounts sets the "id_charts_of_accounts" field.
-func (pc *PaymentCreate) SetIDChartsOfAccounts(i int) *PaymentCreate {
-	pc.mutation.SetIDChartsOfAccounts(i)
+// SetIDChartOfAccounts sets the "id_chart_of_accounts" field.
+func (pc *PaymentCreate) SetIDChartOfAccounts(i int) *PaymentCreate {
+	pc.mutation.SetIDChartOfAccounts(i)
 	return pc
 }
 
-// SetNillableIDChartsOfAccounts sets the "id_charts_of_accounts" field if the given value is not nil.
-func (pc *PaymentCreate) SetNillableIDChartsOfAccounts(i *int) *PaymentCreate {
+// SetNillableIDChartOfAccounts sets the "id_chart_of_accounts" field if the given value is not nil.
+func (pc *PaymentCreate) SetNillableIDChartOfAccounts(i *int) *PaymentCreate {
 	if i != nil {
-		pc.SetIDChartsOfAccounts(*i)
+		pc.SetIDChartOfAccounts(*i)
 	}
 	return pc
 }
@@ -141,20 +169,6 @@ func (pc *PaymentCreate) SetTag(pa payment.Tag) *PaymentCreate {
 func (pc *PaymentCreate) SetNillableTag(pa *payment.Tag) *PaymentCreate {
 	if pa != nil {
 		pc.SetTag(*pa)
-	}
-	return pc
-}
-
-// SetIDPaymentReceived sets the "id_payment_received" field.
-func (pc *PaymentCreate) SetIDPaymentReceived(i int) *PaymentCreate {
-	pc.mutation.SetIDPaymentReceived(i)
-	return pc
-}
-
-// SetNillableIDPaymentReceived sets the "id_payment_received" field if the given value is not nil.
-func (pc *PaymentCreate) SetNillableIDPaymentReceived(i *int) *PaymentCreate {
-	if i != nil {
-		pc.SetIDPaymentReceived(*i)
 	}
 	return pc
 }
@@ -228,21 +242,29 @@ func (pc *PaymentCreate) defaults() {
 		v := payment.DefaultAmount
 		pc.mutation.SetAmount(v)
 	}
-	if _, ok := pc.mutation.Fop(); !ok {
-		v := payment.DefaultFop
-		pc.mutation.SetFop(v)
+	if _, ok := pc.mutation.BaseAmount(); !ok {
+		v := payment.DefaultBaseAmount
+		pc.mutation.SetBaseAmount(v)
 	}
 	if _, ok := pc.mutation.UsedAmount(); !ok {
 		v := payment.DefaultUsedAmount
 		pc.mutation.SetUsedAmount(v)
 	}
+	if _, ok := pc.mutation.GetType(); !ok {
+		v := payment.DefaultType
+		pc.mutation.SetType(v)
+	}
+	if _, ok := pc.mutation.Fop(); !ok {
+		v := payment.DefaultFop
+		pc.mutation.SetFop(v)
+	}
 	if _, ok := pc.mutation.Status(); !ok {
 		v := payment.DefaultStatus
 		pc.mutation.SetStatus(v)
 	}
-	if _, ok := pc.mutation.IDChartsOfAccounts(); !ok {
-		v := payment.DefaultIDChartsOfAccounts
-		pc.mutation.SetIDChartsOfAccounts(v)
+	if _, ok := pc.mutation.IDChartOfAccounts(); !ok {
+		v := payment.DefaultIDChartOfAccounts
+		pc.mutation.SetIDChartOfAccounts(v)
 	}
 	if _, ok := pc.mutation.IDCurrency(); !ok {
 		v := payment.DefaultIDCurrency
@@ -288,12 +310,12 @@ func (pc *PaymentCreate) check() error {
 			return &ValidationError{Name: "amount", err: fmt.Errorf(`ent: validator failed for field "Payment.amount": %w`, err)}
 		}
 	}
-	if _, ok := pc.mutation.Fop(); !ok {
-		return &ValidationError{Name: "fop", err: errors.New(`ent: missing required field "Payment.fop"`)}
+	if _, ok := pc.mutation.BaseAmount(); !ok {
+		return &ValidationError{Name: "base_amount", err: errors.New(`ent: missing required field "Payment.base_amount"`)}
 	}
-	if v, ok := pc.mutation.Fop(); ok {
-		if err := payment.FopValidator(v); err != nil {
-			return &ValidationError{Name: "fop", err: fmt.Errorf(`ent: validator failed for field "Payment.fop": %w`, err)}
+	if v, ok := pc.mutation.BaseAmount(); ok {
+		if err := payment.BaseAmountValidator(v); err != nil {
+			return &ValidationError{Name: "base_amount", err: fmt.Errorf(`ent: validator failed for field "Payment.base_amount": %w`, err)}
 		}
 	}
 	if _, ok := pc.mutation.UsedAmount(); !ok {
@@ -304,6 +326,22 @@ func (pc *PaymentCreate) check() error {
 			return &ValidationError{Name: "used_amount", err: fmt.Errorf(`ent: validator failed for field "Payment.used_amount": %w`, err)}
 		}
 	}
+	if _, ok := pc.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Payment.type"`)}
+	}
+	if v, ok := pc.mutation.GetType(); ok {
+		if err := payment.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Payment.type": %w`, err)}
+		}
+	}
+	if _, ok := pc.mutation.Fop(); !ok {
+		return &ValidationError{Name: "fop", err: errors.New(`ent: missing required field "Payment.fop"`)}
+	}
+	if v, ok := pc.mutation.Fop(); ok {
+		if err := payment.FopValidator(v); err != nil {
+			return &ValidationError{Name: "fop", err: fmt.Errorf(`ent: validator failed for field "Payment.fop": %w`, err)}
+		}
+	}
 	if _, ok := pc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Payment.status"`)}
 	}
@@ -312,8 +350,8 @@ func (pc *PaymentCreate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Payment.status": %w`, err)}
 		}
 	}
-	if _, ok := pc.mutation.IDChartsOfAccounts(); !ok {
-		return &ValidationError{Name: "id_charts_of_accounts", err: errors.New(`ent: missing required field "Payment.id_charts_of_accounts"`)}
+	if _, ok := pc.mutation.IDChartOfAccounts(); !ok {
+		return &ValidationError{Name: "id_chart_of_accounts", err: errors.New(`ent: missing required field "Payment.id_chart_of_accounts"`)}
 	}
 	if _, ok := pc.mutation.IDCurrency(); !ok {
 		return &ValidationError{Name: "id_currency", err: errors.New(`ent: missing required field "Payment.id_currency"`)}
@@ -336,7 +374,10 @@ func (pc *PaymentCreate) sqlSave(ctx context.Context) (*Payment, error) {
 	if err := pc.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := pc.createSpec()
+	_node, _spec, err := pc.createSpec()
+	if err != nil {
+		return nil, err
+	}
 	if err := sqlgraph.CreateNode(ctx, pc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
@@ -350,7 +391,7 @@ func (pc *PaymentCreate) sqlSave(ctx context.Context) (*Payment, error) {
 	return _node, nil
 }
 
-func (pc *PaymentCreate) createSpec() (*Payment, *sqlgraph.CreateSpec) {
+func (pc *PaymentCreate) createSpec() (*Payment, *sqlgraph.CreateSpec, error) {
 	var (
 		_node = &Payment{config: pc.config}
 		_spec = sqlgraph.NewCreateSpec(payment.Table, sqlgraph.NewFieldSpec(payment.FieldID, field.TypeInt))
@@ -364,28 +405,52 @@ func (pc *PaymentCreate) createSpec() (*Payment, *sqlgraph.CreateSpec) {
 		_node.Date = value
 	}
 	if value, ok := pc.mutation.Balance(); ok {
-		_spec.SetField(payment.FieldBalance, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(payment.FieldBalance, field.TypeFloat64, vv)
 		_node.Balance = value
 	}
 	if value, ok := pc.mutation.Amount(); ok {
-		_spec.SetField(payment.FieldAmount, field.TypeFloat64, value)
+		vv, err := payment.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(payment.FieldAmount, field.TypeFloat64, vv)
 		_node.Amount = value
+	}
+	if value, ok := pc.mutation.BaseAmount(); ok {
+		vv, err := payment.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(payment.FieldBaseAmount, field.TypeFloat64, vv)
+		_node.BaseAmount = value
+	}
+	if value, ok := pc.mutation.UsedAmount(); ok {
+		vv, err := payment.ValueScanner.UsedAmount.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(payment.FieldUsedAmount, field.TypeFloat64, vv)
+		_node.UsedAmount = value
+	}
+	if value, ok := pc.mutation.GetType(); ok {
+		_spec.SetField(payment.FieldType, field.TypeEnum, value)
+		_node.Type = value
 	}
 	if value, ok := pc.mutation.Fop(); ok {
 		_spec.SetField(payment.FieldFop, field.TypeEnum, value)
 		_node.Fop = value
 	}
-	if value, ok := pc.mutation.UsedAmount(); ok {
-		_spec.SetField(payment.FieldUsedAmount, field.TypeFloat64, value)
-		_node.UsedAmount = value
-	}
 	if value, ok := pc.mutation.Status(); ok {
 		_spec.SetField(payment.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
-	if value, ok := pc.mutation.IDChartsOfAccounts(); ok {
-		_spec.SetField(payment.FieldIDChartsOfAccounts, field.TypeInt, value)
-		_node.IDChartsOfAccounts = value
+	if value, ok := pc.mutation.IDChartOfAccounts(); ok {
+		_spec.SetField(payment.FieldIDChartOfAccounts, field.TypeInt, value)
+		_node.IDChartOfAccounts = value
 	}
 	if value, ok := pc.mutation.IDCurrency(); ok {
 		_spec.SetField(payment.FieldIDCurrency, field.TypeInt, value)
@@ -394,10 +459,6 @@ func (pc *PaymentCreate) createSpec() (*Payment, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Tag(); ok {
 		_spec.SetField(payment.FieldTag, field.TypeEnum, value)
 		_node.Tag = value
-	}
-	if value, ok := pc.mutation.IDPaymentReceived(); ok {
-		_spec.SetField(payment.FieldIDPaymentReceived, field.TypeInt, value)
-		_node.IDPaymentReceived = value
 	}
 	if nodes := pc.mutation.CustomerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -432,7 +493,7 @@ func (pc *PaymentCreate) createSpec() (*Payment, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return _node, _spec
+	return _node, _spec, nil
 }
 
 // PaymentCreateBulk is the builder for creating many Payment entities in bulk.
@@ -464,7 +525,10 @@ func (pcb *PaymentCreateBulk) Save(ctx context.Context) ([]*Payment, error) {
 				}
 				builder.mutation = mutation
 				var err error
-				nodes[i], specs[i] = builder.createSpec()
+				nodes[i], specs[i], err = builder.createSpec()
+				if err != nil {
+					return nil, err
+				}
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, pcb.builders[i+1].mutation)
 				} else {

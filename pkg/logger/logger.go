@@ -23,20 +23,20 @@ func NewLogger() *Logger {
 
 // Info logs an informational message.
 func (l *Logger) Info(message string) {
-	l.logger.Info().Msg(message)
+	l.logger.Info().Msg(message + "\n")
 }
 
 // Error logs an error message.
 func (l *Logger) Error(message string) {
-	l.logger.Error().Msg(message)
+	l.logger.Error().Msg(message + "\n")
 }
 
 // Debug logs a debug message.
 func (l *Logger) Debug(message string) {
-	l.logger.Debug().Msg(message)
+	l.logger.Debug().Msg(message + "\n")
 }
 
 // Panic logs a panic message and panics.
 func (l *Logger) Panic(message string) {
-	l.logger.Panic().Msg(message)
+	l.logger.Panic().Msg(message + "\n")
 }

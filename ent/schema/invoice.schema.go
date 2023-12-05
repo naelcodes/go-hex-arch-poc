@@ -26,15 +26,21 @@ func (Invoice) Fields() []ent.Field {
 		field.String("due_date").SchemaType(map[string]string{
 			dialect.Postgres: "date",
 		}),
-		field.Float("amount").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
-		field.Float("balance").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
-		field.Float("credit_apply").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
+		field.Float("amount").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
+		field.Float("balance").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
+		field.Float("credit_apply").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
 		field.Enum("tag").Values("1", "2", "3").Default("3"),
 	}
 }

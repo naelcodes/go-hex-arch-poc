@@ -70,17 +70,20 @@ func DueDate(v string) predicate.Invoice {
 
 // Amount applies equality check predicate on the "amount" field. It's identical to AmountEQ.
 func Amount(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldEQ(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldEQ(FieldAmount, vc), err)
 }
 
 // Balance applies equality check predicate on the "balance" field. It's identical to BalanceEQ.
 func Balance(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldEQ(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldEQ(FieldBalance, vc), err)
 }
 
 // CreditApply applies equality check predicate on the "credit_apply" field. It's identical to CreditApplyEQ.
 func CreditApply(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldEQ(FieldCreditApply, v))
+	vc, err := ValueScanner.CreditApply.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldEQ(FieldCreditApply, vc), err)
 }
 
 // CreationDateEQ applies the EQ predicate on the "creation_date" field.
@@ -300,122 +303,194 @@ func DueDateContainsFold(v string) predicate.Invoice {
 
 // AmountEQ applies the EQ predicate on the "amount" field.
 func AmountEQ(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldEQ(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldEQ(FieldAmount, vc), err)
 }
 
 // AmountNEQ applies the NEQ predicate on the "amount" field.
 func AmountNEQ(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldNEQ(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldNEQ(FieldAmount, vc), err)
 }
 
 // AmountIn applies the In predicate on the "amount" field.
 func AmountIn(vs ...float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldIn(FieldAmount, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.Amount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.InvoiceOrErr(sql.FieldIn(FieldAmount, v...), err)
 }
 
 // AmountNotIn applies the NotIn predicate on the "amount" field.
 func AmountNotIn(vs ...float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldNotIn(FieldAmount, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.Amount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.InvoiceOrErr(sql.FieldNotIn(FieldAmount, v...), err)
 }
 
 // AmountGT applies the GT predicate on the "amount" field.
 func AmountGT(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldGT(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldGT(FieldAmount, vc), err)
 }
 
 // AmountGTE applies the GTE predicate on the "amount" field.
 func AmountGTE(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldGTE(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldGTE(FieldAmount, vc), err)
 }
 
 // AmountLT applies the LT predicate on the "amount" field.
 func AmountLT(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldLT(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldLT(FieldAmount, vc), err)
 }
 
 // AmountLTE applies the LTE predicate on the "amount" field.
 func AmountLTE(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldLTE(FieldAmount, v))
+	vc, err := ValueScanner.Amount.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldLTE(FieldAmount, vc), err)
 }
 
 // BalanceEQ applies the EQ predicate on the "balance" field.
 func BalanceEQ(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldEQ(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldEQ(FieldBalance, vc), err)
 }
 
 // BalanceNEQ applies the NEQ predicate on the "balance" field.
 func BalanceNEQ(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldNEQ(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldNEQ(FieldBalance, vc), err)
 }
 
 // BalanceIn applies the In predicate on the "balance" field.
 func BalanceIn(vs ...float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldIn(FieldBalance, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.Balance.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.InvoiceOrErr(sql.FieldIn(FieldBalance, v...), err)
 }
 
 // BalanceNotIn applies the NotIn predicate on the "balance" field.
 func BalanceNotIn(vs ...float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldNotIn(FieldBalance, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.Balance.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.InvoiceOrErr(sql.FieldNotIn(FieldBalance, v...), err)
 }
 
 // BalanceGT applies the GT predicate on the "balance" field.
 func BalanceGT(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldGT(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldGT(FieldBalance, vc), err)
 }
 
 // BalanceGTE applies the GTE predicate on the "balance" field.
 func BalanceGTE(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldGTE(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldGTE(FieldBalance, vc), err)
 }
 
 // BalanceLT applies the LT predicate on the "balance" field.
 func BalanceLT(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldLT(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldLT(FieldBalance, vc), err)
 }
 
 // BalanceLTE applies the LTE predicate on the "balance" field.
 func BalanceLTE(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldLTE(FieldBalance, v))
+	vc, err := ValueScanner.Balance.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldLTE(FieldBalance, vc), err)
 }
 
 // CreditApplyEQ applies the EQ predicate on the "credit_apply" field.
 func CreditApplyEQ(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldEQ(FieldCreditApply, v))
+	vc, err := ValueScanner.CreditApply.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldEQ(FieldCreditApply, vc), err)
 }
 
 // CreditApplyNEQ applies the NEQ predicate on the "credit_apply" field.
 func CreditApplyNEQ(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldNEQ(FieldCreditApply, v))
+	vc, err := ValueScanner.CreditApply.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldNEQ(FieldCreditApply, vc), err)
 }
 
 // CreditApplyIn applies the In predicate on the "credit_apply" field.
 func CreditApplyIn(vs ...float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldIn(FieldCreditApply, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.CreditApply.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.InvoiceOrErr(sql.FieldIn(FieldCreditApply, v...), err)
 }
 
 // CreditApplyNotIn applies the NotIn predicate on the "credit_apply" field.
 func CreditApplyNotIn(vs ...float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldNotIn(FieldCreditApply, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.CreditApply.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.InvoiceOrErr(sql.FieldNotIn(FieldCreditApply, v...), err)
 }
 
 // CreditApplyGT applies the GT predicate on the "credit_apply" field.
 func CreditApplyGT(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldGT(FieldCreditApply, v))
+	vc, err := ValueScanner.CreditApply.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldGT(FieldCreditApply, vc), err)
 }
 
 // CreditApplyGTE applies the GTE predicate on the "credit_apply" field.
 func CreditApplyGTE(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldGTE(FieldCreditApply, v))
+	vc, err := ValueScanner.CreditApply.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldGTE(FieldCreditApply, vc), err)
 }
 
 // CreditApplyLT applies the LT predicate on the "credit_apply" field.
 func CreditApplyLT(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldLT(FieldCreditApply, v))
+	vc, err := ValueScanner.CreditApply.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldLT(FieldCreditApply, vc), err)
 }
 
 // CreditApplyLTE applies the LTE predicate on the "credit_apply" field.
 func CreditApplyLTE(v float64) predicate.Invoice {
-	return predicate.Invoice(sql.FieldLTE(FieldCreditApply, v))
+	vc, err := ValueScanner.CreditApply.Value(v)
+	return predicate.InvoiceOrErr(sql.FieldLTE(FieldCreditApply, vc), err)
 }
 
 // TagEQ applies the EQ predicate on the "tag" field.

@@ -15,6 +15,14 @@ type CustomerDomainService struct {
 	PaymentRepository  paymentDomain.IPaymentRepository
 }
 
+func NewCustomerDomainService(customerRepository ICustomerRepository, invoiceRepository invoiceDomain.IInvoiceRepository, paymentRepository paymentDomain.IPaymentRepository) *CustomerDomainService {
+	return &CustomerDomainService{
+		CustomerRepository: customerRepository,
+		InvoiceRepository:  invoiceRepository,
+		PaymentRepository:  paymentRepository,
+	}
+}
+
 func (service *CustomerDomainService) RemoveCustomer(IdCustomer types.EID) error {
 
 	customerInvoiceCount, err := service.InvoiceRepository.CountByCustomerId(types.EID(IdCustomer))
@@ -23,7 +31,7 @@ func (service *CustomerDomainService) RemoveCustomer(IdCustomer types.EID) error
 		return CustomErrors.RepositoryError(err)
 	}
 
-	if customerInvoiceCount > 0 {
+	if *customerInvoiceCount > 0 {
 		return CustomErrors.DomainError(errors.New("cannot remove customer  with invoices"))
 	}
 
@@ -33,7 +41,7 @@ func (service *CustomerDomainService) RemoveCustomer(IdCustomer types.EID) error
 		return CustomErrors.RepositoryError(err)
 	}
 
-	if customerPaymentCount > 0 {
+	if *customerPaymentCount > 0 {
 		return CustomErrors.DomainError(errors.New("cannot remove customer  with payments"))
 	}
 

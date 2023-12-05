@@ -22,27 +22,27 @@ type PaymentDetails struct {
 	Balance       float64 `json:"balance"`
 }
 
-type CreateOrUpdateImputationDetails struct {
+type ImputationDetails struct {
 	IdPayment     int     `json:"idPayment"`
 	AmountApplied float64 `json:"amountApplied"`
 }
 
-func (c CreateOrUpdateImputationDetails) Validate() error {
-	return validation.ValidateStruct(&c,
-		validation.Field(&c.IdPayment, validation.Required),
-		validation.Field(&c.AmountApplied, validation.Required),
+func (i ImputationDetails) Validate() error {
+	return validation.ValidateStruct(&i,
+		validation.Field(&i.IdPayment, validation.Required),
+		validation.Field(&i.AmountApplied, validation.Required),
 	)
 }
 
-type CreateOrUpdateInvoiceImputationDTO struct {
-	IdInvoice   int                               `json:"idInvoice"`
-	Imputations []CreateOrUpdateImputationDetails `json:"imputations"`
+type InvoiceImputationsDTO struct {
+	IdInvoice   int                 `json:"idInvoice"`
+	Imputations []ImputationDetails `json:"imputations"`
 }
 
-func (c CreateOrUpdateInvoiceImputationDTO) Validate() error {
-	return validation.ValidateStruct(&c,
-		validation.Field(&c.IdInvoice, validation.Required),
-		validation.Field(&c.Imputations, validation.Required),
+func (i InvoiceImputationsDTO) Validate() error {
+	return validation.ValidateStruct(&i,
+		validation.Field(&i.IdInvoice, validation.Required),
+		validation.Field(&i.Imputations, validation.Required),
 	)
 }
 

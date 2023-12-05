@@ -18,13 +18,17 @@ func (TravelItem) Fields() []ent.Field {
 
 	return []ent.Field{
 
-		field.Float("total_price").SchemaType(map[string]string{
-			dialect.Postgres: "money",
-		}).Positive().Default(0),
+		field.Float("total_price").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}),
 		field.String("itinerary"),
 		field.String("traveler_name"),
 		field.String("ticket_number"),
 		field.Int("conjunction_number"),
+		field.String("transaction_type"),
+		field.String("product_type"),
 		field.Enum("status").Values("pending", "invoiced", "void", "receipted").Default("pending"),
 	}
 }

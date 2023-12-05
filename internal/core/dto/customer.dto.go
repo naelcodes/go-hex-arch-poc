@@ -53,11 +53,11 @@ type GetCustomerDTO struct {
 
 type CustomerPayments struct {
 	IdCustomer int
-	Payments   []GetPaymentDTO
+	Payments   []*GetPaymentDTO
 }
 type CustomerInvoice struct {
 	IdCustomer int
-	Invoices   []GetInvoiceDTO
+	Invoices   []*GetInvoiceDTO
 }
 type GetAllCustomersDTO types.GetAllDTO[[]*GetCustomerDTO]
 type GetCustomerPaymentsDTO types.GetAllDTO[*CustomerPayments]

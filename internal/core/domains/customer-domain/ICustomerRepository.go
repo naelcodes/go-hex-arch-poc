@@ -9,7 +9,7 @@ type ICustomerRepository interface {
 	Count() (*int, error)
 	GetAll(*types.GetQueryParams) ([]*dto.GetCustomerDTO, error)
 	GetById(types.EID) (*dto.GetCustomerDTO, error)
-	Save(*CustomerAggregate) (*dto.GetCustomerDTO, error)
-	Update(*CustomerAggregate) error
+	Save(*Customer) (*dto.GetCustomerDTO, error)
+	Update(*Customer) error
 	Delete(types.EID) error
 }

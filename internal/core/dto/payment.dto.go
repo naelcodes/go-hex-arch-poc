@@ -29,7 +29,7 @@ type CreatePaymentDTO struct {
 func (c CreatePaymentDTO) Validate() error {
 	return validation.ValidateStruct(&c,
 		validation.Field(&c.IdCustomer, validation.Required),
-		validation.Field(&c.Amount, validation.Required, validation.Min(0)),
+		validation.Field(&c.Amount, validation.Required),
 		validation.Field(&c.PaymentMode, validation.Required, validation.In("cash", "check", "bank_transfer")),
 	)
 }

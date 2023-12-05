@@ -26,14 +26,6 @@ func (tic *TravelItemCreate) SetTotalPrice(f float64) *TravelItemCreate {
 	return tic
 }
 
-// SetNillableTotalPrice sets the "total_price" field if the given value is not nil.
-func (tic *TravelItemCreate) SetNillableTotalPrice(f *float64) *TravelItemCreate {
-	if f != nil {
-		tic.SetTotalPrice(*f)
-	}
-	return tic
-}
-
 // SetItinerary sets the "itinerary" field.
 func (tic *TravelItemCreate) SetItinerary(s string) *TravelItemCreate {
 	tic.mutation.SetItinerary(s)
@@ -55,6 +47,18 @@ func (tic *TravelItemCreate) SetTicketNumber(s string) *TravelItemCreate {
 // SetConjunctionNumber sets the "conjunction_number" field.
 func (tic *TravelItemCreate) SetConjunctionNumber(i int) *TravelItemCreate {
 	tic.mutation.SetConjunctionNumber(i)
+	return tic
+}
+
+// SetTransactionType sets the "transaction_type" field.
+func (tic *TravelItemCreate) SetTransactionType(s string) *TravelItemCreate {
+	tic.mutation.SetTransactionType(s)
+	return tic
+}
+
+// SetProductType sets the "product_type" field.
+func (tic *TravelItemCreate) SetProductType(s string) *TravelItemCreate {
+	tic.mutation.SetProductType(s)
 	return tic
 }
 
@@ -118,10 +122,6 @@ func (tic *TravelItemCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (tic *TravelItemCreate) defaults() {
-	if _, ok := tic.mutation.TotalPrice(); !ok {
-		v := travelitem.DefaultTotalPrice
-		tic.mutation.SetTotalPrice(v)
-	}
 	if _, ok := tic.mutation.Status(); !ok {
 		v := travelitem.DefaultStatus
 		tic.mutation.SetStatus(v)
@@ -132,11 +132,6 @@ func (tic *TravelItemCreate) defaults() {
 func (tic *TravelItemCreate) check() error {
 	if _, ok := tic.mutation.TotalPrice(); !ok {
 		return &ValidationError{Name: "total_price", err: errors.New(`ent: missing required field "TravelItem.total_price"`)}
-	}
-	if v, ok := tic.mutation.TotalPrice(); ok {
-		if err := travelitem.TotalPriceValidator(v); err != nil {
-			return &ValidationError{Name: "total_price", err: fmt.Errorf(`ent: validator failed for field "TravelItem.total_price": %w`, err)}
-		}
 	}
 	if _, ok := tic.mutation.Itinerary(); !ok {
 		return &ValidationError{Name: "itinerary", err: errors.New(`ent: missing required field "TravelItem.itinerary"`)}
@@ -149,6 +144,12 @@ func (tic *TravelItemCreate) check() error {
 	}
 	if _, ok := tic.mutation.ConjunctionNumber(); !ok {
 		return &ValidationError{Name: "conjunction_number", err: errors.New(`ent: missing required field "TravelItem.conjunction_number"`)}
+	}
+	if _, ok := tic.mutation.TransactionType(); !ok {
+		return &ValidationError{Name: "transaction_type", err: errors.New(`ent: missing required field "TravelItem.transaction_type"`)}
+	}
+	if _, ok := tic.mutation.ProductType(); !ok {
+		return &ValidationError{Name: "product_type", err: errors.New(`ent: missing required field "TravelItem.product_type"`)}
 	}
 	if _, ok := tic.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "TravelItem.status"`)}
@@ -168,7 +169,10 @@ func (tic *TravelItemCreate) sqlSave(ctx context.Context) (*TravelItem, error) {
 	if err := tic.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := tic.createSpec()
+	_node, _spec, err := tic.createSpec()
+	if err != nil {
+		return nil, err
+	}
 	if err := sqlgraph.CreateNode(ctx, tic.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
@@ -182,13 +186,17 @@ func (tic *TravelItemCreate) sqlSave(ctx context.Context) (*TravelItem, error) {
 	return _node, nil
 }
 
-func (tic *TravelItemCreate) createSpec() (*TravelItem, *sqlgraph.CreateSpec) {
+func (tic *TravelItemCreate) createSpec() (*TravelItem, *sqlgraph.CreateSpec, error) {
 	var (
 		_node = &TravelItem{config: tic.config}
 		_spec = sqlgraph.NewCreateSpec(travelitem.Table, sqlgraph.NewFieldSpec(travelitem.FieldID, field.TypeInt))
 	)
 	if value, ok := tic.mutation.TotalPrice(); ok {
-		_spec.SetField(travelitem.FieldTotalPrice, field.TypeFloat64, value)
+		vv, err := travelitem.ValueScanner.TotalPrice.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(travelitem.FieldTotalPrice, field.TypeFloat64, vv)
 		_node.TotalPrice = value
 	}
 	if value, ok := tic.mutation.Itinerary(); ok {
@@ -206,6 +214,14 @@ func (tic *TravelItemCreate) createSpec() (*TravelItem, *sqlgraph.CreateSpec) {
 	if value, ok := tic.mutation.ConjunctionNumber(); ok {
 		_spec.SetField(travelitem.FieldConjunctionNumber, field.TypeInt, value)
 		_node.ConjunctionNumber = value
+	}
+	if value, ok := tic.mutation.TransactionType(); ok {
+		_spec.SetField(travelitem.FieldTransactionType, field.TypeString, value)
+		_node.TransactionType = value
+	}
+	if value, ok := tic.mutation.ProductType(); ok {
+		_spec.SetField(travelitem.FieldProductType, field.TypeString, value)
+		_node.ProductType = value
 	}
 	if value, ok := tic.mutation.Status(); ok {
 		_spec.SetField(travelitem.FieldStatus, field.TypeEnum, value)
@@ -228,7 +244,7 @@ func (tic *TravelItemCreate) createSpec() (*TravelItem, *sqlgraph.CreateSpec) {
 		_node.id_invoice = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return _node, _spec
+	return _node, _spec, nil
 }
 
 // TravelItemCreateBulk is the builder for creating many TravelItem entities in bulk.
@@ -260,7 +276,10 @@ func (ticb *TravelItemCreateBulk) Save(ctx context.Context) ([]*TravelItem, erro
 				}
 				builder.mutation = mutation
 				var err error
-				nodes[i], specs[i] = builder.createSpec()
+				nodes[i], specs[i], err = builder.createSpec()
+				if err != nil {
+					return nil, err
+				}
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, ticb.builders[i+1].mutation)
 				} else {

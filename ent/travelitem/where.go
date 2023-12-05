@@ -55,7 +55,8 @@ func IDLTE(id int) predicate.TravelItem {
 
 // TotalPrice applies equality check predicate on the "total_price" field. It's identical to TotalPriceEQ.
 func TotalPrice(v float64) predicate.TravelItem {
-	return predicate.TravelItem(sql.FieldEQ(FieldTotalPrice, v))
+	vc, err := ValueScanner.TotalPrice.Value(v)
+	return predicate.TravelItemOrErr(sql.FieldEQ(FieldTotalPrice, vc), err)
 }
 
 // Itinerary applies equality check predicate on the "itinerary" field. It's identical to ItineraryEQ.
@@ -78,44 +79,78 @@ func ConjunctionNumber(v int) predicate.TravelItem {
 	return predicate.TravelItem(sql.FieldEQ(FieldConjunctionNumber, v))
 }
 
+// TransactionType applies equality check predicate on the "transaction_type" field. It's identical to TransactionTypeEQ.
+func TransactionType(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldEQ(FieldTransactionType, v))
+}
+
+// ProductType applies equality check predicate on the "product_type" field. It's identical to ProductTypeEQ.
+func ProductType(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldEQ(FieldProductType, v))
+}
+
 // TotalPriceEQ applies the EQ predicate on the "total_price" field.
 func TotalPriceEQ(v float64) predicate.TravelItem {
-	return predicate.TravelItem(sql.FieldEQ(FieldTotalPrice, v))
+	vc, err := ValueScanner.TotalPrice.Value(v)
+	return predicate.TravelItemOrErr(sql.FieldEQ(FieldTotalPrice, vc), err)
 }
 
 // TotalPriceNEQ applies the NEQ predicate on the "total_price" field.
 func TotalPriceNEQ(v float64) predicate.TravelItem {
-	return predicate.TravelItem(sql.FieldNEQ(FieldTotalPrice, v))
+	vc, err := ValueScanner.TotalPrice.Value(v)
+	return predicate.TravelItemOrErr(sql.FieldNEQ(FieldTotalPrice, vc), err)
 }
 
 // TotalPriceIn applies the In predicate on the "total_price" field.
 func TotalPriceIn(vs ...float64) predicate.TravelItem {
-	return predicate.TravelItem(sql.FieldIn(FieldTotalPrice, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.TotalPrice.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.TravelItemOrErr(sql.FieldIn(FieldTotalPrice, v...), err)
 }
 
 // TotalPriceNotIn applies the NotIn predicate on the "total_price" field.
 func TotalPriceNotIn(vs ...float64) predicate.TravelItem {
-	return predicate.TravelItem(sql.FieldNotIn(FieldTotalPrice, vs...))
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.TotalPrice.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.TravelItemOrErr(sql.FieldNotIn(FieldTotalPrice, v...), err)
 }
 
 // TotalPriceGT applies the GT predicate on the "total_price" field.
 func TotalPriceGT(v float64) predicate.TravelItem {
-	return predicate.TravelItem(sql.FieldGT(FieldTotalPrice, v))
+	vc, err := ValueScanner.TotalPrice.Value(v)
+	return predicate.TravelItemOrErr(sql.FieldGT(FieldTotalPrice, vc), err)
 }
 
 // TotalPriceGTE applies the GTE predicate on the "total_price" field.
 func TotalPriceGTE(v float64) predicate.TravelItem {
-	return predicate.TravelItem(sql.FieldGTE(FieldTotalPrice, v))
+	vc, err := ValueScanner.TotalPrice.Value(v)
+	return predicate.TravelItemOrErr(sql.FieldGTE(FieldTotalPrice, vc), err)
 }
 
 // TotalPriceLT applies the LT predicate on the "total_price" field.
 func TotalPriceLT(v float64) predicate.TravelItem {
-	return predicate.TravelItem(sql.FieldLT(FieldTotalPrice, v))
+	vc, err := ValueScanner.TotalPrice.Value(v)
+	return predicate.TravelItemOrErr(sql.FieldLT(FieldTotalPrice, vc), err)
 }
 
 // TotalPriceLTE applies the LTE predicate on the "total_price" field.
 func TotalPriceLTE(v float64) predicate.TravelItem {
-	return predicate.TravelItem(sql.FieldLTE(FieldTotalPrice, v))
+	vc, err := ValueScanner.TotalPrice.Value(v)
+	return predicate.TravelItemOrErr(sql.FieldLTE(FieldTotalPrice, vc), err)
 }
 
 // ItineraryEQ applies the EQ predicate on the "itinerary" field.
@@ -351,6 +386,136 @@ func ConjunctionNumberLT(v int) predicate.TravelItem {
 // ConjunctionNumberLTE applies the LTE predicate on the "conjunction_number" field.
 func ConjunctionNumberLTE(v int) predicate.TravelItem {
 	return predicate.TravelItem(sql.FieldLTE(FieldConjunctionNumber, v))
+}
+
+// TransactionTypeEQ applies the EQ predicate on the "transaction_type" field.
+func TransactionTypeEQ(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldEQ(FieldTransactionType, v))
+}
+
+// TransactionTypeNEQ applies the NEQ predicate on the "transaction_type" field.
+func TransactionTypeNEQ(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldNEQ(FieldTransactionType, v))
+}
+
+// TransactionTypeIn applies the In predicate on the "transaction_type" field.
+func TransactionTypeIn(vs ...string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldIn(FieldTransactionType, vs...))
+}
+
+// TransactionTypeNotIn applies the NotIn predicate on the "transaction_type" field.
+func TransactionTypeNotIn(vs ...string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldNotIn(FieldTransactionType, vs...))
+}
+
+// TransactionTypeGT applies the GT predicate on the "transaction_type" field.
+func TransactionTypeGT(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldGT(FieldTransactionType, v))
+}
+
+// TransactionTypeGTE applies the GTE predicate on the "transaction_type" field.
+func TransactionTypeGTE(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldGTE(FieldTransactionType, v))
+}
+
+// TransactionTypeLT applies the LT predicate on the "transaction_type" field.
+func TransactionTypeLT(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldLT(FieldTransactionType, v))
+}
+
+// TransactionTypeLTE applies the LTE predicate on the "transaction_type" field.
+func TransactionTypeLTE(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldLTE(FieldTransactionType, v))
+}
+
+// TransactionTypeContains applies the Contains predicate on the "transaction_type" field.
+func TransactionTypeContains(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldContains(FieldTransactionType, v))
+}
+
+// TransactionTypeHasPrefix applies the HasPrefix predicate on the "transaction_type" field.
+func TransactionTypeHasPrefix(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldHasPrefix(FieldTransactionType, v))
+}
+
+// TransactionTypeHasSuffix applies the HasSuffix predicate on the "transaction_type" field.
+func TransactionTypeHasSuffix(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldHasSuffix(FieldTransactionType, v))
+}
+
+// TransactionTypeEqualFold applies the EqualFold predicate on the "transaction_type" field.
+func TransactionTypeEqualFold(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldEqualFold(FieldTransactionType, v))
+}
+
+// TransactionTypeContainsFold applies the ContainsFold predicate on the "transaction_type" field.
+func TransactionTypeContainsFold(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldContainsFold(FieldTransactionType, v))
+}
+
+// ProductTypeEQ applies the EQ predicate on the "product_type" field.
+func ProductTypeEQ(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldEQ(FieldProductType, v))
+}
+
+// ProductTypeNEQ applies the NEQ predicate on the "product_type" field.
+func ProductTypeNEQ(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldNEQ(FieldProductType, v))
+}
+
+// ProductTypeIn applies the In predicate on the "product_type" field.
+func ProductTypeIn(vs ...string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldIn(FieldProductType, vs...))
+}
+
+// ProductTypeNotIn applies the NotIn predicate on the "product_type" field.
+func ProductTypeNotIn(vs ...string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldNotIn(FieldProductType, vs...))
+}
+
+// ProductTypeGT applies the GT predicate on the "product_type" field.
+func ProductTypeGT(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldGT(FieldProductType, v))
+}
+
+// ProductTypeGTE applies the GTE predicate on the "product_type" field.
+func ProductTypeGTE(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldGTE(FieldProductType, v))
+}
+
+// ProductTypeLT applies the LT predicate on the "product_type" field.
+func ProductTypeLT(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldLT(FieldProductType, v))
+}
+
+// ProductTypeLTE applies the LTE predicate on the "product_type" field.
+func ProductTypeLTE(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldLTE(FieldProductType, v))
+}
+
+// ProductTypeContains applies the Contains predicate on the "product_type" field.
+func ProductTypeContains(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldContains(FieldProductType, v))
+}
+
+// ProductTypeHasPrefix applies the HasPrefix predicate on the "product_type" field.
+func ProductTypeHasPrefix(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldHasPrefix(FieldProductType, v))
+}
+
+// ProductTypeHasSuffix applies the HasSuffix predicate on the "product_type" field.
+func ProductTypeHasSuffix(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldHasSuffix(FieldProductType, v))
+}
+
+// ProductTypeEqualFold applies the EqualFold predicate on the "product_type" field.
+func ProductTypeEqualFold(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldEqualFold(FieldProductType, v))
+}
+
+// ProductTypeContainsFold applies the ContainsFold predicate on the "product_type" field.
+func ProductTypeContainsFold(v string) predicate.TravelItem {
+	return predicate.TravelItem(sql.FieldContainsFold(FieldProductType, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

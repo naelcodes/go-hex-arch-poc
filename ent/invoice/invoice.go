@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 )
 
 const (
@@ -112,6 +113,12 @@ var (
 	DefaultCreditApply float64
 	// CreditApplyValidator is a validator for the "credit_apply" field. It is called by the builders before save.
 	CreditApplyValidator func(float64) error
+	// ValueScanner of all Invoice fields.
+	ValueScanner struct {
+		Amount      field.TypeValueScanner[float64]
+		Balance     field.TypeValueScanner[float64]
+		CreditApply field.TypeValueScanner[float64]
+	}
 )
 
 // Status defines the type for the "status" enum field.

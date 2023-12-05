@@ -70,7 +70,7 @@ func NewServerError(err error) *CustomError {
 }
 
 type GlobalErrorResponse struct {
-	Success   bool   `json:"success,omitempty"`
+	Success   bool   `json:"success"`
 	ErrorType string `json:"errorType,omitempty"`
 	Error     string `json:"error,omitempty"`
 	Operation string `json:"operation,omitempty"`

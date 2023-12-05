@@ -55,8 +55,12 @@ func QueryValidator() fiber.Handler {
 			}
 
 			if queryParams.PageSize != nil && queryParams.PageNumber != nil {
-				if *queryParams.PageSize <= 0 || *queryParams.PageNumber <= 0 {
-					return CustomErr.ValidationError(errors.New("page number and page size should be greater than 0"))
+				if *queryParams.PageSize <= 0 {
+					return CustomErr.ValidationError(errors.New("page size should be greater than 0"))
+				}
+
+				if *queryParams.PageNumber < 0 {
+					return CustomErr.ValidationError(errors.New("page number should be greater than or equal to 0"))
 				}
 			}
 		}

@@ -112,6 +112,34 @@ func (tiu *TravelItemUpdate) AddConjunctionNumber(i int) *TravelItemUpdate {
 	return tiu
 }
 
+// SetTransactionType sets the "transaction_type" field.
+func (tiu *TravelItemUpdate) SetTransactionType(s string) *TravelItemUpdate {
+	tiu.mutation.SetTransactionType(s)
+	return tiu
+}
+
+// SetNillableTransactionType sets the "transaction_type" field if the given value is not nil.
+func (tiu *TravelItemUpdate) SetNillableTransactionType(s *string) *TravelItemUpdate {
+	if s != nil {
+		tiu.SetTransactionType(*s)
+	}
+	return tiu
+}
+
+// SetProductType sets the "product_type" field.
+func (tiu *TravelItemUpdate) SetProductType(s string) *TravelItemUpdate {
+	tiu.mutation.SetProductType(s)
+	return tiu
+}
+
+// SetNillableProductType sets the "product_type" field if the given value is not nil.
+func (tiu *TravelItemUpdate) SetNillableProductType(s *string) *TravelItemUpdate {
+	if s != nil {
+		tiu.SetProductType(*s)
+	}
+	return tiu
+}
+
 // SetStatus sets the "status" field.
 func (tiu *TravelItemUpdate) SetStatus(t travelitem.Status) *TravelItemUpdate {
 	tiu.mutation.SetStatus(t)
@@ -177,11 +205,6 @@ func (tiu *TravelItemUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (tiu *TravelItemUpdate) check() error {
-	if v, ok := tiu.mutation.TotalPrice(); ok {
-		if err := travelitem.TotalPriceValidator(v); err != nil {
-			return &ValidationError{Name: "total_price", err: fmt.Errorf(`ent: validator failed for field "TravelItem.total_price": %w`, err)}
-		}
-	}
 	if v, ok := tiu.mutation.Status(); ok {
 		if err := travelitem.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "TravelItem.status": %w`, err)}
@@ -206,10 +229,18 @@ func (tiu *TravelItemUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := tiu.mutation.TotalPrice(); ok {
-		_spec.SetField(travelitem.FieldTotalPrice, field.TypeFloat64, value)
+		vv, err := travelitem.ValueScanner.TotalPrice.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(travelitem.FieldTotalPrice, field.TypeFloat64, vv)
 	}
 	if value, ok := tiu.mutation.AddedTotalPrice(); ok {
-		_spec.AddField(travelitem.FieldTotalPrice, field.TypeFloat64, value)
+		vv, err := travelitem.ValueScanner.TotalPrice.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(travelitem.FieldTotalPrice, field.TypeFloat64, vv)
 	}
 	if value, ok := tiu.mutation.Itinerary(); ok {
 		_spec.SetField(travelitem.FieldItinerary, field.TypeString, value)
@@ -225,6 +256,12 @@ func (tiu *TravelItemUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tiu.mutation.AddedConjunctionNumber(); ok {
 		_spec.AddField(travelitem.FieldConjunctionNumber, field.TypeInt, value)
+	}
+	if value, ok := tiu.mutation.TransactionType(); ok {
+		_spec.SetField(travelitem.FieldTransactionType, field.TypeString, value)
+	}
+	if value, ok := tiu.mutation.ProductType(); ok {
+		_spec.SetField(travelitem.FieldProductType, field.TypeString, value)
 	}
 	if value, ok := tiu.mutation.Status(); ok {
 		_spec.SetField(travelitem.FieldStatus, field.TypeEnum, value)
@@ -362,6 +399,34 @@ func (tiuo *TravelItemUpdateOne) AddConjunctionNumber(i int) *TravelItemUpdateOn
 	return tiuo
 }
 
+// SetTransactionType sets the "transaction_type" field.
+func (tiuo *TravelItemUpdateOne) SetTransactionType(s string) *TravelItemUpdateOne {
+	tiuo.mutation.SetTransactionType(s)
+	return tiuo
+}
+
+// SetNillableTransactionType sets the "transaction_type" field if the given value is not nil.
+func (tiuo *TravelItemUpdateOne) SetNillableTransactionType(s *string) *TravelItemUpdateOne {
+	if s != nil {
+		tiuo.SetTransactionType(*s)
+	}
+	return tiuo
+}
+
+// SetProductType sets the "product_type" field.
+func (tiuo *TravelItemUpdateOne) SetProductType(s string) *TravelItemUpdateOne {
+	tiuo.mutation.SetProductType(s)
+	return tiuo
+}
+
+// SetNillableProductType sets the "product_type" field if the given value is not nil.
+func (tiuo *TravelItemUpdateOne) SetNillableProductType(s *string) *TravelItemUpdateOne {
+	if s != nil {
+		tiuo.SetProductType(*s)
+	}
+	return tiuo
+}
+
 // SetStatus sets the "status" field.
 func (tiuo *TravelItemUpdateOne) SetStatus(t travelitem.Status) *TravelItemUpdateOne {
 	tiuo.mutation.SetStatus(t)
@@ -440,11 +505,6 @@ func (tiuo *TravelItemUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (tiuo *TravelItemUpdateOne) check() error {
-	if v, ok := tiuo.mutation.TotalPrice(); ok {
-		if err := travelitem.TotalPriceValidator(v); err != nil {
-			return &ValidationError{Name: "total_price", err: fmt.Errorf(`ent: validator failed for field "TravelItem.total_price": %w`, err)}
-		}
-	}
 	if v, ok := tiuo.mutation.Status(); ok {
 		if err := travelitem.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "TravelItem.status": %w`, err)}
@@ -486,10 +546,18 @@ func (tiuo *TravelItemUpdateOne) sqlSave(ctx context.Context) (_node *TravelItem
 		}
 	}
 	if value, ok := tiuo.mutation.TotalPrice(); ok {
-		_spec.SetField(travelitem.FieldTotalPrice, field.TypeFloat64, value)
+		vv, err := travelitem.ValueScanner.TotalPrice.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(travelitem.FieldTotalPrice, field.TypeFloat64, vv)
 	}
 	if value, ok := tiuo.mutation.AddedTotalPrice(); ok {
-		_spec.AddField(travelitem.FieldTotalPrice, field.TypeFloat64, value)
+		vv, err := travelitem.ValueScanner.TotalPrice.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(travelitem.FieldTotalPrice, field.TypeFloat64, vv)
 	}
 	if value, ok := tiuo.mutation.Itinerary(); ok {
 		_spec.SetField(travelitem.FieldItinerary, field.TypeString, value)
@@ -505,6 +573,12 @@ func (tiuo *TravelItemUpdateOne) sqlSave(ctx context.Context) (_node *TravelItem
 	}
 	if value, ok := tiuo.mutation.AddedConjunctionNumber(); ok {
 		_spec.AddField(travelitem.FieldConjunctionNumber, field.TypeInt, value)
+	}
+	if value, ok := tiuo.mutation.TransactionType(); ok {
+		_spec.SetField(travelitem.FieldTransactionType, field.TypeString, value)
+	}
+	if value, ok := tiuo.mutation.ProductType(); ok {
+		_spec.SetField(travelitem.FieldProductType, field.TypeString, value)
 	}
 	if value, ok := tiuo.mutation.Status(); ok {
 		_spec.SetField(travelitem.FieldStatus, field.TypeEnum, value)

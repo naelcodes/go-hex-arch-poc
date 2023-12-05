@@ -352,22 +352,46 @@ func (iu *InvoiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(invoice.FieldDueDate, field.TypeString, value)
 	}
 	if value, ok := iu.mutation.Amount(); ok {
-		_spec.SetField(invoice.FieldAmount, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(invoice.FieldAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := iu.mutation.AddedAmount(); ok {
-		_spec.AddField(invoice.FieldAmount, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(invoice.FieldAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := iu.mutation.Balance(); ok {
-		_spec.SetField(invoice.FieldBalance, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(invoice.FieldBalance, field.TypeFloat64, vv)
 	}
 	if value, ok := iu.mutation.AddedBalance(); ok {
-		_spec.AddField(invoice.FieldBalance, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(invoice.FieldBalance, field.TypeFloat64, vv)
 	}
 	if value, ok := iu.mutation.CreditApply(); ok {
-		_spec.SetField(invoice.FieldCreditApply, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.CreditApply.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(invoice.FieldCreditApply, field.TypeFloat64, vv)
 	}
 	if value, ok := iu.mutation.AddedCreditApply(); ok {
-		_spec.AddField(invoice.FieldCreditApply, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.CreditApply.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(invoice.FieldCreditApply, field.TypeFloat64, vv)
 	}
 	if value, ok := iu.mutation.Tag(); ok {
 		_spec.SetField(invoice.FieldTag, field.TypeEnum, value)
@@ -863,22 +887,46 @@ func (iuo *InvoiceUpdateOne) sqlSave(ctx context.Context) (_node *Invoice, err e
 		_spec.SetField(invoice.FieldDueDate, field.TypeString, value)
 	}
 	if value, ok := iuo.mutation.Amount(); ok {
-		_spec.SetField(invoice.FieldAmount, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(invoice.FieldAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := iuo.mutation.AddedAmount(); ok {
-		_spec.AddField(invoice.FieldAmount, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Amount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(invoice.FieldAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := iuo.mutation.Balance(); ok {
-		_spec.SetField(invoice.FieldBalance, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(invoice.FieldBalance, field.TypeFloat64, vv)
 	}
 	if value, ok := iuo.mutation.AddedBalance(); ok {
-		_spec.AddField(invoice.FieldBalance, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.Balance.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(invoice.FieldBalance, field.TypeFloat64, vv)
 	}
 	if value, ok := iuo.mutation.CreditApply(); ok {
-		_spec.SetField(invoice.FieldCreditApply, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.CreditApply.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(invoice.FieldCreditApply, field.TypeFloat64, vv)
 	}
 	if value, ok := iuo.mutation.AddedCreditApply(); ok {
-		_spec.AddField(invoice.FieldCreditApply, field.TypeFloat64, value)
+		vv, err := invoice.ValueScanner.CreditApply.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(invoice.FieldCreditApply, field.TypeFloat64, vv)
 	}
 	if value, ok := iuo.mutation.Tag(); ok {
 		_spec.SetField(invoice.FieldTag, field.TypeEnum, value)

@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"entgo.io/ent/schema/field"
 	"github.com/naelcodes/ab-backend/ent/customer"
 	"github.com/naelcodes/ab-backend/ent/imputation"
 	"github.com/naelcodes/ab-backend/ent/invoice"
@@ -47,20 +48,9 @@ func init() {
 	imputationDescAmountApply := imputationFields[0].Descriptor()
 	// imputation.DefaultAmountApply holds the default value on creation for the amount_apply field.
 	imputation.DefaultAmountApply = imputationDescAmountApply.Default.(float64)
+	imputation.ValueScanner.AmountApply = imputationDescAmountApply.ValueScanner.(field.TypeValueScanner[float64])
 	// imputation.AmountApplyValidator is a validator for the "amount_apply" field. It is called by the builders before save.
 	imputation.AmountApplyValidator = imputationDescAmountApply.Validators[0].(func(float64) error)
-	// imputationDescPaymentAmount is the schema descriptor for payment_amount field.
-	imputationDescPaymentAmount := imputationFields[1].Descriptor()
-	// imputation.DefaultPaymentAmount holds the default value on creation for the payment_amount field.
-	imputation.DefaultPaymentAmount = imputationDescPaymentAmount.Default.(float64)
-	// imputation.PaymentAmountValidator is a validator for the "payment_amount" field. It is called by the builders before save.
-	imputation.PaymentAmountValidator = imputationDescPaymentAmount.Validators[0].(func(float64) error)
-	// imputationDescInvoiceAmount is the schema descriptor for invoice_amount field.
-	imputationDescInvoiceAmount := imputationFields[2].Descriptor()
-	// imputation.DefaultInvoiceAmount holds the default value on creation for the invoice_amount field.
-	imputation.DefaultInvoiceAmount = imputationDescInvoiceAmount.Default.(float64)
-	// imputation.InvoiceAmountValidator is a validator for the "invoice_amount" field. It is called by the builders before save.
-	imputation.InvoiceAmountValidator = imputationDescInvoiceAmount.Validators[0].(func(float64) error)
 	invoiceFields := schema.Invoice{}.Fields()
 	_ = invoiceFields
 	// invoiceDescCreationDate is the schema descriptor for creation_date field.
@@ -75,18 +65,21 @@ func init() {
 	invoiceDescAmount := invoiceFields[4].Descriptor()
 	// invoice.DefaultAmount holds the default value on creation for the amount field.
 	invoice.DefaultAmount = invoiceDescAmount.Default.(float64)
+	invoice.ValueScanner.Amount = invoiceDescAmount.ValueScanner.(field.TypeValueScanner[float64])
 	// invoice.AmountValidator is a validator for the "amount" field. It is called by the builders before save.
 	invoice.AmountValidator = invoiceDescAmount.Validators[0].(func(float64) error)
 	// invoiceDescBalance is the schema descriptor for balance field.
 	invoiceDescBalance := invoiceFields[5].Descriptor()
 	// invoice.DefaultBalance holds the default value on creation for the balance field.
 	invoice.DefaultBalance = invoiceDescBalance.Default.(float64)
+	invoice.ValueScanner.Balance = invoiceDescBalance.ValueScanner.(field.TypeValueScanner[float64])
 	// invoice.BalanceValidator is a validator for the "balance" field. It is called by the builders before save.
 	invoice.BalanceValidator = invoiceDescBalance.Validators[0].(func(float64) error)
 	// invoiceDescCreditApply is the schema descriptor for credit_apply field.
 	invoiceDescCreditApply := invoiceFields[6].Descriptor()
 	// invoice.DefaultCreditApply holds the default value on creation for the credit_apply field.
 	invoice.DefaultCreditApply = invoiceDescCreditApply.Default.(float64)
+	invoice.ValueScanner.CreditApply = invoiceDescCreditApply.ValueScanner.(field.TypeValueScanner[float64])
 	// invoice.CreditApplyValidator is a validator for the "credit_apply" field. It is called by the builders before save.
 	invoice.CreditApplyValidator = invoiceDescCreditApply.Validators[0].(func(float64) error)
 	paymentFields := schema.Payment{}.Fields()
@@ -103,34 +96,41 @@ func init() {
 	paymentDescBalance := paymentFields[2].Descriptor()
 	// payment.DefaultBalance holds the default value on creation for the balance field.
 	payment.DefaultBalance = paymentDescBalance.Default.(float64)
+	payment.ValueScanner.Balance = paymentDescBalance.ValueScanner.(field.TypeValueScanner[float64])
 	// payment.BalanceValidator is a validator for the "balance" field. It is called by the builders before save.
 	payment.BalanceValidator = paymentDescBalance.Validators[0].(func(float64) error)
 	// paymentDescAmount is the schema descriptor for amount field.
 	paymentDescAmount := paymentFields[3].Descriptor()
 	// payment.DefaultAmount holds the default value on creation for the amount field.
 	payment.DefaultAmount = paymentDescAmount.Default.(float64)
+	payment.ValueScanner.Amount = paymentDescAmount.ValueScanner.(field.TypeValueScanner[float64])
 	// payment.AmountValidator is a validator for the "amount" field. It is called by the builders before save.
 	payment.AmountValidator = paymentDescAmount.Validators[0].(func(float64) error)
+	// paymentDescBaseAmount is the schema descriptor for base_amount field.
+	paymentDescBaseAmount := paymentFields[4].Descriptor()
+	// payment.DefaultBaseAmount holds the default value on creation for the base_amount field.
+	payment.DefaultBaseAmount = paymentDescBaseAmount.Default.(float64)
+	payment.ValueScanner.BaseAmount = paymentDescBaseAmount.ValueScanner.(field.TypeValueScanner[float64])
+	// payment.BaseAmountValidator is a validator for the "base_amount" field. It is called by the builders before save.
+	payment.BaseAmountValidator = paymentDescBaseAmount.Validators[0].(func(float64) error)
 	// paymentDescUsedAmount is the schema descriptor for used_amount field.
 	paymentDescUsedAmount := paymentFields[5].Descriptor()
 	// payment.DefaultUsedAmount holds the default value on creation for the used_amount field.
 	payment.DefaultUsedAmount = paymentDescUsedAmount.Default.(float64)
+	payment.ValueScanner.UsedAmount = paymentDescUsedAmount.ValueScanner.(field.TypeValueScanner[float64])
 	// payment.UsedAmountValidator is a validator for the "used_amount" field. It is called by the builders before save.
 	payment.UsedAmountValidator = paymentDescUsedAmount.Validators[0].(func(float64) error)
-	// paymentDescIDChartsOfAccounts is the schema descriptor for id_charts_of_accounts field.
-	paymentDescIDChartsOfAccounts := paymentFields[7].Descriptor()
-	// payment.DefaultIDChartsOfAccounts holds the default value on creation for the id_charts_of_accounts field.
-	payment.DefaultIDChartsOfAccounts = paymentDescIDChartsOfAccounts.Default.(int)
+	// paymentDescIDChartOfAccounts is the schema descriptor for id_chart_of_accounts field.
+	paymentDescIDChartOfAccounts := paymentFields[9].Descriptor()
+	// payment.DefaultIDChartOfAccounts holds the default value on creation for the id_chart_of_accounts field.
+	payment.DefaultIDChartOfAccounts = paymentDescIDChartOfAccounts.Default.(int)
 	// paymentDescIDCurrency is the schema descriptor for id_currency field.
-	paymentDescIDCurrency := paymentFields[8].Descriptor()
+	paymentDescIDCurrency := paymentFields[10].Descriptor()
 	// payment.DefaultIDCurrency holds the default value on creation for the id_currency field.
 	payment.DefaultIDCurrency = paymentDescIDCurrency.Default.(int)
 	travelitemFields := schema.TravelItem{}.Fields()
 	_ = travelitemFields
 	// travelitemDescTotalPrice is the schema descriptor for total_price field.
 	travelitemDescTotalPrice := travelitemFields[0].Descriptor()
-	// travelitem.DefaultTotalPrice holds the default value on creation for the total_price field.
-	travelitem.DefaultTotalPrice = travelitemDescTotalPrice.Default.(float64)
-	// travelitem.TotalPriceValidator is a validator for the "total_price" field. It is called by the builders before save.
-	travelitem.TotalPriceValidator = travelitemDescTotalPrice.Validators[0].(func(float64) error)
+	travelitem.ValueScanner.TotalPrice = travelitemDescTotalPrice.ValueScanner.(field.TypeValueScanner[float64])
 }

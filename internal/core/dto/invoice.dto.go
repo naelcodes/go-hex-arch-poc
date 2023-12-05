@@ -5,21 +5,6 @@ import (
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
-type TravelItemDTO struct {
-	Id           uint    `json:"id"`
-	Itinerary    *string `json:"itinerary,omitempty"`
-	TravelerName *string `json:"travelerName,omitempty"`
-	TicketNumber *string `json:"ticketNumber,omitempty"`
-	TotalPrice   float64 `json:"totalPrice"`
-}
-
-func (t TravelItemDTO) Validate() error {
-	return validation.ValidateStruct(&t,
-		validation.Field(&t.Id, validation.Required),
-		validation.Field(&t.TotalPrice, validation.Required),
-	)
-}
-
 type GetInvoiceDTO struct {
 	Id            int             `json:"id"`
 	InvoiceNumber string          `json:"invoiceNumber"`
@@ -31,7 +16,7 @@ type GetInvoiceDTO struct {
 	Status        string          `json:"status"`
 	IdCustomer    *int            `json:"idCustomer,omitempty"`
 	Customer      *GetCustomerDTO `json:"customer,omitempty"`
-	TravelItems   []TravelItemDTO `json:"travelItems"`
+	TravelItems   []TravelItemDTO `json:"travelItems,omitempty"`
 }
 
 type CreateInvoiceDTO struct {
@@ -69,4 +54,3 @@ func (u UpdateInvoiceDTO) Validate() error {
 }
 
 type GetAllInvoiceDTO types.GetAllDTO[[]*GetInvoiceDTO]
-type GetAllTravelItemDTO types.GetAllDTO[[]*TravelItemDTO]

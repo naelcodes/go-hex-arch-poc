@@ -8,7 +8,7 @@ import (
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
-type PaymentAggregate struct {
+type Payment struct {
 	types.BaseEntity
 	PaymentNumber string
 	PaymentDate   string
@@ -20,7 +20,7 @@ type PaymentAggregate struct {
 	IdCustomer    types.EID
 }
 
-func (p *PaymentAggregate) calculateBalance() error {
+func (p *Payment) calculateBalance() error {
 
 	if p.UsedAmount > p.Amount {
 		return CustomErrors.DomainError(errors.New("payment balance can't be less than 0"))
@@ -32,7 +32,7 @@ func (p *PaymentAggregate) calculateBalance() error {
 	return nil
 }
 
-func (p *PaymentAggregate) updateStatus() {
+func (p *Payment) updateStatus() {
 
 	if p.UsedAmount == p.Amount && p.Balance == 0 {
 		p.Status = "used"
@@ -41,7 +41,7 @@ func (p *PaymentAggregate) updateStatus() {
 	}
 }
 
-func (p *PaymentAggregate) AllocateAmount(imputationAmount float64) error {
+func (p *Payment) AllocateAmount(imputationAmount float64) error {
 
 	if p.Status == "used" {
 		return CustomErrors.DomainError(fmt.Errorf("payment %v is already used. new allocations can't be made on a used payment", p.PaymentNumber))

@@ -11,12 +11,14 @@ import (
 	paymentDomain "github.com/naelcodes/ab-backend/internal/core/domains/payment-domain"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
+	"github.com/naelcodes/ab-backend/pkg/logger"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
 type PaymentRepository struct {
 	Database *ent.Client
 	Context  context.Context
+	Logger   *logger.Logger
 }
 
 func (repo *PaymentRepository) Count() (*int, error) {
@@ -31,6 +33,8 @@ func (repo *PaymentRepository) Count() (*int, error) {
 
 func (repo *PaymentRepository) CountByCustomerID(customerId types.EID) (*int, error) {
 
+	repo.Logger.Info(fmt.Sprintf("[PaymentRepository - CountByCustomerID] Customer ID: %v", customerId))
+
 	totalRowCount, err := repo.Database.Payment.Query().
 		Where(payment.
 			And(
@@ -39,8 +43,11 @@ func (repo *PaymentRepository) CountByCustomerID(customerId types.EID) (*int, er
 		Count(repo.Context)
 
 	if err != nil {
+		repo.Logger.Error(fmt.Sprintf("[PaymentRepository - CountByCustomerID] Error counting customer's payments: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error counting customer's payments: %v", err))
 	}
+
+	repo.Logger.Info(fmt.Sprintf("[PaymentRepository - CountByCustomerID] Total number of customer's payments: %v", totalRowCount))
 	return &totalRowCount, nil
 }
 
@@ -57,7 +64,7 @@ func (repo *PaymentRepository) GetById(id types.EID) (*dto.GetPaymentDTO, error)
 		}
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting payment record: %v", err))
 	}
-	paymentDTO := PaymentModelToDTO(payment, false)
+	paymentDTO := PaymentModelToDTO(payment, false, nil)
 	return paymentDTO, nil
 }
 
@@ -84,7 +91,7 @@ func (repo *PaymentRepository) GetAll(queryParams *types.GetQueryParams) ([]*dto
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting payments records: %v", err))
 	}
 
-	paymentDTOList := PaymentModelListToDTOList(payments, embedCustomer)
+	paymentDTOList := PaymentModelListToDTOList(payments, embedCustomer, nil)
 
 	return paymentDTOList, nil
 }
@@ -114,65 +121,92 @@ func (repo *PaymentRepository) GetByCustomerID(id types.EID, queryParams *types.
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting customer's payments records: %v", err))
 	}
 
-	paymentDTOList := PaymentModelListToDTOList(payments, false)
+	customerId := int(id)
+	paymentDTOList := PaymentModelListToDTOList(payments, false, &customerId)
 
 	return paymentDTOList, nil
 
 }
 
-func (repo *PaymentRepository) Save(paymentAggregate *paymentDomain.PaymentAggregate) (*dto.GetPaymentDTO, error) {
+func (repo *PaymentRepository) Save(paymentEntity *paymentDomain.Payment) (*dto.GetPaymentDTO, error) {
+
+	repo.Logger.Info(fmt.Sprintf("Reposiotry - Saving payment entity: %v", paymentEntity))
 
 	payment, err := repo.Database.Payment.Create().
-		SetAmount(paymentAggregate.Amount).
-		SetCustomerID(int(paymentAggregate.IdCustomer)).
-		SetBalance(paymentAggregate.Balance).
-		SetUsedAmount(paymentAggregate.UsedAmount).
-		SetFop(payment.Fop(paymentAggregate.PaymentMode)).
-		SetStatus(payment.Status(paymentAggregate.Status)).
-		SetDate(paymentAggregate.PaymentDate).
-		SetNumber(paymentAggregate.PaymentNumber).
+		SetAmount(paymentEntity.Amount).
+		SetCustomerID(int(paymentEntity.IdCustomer)).
+		SetBalance(paymentEntity.Balance).
+		SetUsedAmount(paymentEntity.UsedAmount).
+		SetFop(payment.Fop(paymentEntity.PaymentMode)).
+		SetDate(paymentEntity.PaymentDate).
+		SetNumber(paymentEntity.PaymentNumber).
 		Save(repo.Context)
 
 	if err != nil {
+		repo.Logger.Error(fmt.Sprintf("Repository - Error saving payment: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error saving payment: %v", err))
 	}
 
-	paymentDTO := PaymentModelToDTO(payment, false)
+	repo.Logger.Info(fmt.Sprintf("Repository - Converting to DTO: %v", payment))
+
+	customerId := int(paymentEntity.IdCustomer)
+	paymentDTO := PaymentModelToDTO(payment, false, &customerId)
+
+	repo.Logger.Info(fmt.Sprintf("Repository - Saved payment DTO: %v", paymentDTO))
+
 	return paymentDTO, nil
 
 }
 
-func (repo *PaymentRepository) Update(tx *ent.Tx, paymentAggregate *paymentDomain.PaymentAggregate) error {
-	if tx != nil {
-		_, err := tx.Payment.UpdateOneID(int(paymentAggregate.Id)).
-			SetAmount(paymentAggregate.Amount).
-			SetBalance(paymentAggregate.Balance).
-			SetUsedAmount(paymentAggregate.UsedAmount).
-			SetStatus(payment.Status(paymentAggregate.Status)).
+func (repo *PaymentRepository) SaveAllPaymentsAllocations(transaction *ent.Tx, payments []*paymentDomain.Payment) {
+
+	repo.Logger.Info(fmt.Sprintf("[PaymentRepository - SavePaymentsAllocations] - Saving payments allocations: %v", payments))
+
+	for _, p := range payments {
+		updatedPayment, err := transaction.Payment.UpdateOneID(int(p.Id)).
+			SetBalance(p.Balance).
+			SetUsedAmount(p.UsedAmount).
+			SetStatus(payment.Status(p.Status)).
 			Save(repo.Context)
 
+		repo.Logger.Info(fmt.Sprintf("[PaymentRepository - SavePaymentsAllocations] - Updated payment: %v", updatedPayment))
 		if err != nil {
-			return CustomErrors.RepositoryError(fmt.Errorf("error updating payment: %v", err))
+			panic(CustomErrors.RepositoryError(fmt.Errorf("error saving payments allocations: %v", err)))
 		}
-	} else {
-		paymentQuery := repo.Database.Payment.UpdateOneID(int(paymentAggregate.Id))
-		if paymentAggregate.IdCustomer != 0 {
-			paymentQuery.SetCustomerID(int(paymentAggregate.IdCustomer))
-		}
+	}
 
-		if paymentAggregate.Amount != 0 {
-			paymentQuery.SetAmount(paymentAggregate.Amount)
-		}
+	repo.Logger.Info("[PaymentRepository - SavePaymentsAllocations] - Saved payments allocations")
+}
 
-		if paymentAggregate.PaymentMode != "" {
-			paymentQuery.SetFop(payment.Fop(paymentAggregate.PaymentMode))
-		}
+func (repo *PaymentRepository) Update(paymentEntity *paymentDomain.Payment) error {
 
-		_, err := paymentQuery.Save(repo.Context)
+	paymentData, err := repo.Database.Payment.Query().
+		WithCustomer(func(q *ent.CustomerQuery) {
+			q.Select(customer.FieldID)
+		}).Where(payment.IDEQ(int(paymentEntity.Id))).Only(repo.Context)
 
-		if err != nil {
-			return CustomErrors.RepositoryError(fmt.Errorf("error updating payment: %v", err))
-		}
+	if err != nil {
+		return CustomErrors.RepositoryError(fmt.Errorf("error getting payment during update: %v", err))
+	}
+
+	paymentUpdateQuery := repo.Database.Payment.UpdateOneID(int(paymentEntity.Id))
+
+	if paymentEntity.IdCustomer != types.EID(paymentData.Edges.Customer.ID) {
+		paymentUpdateQuery.SetCustomerID(int(paymentEntity.IdCustomer))
+	}
+
+	if paymentEntity.Amount != paymentData.Amount {
+		paymentUpdateQuery.SetAmount(paymentEntity.Amount)
+	}
+
+	if paymentEntity.PaymentMode != string(paymentData.Fop) {
+		paymentUpdateQuery.SetFop(payment.Fop(paymentEntity.PaymentMode))
+	}
+
+	_, saveErr := paymentUpdateQuery.Save(repo.Context)
+
+	if saveErr != nil {
+		return CustomErrors.RepositoryError(fmt.Errorf("error updating payment: %v", err))
 	}
 
 	return nil
