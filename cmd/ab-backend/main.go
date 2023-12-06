@@ -22,7 +22,7 @@ func main() {
 	context := context.Background()
 	globalContext := new(types.GlobalContext)
 
-	globalContext.Database = database.PostgresConnection(context, appEngine.GetLogger())
+	globalContext.Database = database.PostgresConnection(context)
 	globalContext.AppEngine = appEngine
 	globalContext.Context = context
 
@@ -32,7 +32,6 @@ func main() {
 	restController := new(api.RestController)
 	restController.Init(globalContext)
 	restController.ApplicationService = application
-	restController.Logger = appEngine.GetLogger()
 
 	log.Fatal(appEngine.Start())
 }

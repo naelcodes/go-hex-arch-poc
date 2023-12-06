@@ -6,13 +6,11 @@ import (
 	"github.com/naelcodes/ab-backend/internal/core/application"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	"github.com/naelcodes/ab-backend/internal/infrastructure/api/middleware"
-	"github.com/naelcodes/ab-backend/pkg/logger"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
 type RestController struct {
 	ApplicationService *application.Application
-	Logger             *logger.Logger
 }
 
 func (controller *RestController) Init(globalContext *types.GlobalContext) {

@@ -11,7 +11,6 @@ import (
 	invoiceDomain "github.com/naelcodes/ab-backend/internal/core/domains/invoice-domain"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
-	"github.com/naelcodes/ab-backend/pkg/logger"
 	"github.com/naelcodes/ab-backend/pkg/types"
 	"github.com/naelcodes/ab-backend/pkg/utils"
 )
@@ -19,25 +18,24 @@ import (
 type InvoiceRepository struct {
 	Database *ent.Client
 	Context  context.Context
-	Logger   *logger.Logger
 }
 
 func (repo *InvoiceRepository) Count() (*int, error) {
 
-	repo.Logger.Info("[InvoiceRepository - Count]")
+	utils.Logger.Info("[InvoiceRepository - Count]")
 
 	totalRowCount, err := repo.Database.Invoice.Query().Where(invoice.TagEQ(invoice.Tag3)).Count(repo.Context)
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("[InvoiceRepository - Count] Error counting invoices: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - Count] Error counting invoices: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error counting invoices: %v", err))
 	}
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - Count] Total number of invoices: %v", totalRowCount))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - Count] Total number of invoices: %v", totalRowCount))
 	return &totalRowCount, nil
 }
 func (repo *InvoiceRepository) CountByCustomerId(customerId types.EID) (*int, error) {
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - CountByCustomerId] Customer ID: %v", customerId))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - CountByCustomerId] Customer ID: %v", customerId))
 
 	totalRowCount, err := repo.Database.Invoice.Query().
 		Where(invoice.And(
@@ -46,12 +44,12 @@ func (repo *InvoiceRepository) CountByCustomerId(customerId types.EID) (*int, er
 		Count(repo.Context)
 
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("[InvoiceRepository - CountByCustomerId] Error counting customer's invoices: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - CountByCustomerId] Error counting customer's invoices: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error counting customer's invoices: %v", err))
 
 	}
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - CountByCustomerId] Total number of customer's invoices: %v", totalRowCount))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - CountByCustomerId] Total number of customer's invoices: %v", totalRowCount))
 
 	return &totalRowCount, nil
 }
@@ -68,7 +66,7 @@ func (repo *InvoiceRepository) GetAll(queryParams *types.GetQueryParams) (*dto.G
 	embedCustomer := false
 	totalRowCount, err := repo.Database.Invoice.Query().Where(invoice.TagEQ(invoice.Tag3)).Count(repo.Context)
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("[InvoiceRepository - GetAll] Error counting invoices: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - GetAll] Error counting invoices: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error counting invoices: %v", err))
 	}
 
@@ -77,11 +75,11 @@ func (repo *InvoiceRepository) GetAll(queryParams *types.GetQueryParams) (*dto.G
 
 	invoiceQuery := repo.Database.Invoice.Query().WithTravelItems().Where(invoice.TagEQ(invoice.Tag3))
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] QueryParams: %v", queryParams))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] QueryParams: %v", queryParams))
 
 	if queryParams != nil {
 
-		repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] Search: %v", queryParams.Fields))
+		utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] Search: %v", queryParams.Fields))
 
 		if queryParams.Embed != nil && *queryParams.Embed == "customer" {
 			embedCustomer = true
@@ -99,13 +97,13 @@ func (repo *InvoiceRepository) GetAll(queryParams *types.GetQueryParams) (*dto.G
 	invoices, err := invoiceQuery.All(repo.Context)
 
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("[InvoiceRepository - GetAll] Error getting invoices records: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - GetAll] Error getting invoices records: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting invoices records: %v", err))
 	}
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] Invoices records: %v", invoices))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] Invoices records: %v", invoices))
 	invoiceDTOList := InvoiceModelListToDTOList(invoices, embedCustomer)
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] Invoices DTO: %v", invoiceDTOList))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] Invoices DTO: %v", invoiceDTOList))
 
 	getAllInvoiceDTO := new(dto.GetAllInvoiceDTO)
 	getAllInvoiceDTO.Data = invoiceDTOList
@@ -113,18 +111,18 @@ func (repo *InvoiceRepository) GetAll(queryParams *types.GetQueryParams) (*dto.G
 	getAllInvoiceDTO.PageSize = pageSize
 	getAllInvoiceDTO.TotalRowCount = totalRowCount
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] GetAllInvoiceDTO: %v", getAllInvoiceDTO))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] GetAllInvoiceDTO: %v", getAllInvoiceDTO))
 	return getAllInvoiceDTO, nil
 }
 
 func (repo *InvoiceRepository) Save(transaction *ent.Tx, invoiceDomainModel *invoiceDomain.Invoice) (*dto.GetInvoiceDTO, error) {
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - Save] Invoice: %v", invoiceDomainModel))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - Save] Invoice: %v", invoiceDomainModel))
 
 	totalRowCount, err := transaction.Invoice.Query().Where(invoice.TagEQ(invoice.Tag3)).Count(repo.Context)
 
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("[InvoiceRepository - Save] Error counting invoices: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - Save] Error counting invoices: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error counting invoices: %v", err))
 	}
 
@@ -141,11 +139,11 @@ func (repo *InvoiceRepository) Save(transaction *ent.Tx, invoiceDomainModel *inv
 		Save(repo.Context)
 
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("[InvoiceRepository - Save] Error creating invoice: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - Save] Error creating invoice: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error creating invoice: %v", err))
 	}
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - Save] Created invoice: %v", createdInvoice))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - Save] Created invoice: %v", createdInvoice))
 
 	updatedRowCount, err := transaction.TravelItem.Update().
 		Where(travelitem.IDIn(invoiceDomainModel.TravelItemsId...)).
@@ -154,17 +152,17 @@ func (repo *InvoiceRepository) Save(transaction *ent.Tx, invoiceDomainModel *inv
 		Save(repo.Context)
 
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("[InvoiceRepository - Save] Error updating travel items: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - Save] Error updating travel items: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error updating travel items: %v", err))
 	}
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - Save] Updated travel items: %v", updatedRowCount))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - Save] Updated travel items: %v", updatedRowCount))
 
 	return InvoiceModelToDTO(createdInvoice, false), nil
 }
 
 func (repo *InvoiceRepository) SaveImputation(transaction *ent.Tx, invoiceEntity *invoiceDomain.Invoice) {
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - SaveImputation] Invoice ID: %v", invoiceEntity.Id))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - SaveImputation] Invoice ID: %v", invoiceEntity.Id))
 
 	updatedInvoice, err := transaction.Invoice.UpdateOneID(int(invoiceEntity.Id)).
 		SetBalance(invoiceEntity.Balance).
@@ -173,11 +171,11 @@ func (repo *InvoiceRepository) SaveImputation(transaction *ent.Tx, invoiceEntity
 		Save(repo.Context)
 
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("[InvoiceRepository - SaveImputation] Error updating invoice: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - SaveImputation] Error updating invoice: %v", err))
 		panic(CustomErrors.RepositoryError(fmt.Errorf("error updating invoice: %v", err)))
 	}
 
-	repo.Logger.Info(fmt.Sprintf("[InvoiceRepository - SaveImputation] Updated invoice: %v", updatedInvoice))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - SaveImputation] Updated invoice: %v", updatedInvoice))
 }
 
 func (repo *InvoiceRepository) Update(transaction *ent.Tx, invoice *invoiceDomain.Invoice) error {

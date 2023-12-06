@@ -7,25 +7,26 @@ import (
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	"github.com/naelcodes/ab-backend/pkg/errors"
 	"github.com/naelcodes/ab-backend/pkg/types"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 func (controller *RestController) CreateInvoiceHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
-		controller.Logger.Info("[CreateInvoiceHandler] - Creating invoice")
+		utils.Logger.Info("[CreateInvoiceHandler] - Creating invoice")
 
 		createInvoiceDto := c.Locals("payload").(*dto.CreateInvoiceDTO)
 
-		controller.Logger.Info(fmt.Sprintf("[CreateInvoiceHandler] - Payload: %v", createInvoiceDto))
+		utils.Logger.Info(fmt.Sprintf("[CreateInvoiceHandler] - Payload: %v", createInvoiceDto))
 
 		newInvoiceDTO, err := controller.ApplicationService.CreateInvoiceService(createInvoiceDto)
 
 		if err != nil {
-			controller.Logger.Error(fmt.Sprintf("[CreateInvoiceHandler] - Error creating invoice: %v", err))
+			utils.Logger.Error(fmt.Sprintf("[CreateInvoiceHandler] - Error creating invoice: %v", err))
 			return err
 		}
 
-		controller.Logger.Info(fmt.Sprintf("[CreateInvoiceHandler] - Created invoice DTO: %v", newInvoiceDTO))
+		utils.Logger.Info(fmt.Sprintf("[CreateInvoiceHandler] - Created invoice DTO: %v", newInvoiceDTO))
 		return c.Status(fiber.StatusOK).JSON(newInvoiceDTO)
 
 	}
@@ -36,21 +37,21 @@ func (controller *RestController) GetAllInvoiceHandler() fiber.Handler {
 		queryParams := new(types.GetQueryParams)
 		err := c.QueryParser(queryParams)
 
-		controller.Logger.Info(fmt.Sprintf("[GetAllInvoiceHandler] - Query params: %v", queryParams))
+		utils.Logger.Info(fmt.Sprintf("[GetAllInvoiceHandler] - Query params: %v", queryParams))
 
 		if err != nil {
-			controller.Logger.Error(fmt.Sprintf("[GetAllInvoiceHandler] - Error parsing query params: %v", err))
+			utils.Logger.Error(fmt.Sprintf("[GetAllInvoiceHandler] - Error parsing query params: %v", err))
 			return errors.ServiceError(err, "Parsing query params")
 		}
 
 		getAllInvoiceDTO, err := controller.ApplicationService.GetAllInvoiceService(queryParams)
 
 		if err != nil {
-			controller.Logger.Error(fmt.Sprintf("[GetAllInvoiceHandler] - Error getting all invoice DTO: %v", err))
+			utils.Logger.Error(fmt.Sprintf("[GetAllInvoiceHandler] - Error getting all invoice DTO: %v", err))
 			return err
 		}
 
-		controller.Logger.Info(fmt.Sprintf("[GetAllInvoiceHandler] - All invoice DTO: %v", getAllInvoiceDTO))
+		utils.Logger.Info(fmt.Sprintf("[GetAllInvoiceHandler] - All invoice DTO: %v", getAllInvoiceDTO))
 		return c.Status(fiber.StatusOK).JSON(getAllInvoiceDTO)
 
 	}

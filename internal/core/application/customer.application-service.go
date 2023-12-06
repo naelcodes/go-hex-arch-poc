@@ -6,32 +6,33 @@ import (
 	customerDomain "github.com/naelcodes/ab-backend/internal/core/domains/customer-domain"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	"github.com/naelcodes/ab-backend/pkg/types"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 func (application *Application) GetCustomerService(id types.EID) (*dto.GetCustomerDTO, error) {
 
 	customer, err := application.customerRepository.GetById(types.EID(id))
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[GetCustomerService] Error getting customer record: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[GetCustomerService] Error getting customer record: %v", err))
 		return nil, err
 	}
 
-	application.Logger.Info(fmt.Sprintf("[GetCustomerService] Customer record: %v", customer))
+	utils.Logger.Info(fmt.Sprintf("[GetCustomerService] Customer record: %v", customer))
 	return customer, nil
 }
 
 func (application *Application) GetAllCustomersService(queryParams *types.GetQueryParams) (*dto.GetAllCustomersDTO, error) {
 
-	application.Logger.Info(fmt.Sprintf("[GetAllCustomersService] QueryParams -: %v", *queryParams))
+	utils.Logger.Info(fmt.Sprintf("[GetAllCustomersService] QueryParams -: %v", *queryParams))
 
 	totalRowCount, err := application.customerRepository.Count()
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[GetAllCustomersService] Error counting customers: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[GetAllCustomersService] Error counting customers: %v", err))
 		return nil, err
 	}
 
-	application.Logger.Info(fmt.Sprintf("[GetAllCustomersService] Total number of customers: %v", totalRowCount))
+	utils.Logger.Info(fmt.Sprintf("[GetAllCustomersService] Total number of customers: %v", totalRowCount))
 
 	if queryParams == nil || (queryParams.PageNumber == nil && queryParams.PageSize == nil) {
 		if queryParams == nil {
@@ -46,7 +47,7 @@ func (application *Application) GetAllCustomersService(queryParams *types.GetQue
 	customers, err := application.customerRepository.GetAll(queryParams)
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[GetAllCustomersService] Error getting customers: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[GetAllCustomersService] Error getting customers: %v", err))
 		return nil, err
 	}
 
@@ -57,7 +58,7 @@ func (application *Application) GetAllCustomersService(queryParams *types.GetQue
 		TotalRowCount: *totalRowCount,
 	}
 
-	application.Logger.Info(fmt.Sprintf("[GetAllCustomersService] GetCustomersDTO: %v", getCustomersDTO))
+	utils.Logger.Info(fmt.Sprintf("[GetAllCustomersService] GetCustomersDTO: %v", getCustomersDTO))
 
 	return getCustomersDTO, nil
 
@@ -65,7 +66,7 @@ func (application *Application) GetAllCustomersService(queryParams *types.GetQue
 
 func (application *Application) CreateCustomerService(customerDTO *dto.CreateCustomerDTO) (*dto.GetCustomerDTO, error) {
 
-	application.Logger.Info(fmt.Sprintf("[CreateCustomerService] CreateCustomerDTO: %v", customerDTO))
+	utils.Logger.Info(fmt.Sprintf("[CreateCustomerService] CreateCustomerDTO: %v", customerDTO))
 
 	customer := customerDomain.NewCustomerBuilder().
 		SetCustomerName(customerDTO.CustomerName).
@@ -79,17 +80,17 @@ func (application *Application) CreateCustomerService(customerDTO *dto.CreateCus
 	newCustomerDTO, err := application.customerRepository.Save(customer)
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[CreateCustomerService] Error saving customer: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[CreateCustomerService] Error saving customer: %v", err))
 		return nil, err
 	}
 
-	application.Logger.Info(fmt.Sprintf("[CreateCustomerService] NewCustomerDTO: %v", newCustomerDTO))
+	utils.Logger.Info(fmt.Sprintf("[CreateCustomerService] NewCustomerDTO: %v", newCustomerDTO))
 	return newCustomerDTO, nil
 }
 
 func (application *Application) UpdateCustomerService(id int, customerDTO *dto.UpdateCustomerDTO) (bool, error) {
 
-	application.Logger.Info(fmt.Sprintf("[UpdateCustomerService] UpdateCustomerDTO: %v", customerDTO))
+	utils.Logger.Info(fmt.Sprintf("[UpdateCustomerService] UpdateCustomerDTO: %v", customerDTO))
 
 	customerBuilder := customerDomain.NewCustomerBuilder()
 
@@ -118,43 +119,43 @@ func (application *Application) UpdateCustomerService(id int, customerDTO *dto.U
 	err := application.customerRepository.Update(customer)
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[UpdateCustomerService] Error updating customer: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[UpdateCustomerService] Error updating customer: %v", err))
 		return false, err
 	}
 
-	application.Logger.Info(fmt.Sprintf("[UpdateCustomerService] customer updated: %v", true))
+	utils.Logger.Info(fmt.Sprintf("[UpdateCustomerService] customer updated: %v", true))
 
 	return true, nil
 }
 
 func (application *Application) DeleteCustomerService(id types.EID) (bool, error) {
 
-	application.Logger.Info(fmt.Sprintf("[DeleteCustomerService] Id: %v", id))
+	utils.Logger.Info(fmt.Sprintf("[DeleteCustomerService] Id: %v", id))
 
 	CustomerDomainService := customerDomain.NewCustomerDomainService(application.customerRepository, application.invoiceRepository, application.paymentRepository)
 	err := CustomerDomainService.RemoveCustomer(id)
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[DeleteCustomerService] Error deleting customer: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[DeleteCustomerService] Error deleting customer: %v", err))
 		return false, err
 	}
 
-	application.Logger.Info(fmt.Sprintf("[DeleteCustomerService] customer deleted: %v", true))
+	utils.Logger.Info(fmt.Sprintf("[DeleteCustomerService] customer deleted: %v", true))
 	return true, nil
 }
 
 func (application *Application) GetCustomerPaymentsService(customerId types.EID, queryParams *types.GetQueryParams, isOpen *bool) (*dto.GetCustomerPaymentsDTO, error) {
 
-	application.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsService] customerId: %v, queryParams: %v, isOpen: %v", customerId, queryParams, isOpen))
+	utils.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsService] customerId: %v, queryParams: %v, isOpen: %v", customerId, queryParams, isOpen))
 
 	totalRowCount, err := application.paymentRepository.CountByCustomerID(customerId)
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[GetCustomerPaymentsService] Error getting totalRowCount: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[GetCustomerPaymentsService] Error getting totalRowCount: %v", err))
 		return nil, err
 	}
 
-	application.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsService] totalRowCount: %v", totalRowCount))
+	utils.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsService] totalRowCount: %v", totalRowCount))
 
 	if queryParams == nil || (queryParams.PageNumber == nil && queryParams.PageSize == nil) {
 		if queryParams == nil {
@@ -169,7 +170,7 @@ func (application *Application) GetCustomerPaymentsService(customerId types.EID,
 	paymentDTO, err := application.paymentRepository.GetByCustomerID(customerId, queryParams, isOpen)
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[GetCustomerPaymentsService] Error getting paymentDTO: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[GetCustomerPaymentsService] Error getting paymentDTO: %v", err))
 		return nil, err
 	}
 
@@ -183,23 +184,23 @@ func (application *Application) GetCustomerPaymentsService(customerId types.EID,
 	getCustomPaymentsDTO.PageSize = *queryParams.PageSize
 	getCustomPaymentsDTO.TotalRowCount = *totalRowCount
 
-	application.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsService] getCustomPaymentsDTO: %v", getCustomPaymentsDTO))
+	utils.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsService] getCustomPaymentsDTO: %v", getCustomPaymentsDTO))
 
 	return getCustomPaymentsDTO, nil
 }
 
 func (application *Application) GetCustomerInvoicesService(customerId types.EID, queryParams *types.GetQueryParams, isPaid *bool) (*dto.GetCustomerInvoicesDTO, error) {
 
-	application.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesService] customerId: %v, queryParams: %v, isPaid: %v", customerId, queryParams, isPaid))
+	utils.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesService] customerId: %v, queryParams: %v, isPaid: %v", customerId, queryParams, isPaid))
 
 	totalRowCount, err := application.invoiceRepository.CountByCustomerId(customerId)
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[GetCustomerInvoicesService] Error getting totalRowCount: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[GetCustomerInvoicesService] Error getting totalRowCount: %v", err))
 		return nil, err
 	}
 
-	application.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesService] totalRowCount: %v", totalRowCount))
+	utils.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesService] totalRowCount: %v", totalRowCount))
 
 	if queryParams == nil || (queryParams.PageNumber == nil && queryParams.PageSize == nil) {
 		if queryParams == nil {
@@ -214,7 +215,7 @@ func (application *Application) GetCustomerInvoicesService(customerId types.EID,
 	invoiceDTO, err := application.invoiceRepository.GetByCustomerID(customerId, queryParams, isPaid)
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[GetCustomerInvoicesService] Error getting invoiceDTO: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[GetCustomerInvoicesService] Error getting invoiceDTO: %v", err))
 		return nil, err
 	}
 
@@ -228,7 +229,7 @@ func (application *Application) GetCustomerInvoicesService(customerId types.EID,
 	getCustomerInvoicesDTO.PageSize = *queryParams.PageSize
 	getCustomerInvoicesDTO.TotalRowCount = *totalRowCount
 
-	application.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesService] getCustomerInvoicesDTO: %v", *getCustomerInvoicesDTO))
+	utils.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesService] getCustomerInvoicesDTO: %v", *getCustomerInvoicesDTO))
 
 	return getCustomerInvoicesDTO, nil
 

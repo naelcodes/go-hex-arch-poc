@@ -8,13 +8,11 @@ import (
 	paymentDomain "github.com/naelcodes/ab-backend/internal/core/domains/payment-domain"
 	"github.com/naelcodes/ab-backend/internal/infrastructure/persistence/postgres"
 
-	"github.com/naelcodes/ab-backend/pkg/logger"
 	"github.com/naelcodes/ab-backend/pkg/transactionManager"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
 type Application struct {
-	Logger               *logger.Logger
 	customerRepository   customerDomain.ICustomerRepository
 	invoiceRepository    invoiceDomain.IInvoiceRepository
 	paymentRepository    paymentDomain.IPaymentRepository
@@ -26,21 +24,19 @@ type Application struct {
 
 func (application *Application) Init(globalContext *types.GlobalContext) {
 
-	application.Logger = globalContext.AppEngine.GetLogger()
-
-	customerRepository := &postgres.CustomerRepository{Database: globalContext.Database, Context: globalContext.Context, Logger: globalContext.AppEngine.GetLogger()}
+	customerRepository := &postgres.CustomerRepository{Database: globalContext.Database, Context: globalContext.Context}
 	application.customerRepository = customerRepository
 
-	invoiceRepository := &postgres.InvoiceRepository{Database: globalContext.Database, Context: globalContext.Context, Logger: globalContext.AppEngine.GetLogger()}
+	invoiceRepository := &postgres.InvoiceRepository{Database: globalContext.Database, Context: globalContext.Context}
 	application.invoiceRepository = invoiceRepository
 
-	paymentRepository := &postgres.PaymentRepository{Database: globalContext.Database, Context: globalContext.Context, Logger: globalContext.AppEngine.GetLogger()}
+	paymentRepository := &postgres.PaymentRepository{Database: globalContext.Database, Context: globalContext.Context}
 	application.paymentRepository = paymentRepository
 
 	imputationRepository := &postgres.ImputationRepository{Database: globalContext.Database, Context: globalContext.Context}
 	application.imputationRepository = imputationRepository
 
-	travelItemRepository := &postgres.TravelItemRepository{Database: globalContext.Database, Context: globalContext.Context, Logger: globalContext.AppEngine.GetLogger()}
+	travelItemRepository := &postgres.TravelItemRepository{Database: globalContext.Database, Context: globalContext.Context}
 	application.travelItemRepository = travelItemRepository
 
 	application.TransactionManager = transactionManager.NewTransactionManager(globalContext.Context, globalContext.Database)

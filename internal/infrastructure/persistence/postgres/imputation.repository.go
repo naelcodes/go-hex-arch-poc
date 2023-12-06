@@ -8,14 +8,13 @@ import (
 	imputationDomain "github.com/naelcodes/ab-backend/internal/core/domains/imputation-domain"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
-	"github.com/naelcodes/ab-backend/pkg/logger"
 	"github.com/naelcodes/ab-backend/pkg/types"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 type ImputationRepository struct {
 	Database *ent.Client
 	Context  context.Context
-	Logger   *logger.Logger
 }
 
 func (repo *ImputationRepository) CountByInvoiceId(idInvoice types.EID) (*int, error) {
@@ -40,10 +39,10 @@ func (repo *ImputationRepository) Update(transaction *ent.Tx, imputationEntity *
 
 func (repo *ImputationRepository) SaveAll(transaction *ent.Tx, imputationEntities []*imputationDomain.Imputation) {
 
-	repo.Logger.Info(fmt.Sprintf("[ImputationRepository - SaveAll] Saving %v imputations", len(imputationEntities)))
+	utils.Logger.Info(fmt.Sprintf("[ImputationRepository - SaveAll] Saving %v imputations", len(imputationEntities)))
 
 	for _, i := range imputationEntities {
-		repo.Logger.Info(fmt.Sprintf("[ImputationRepository - SaveAll] Saving imputation: %v", i))
+		utils.Logger.Info(fmt.Sprintf("[ImputationRepository - SaveAll] Saving imputation: %v", i))
 
 		updatedImputation, err := transaction.Imputation.UpdateOneID(int(i.Id)).
 			SetInvoiceID(int(i.IdInvoice)).
@@ -52,14 +51,14 @@ func (repo *ImputationRepository) SaveAll(transaction *ent.Tx, imputationEntitie
 			Save(repo.Context)
 
 		if err != nil {
-			repo.Logger.Error(fmt.Sprintf("[ImputationRepository - SaveAll] Error updating imputation: %v", err))
+			utils.Logger.Error(fmt.Sprintf("[ImputationRepository - SaveAll] Error updating imputation: %v", err))
 			panic(CustomErrors.RepositoryError(fmt.Errorf("error updating imputation: %v", err)))
 		}
-		repo.Logger.Info(fmt.Sprintf("[ImputationRepository - SaveAll] Updated imputation: %v", updatedImputation))
+		utils.Logger.Info(fmt.Sprintf("[ImputationRepository - SaveAll] Updated imputation: %v", updatedImputation))
 
 	}
 
-	repo.Logger.Info("[ImputationRepository - SaveAll] Saved imputations")
+	utils.Logger.Info("[ImputationRepository - SaveAll] Saved imputations")
 }
 
 func (repo *ImputationRepository) Delete(transaction *ent.Tx, id types.EID) error {

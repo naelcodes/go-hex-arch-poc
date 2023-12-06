@@ -7,12 +7,12 @@ import (
 
 	"github.com/naelcodes/ab-backend/config"
 	"github.com/naelcodes/ab-backend/pkg/errors"
-	"github.com/naelcodes/ab-backend/pkg/logger"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 type AppEngine struct {
 	server *fiber.App
-	logger *logger.Logger
+	logger *utils.ZeroLogger
 }
 
 func (appEngine *AppEngine) Init() {
@@ -21,7 +21,7 @@ func (appEngine *AppEngine) Init() {
 		ErrorHandler: errors.GlobalErrorHandler,
 	})
 	appEngine.server = app
-	appEngine.logger = logger.NewLogger()
+	appEngine.logger = utils.NewZeroLogger()
 
 }
 
@@ -34,6 +34,6 @@ func (appEngine *AppEngine) GetServer() *fiber.App {
 	return appEngine.server
 }
 
-func (appEngine *AppEngine) GetLogger() *logger.Logger {
+func (appEngine *AppEngine) GetLogger() *utils.ZeroLogger {
 	return appEngine.logger
 }

@@ -11,14 +11,13 @@ import (
 	paymentDomain "github.com/naelcodes/ab-backend/internal/core/domains/payment-domain"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
-	"github.com/naelcodes/ab-backend/pkg/logger"
 	"github.com/naelcodes/ab-backend/pkg/types"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 type PaymentRepository struct {
 	Database *ent.Client
 	Context  context.Context
-	Logger   *logger.Logger
 }
 
 func (repo *PaymentRepository) Count() (*int, error) {
@@ -33,7 +32,7 @@ func (repo *PaymentRepository) Count() (*int, error) {
 
 func (repo *PaymentRepository) CountByCustomerID(customerId types.EID) (*int, error) {
 
-	repo.Logger.Info(fmt.Sprintf("[PaymentRepository - CountByCustomerID] Customer ID: %v", customerId))
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - CountByCustomerID] Customer ID: %v", customerId))
 
 	totalRowCount, err := repo.Database.Payment.Query().
 		Where(payment.
@@ -43,11 +42,11 @@ func (repo *PaymentRepository) CountByCustomerID(customerId types.EID) (*int, er
 		Count(repo.Context)
 
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("[PaymentRepository - CountByCustomerID] Error counting customer's payments: %v", err))
+		utils.Logger.Error(fmt.Sprintf("[PaymentRepository - CountByCustomerID] Error counting customer's payments: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error counting customer's payments: %v", err))
 	}
 
-	repo.Logger.Info(fmt.Sprintf("[PaymentRepository - CountByCustomerID] Total number of customer's payments: %v", totalRowCount))
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - CountByCustomerID] Total number of customer's payments: %v", totalRowCount))
 	return &totalRowCount, nil
 }
 
@@ -130,7 +129,7 @@ func (repo *PaymentRepository) GetByCustomerID(id types.EID, queryParams *types.
 
 func (repo *PaymentRepository) Save(paymentEntity *paymentDomain.Payment) (*dto.GetPaymentDTO, error) {
 
-	repo.Logger.Info(fmt.Sprintf("Reposiotry - Saving payment entity: %v", paymentEntity))
+	utils.Logger.Info(fmt.Sprintf("Reposiotry - Saving payment entity: %v", paymentEntity))
 
 	payment, err := repo.Database.Payment.Create().
 		SetAmount(paymentEntity.Amount).
@@ -143,16 +142,16 @@ func (repo *PaymentRepository) Save(paymentEntity *paymentDomain.Payment) (*dto.
 		Save(repo.Context)
 
 	if err != nil {
-		repo.Logger.Error(fmt.Sprintf("Repository - Error saving payment: %v", err))
+		utils.Logger.Error(fmt.Sprintf("Repository - Error saving payment: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error saving payment: %v", err))
 	}
 
-	repo.Logger.Info(fmt.Sprintf("Repository - Converting to DTO: %v", payment))
+	utils.Logger.Info(fmt.Sprintf("Repository - Converting to DTO: %v", payment))
 
 	customerId := int(paymentEntity.IdCustomer)
 	paymentDTO := PaymentModelToDTO(payment, false, &customerId)
 
-	repo.Logger.Info(fmt.Sprintf("Repository - Saved payment DTO: %v", paymentDTO))
+	utils.Logger.Info(fmt.Sprintf("Repository - Saved payment DTO: %v", paymentDTO))
 
 	return paymentDTO, nil
 
@@ -160,7 +159,7 @@ func (repo *PaymentRepository) Save(paymentEntity *paymentDomain.Payment) (*dto.
 
 func (repo *PaymentRepository) SaveAllPaymentsAllocations(transaction *ent.Tx, payments []*paymentDomain.Payment) {
 
-	repo.Logger.Info(fmt.Sprintf("[PaymentRepository - SavePaymentsAllocations] - Saving payments allocations: %v", payments))
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - SavePaymentsAllocations] - Saving payments allocations: %v", payments))
 
 	for _, p := range payments {
 		updatedPayment, err := transaction.Payment.UpdateOneID(int(p.Id)).
@@ -169,13 +168,13 @@ func (repo *PaymentRepository) SaveAllPaymentsAllocations(transaction *ent.Tx, p
 			SetStatus(payment.Status(p.Status)).
 			Save(repo.Context)
 
-		repo.Logger.Info(fmt.Sprintf("[PaymentRepository - SavePaymentsAllocations] - Updated payment: %v", updatedPayment))
+		utils.Logger.Info(fmt.Sprintf("[PaymentRepository - SavePaymentsAllocations] - Updated payment: %v", updatedPayment))
 		if err != nil {
 			panic(CustomErrors.RepositoryError(fmt.Errorf("error saving payments allocations: %v", err)))
 		}
 	}
 
-	repo.Logger.Info("[PaymentRepository - SavePaymentsAllocations] - Saved payments allocations")
+	utils.Logger.Info("[PaymentRepository - SavePaymentsAllocations] - Saved payments allocations")
 }
 
 func (repo *PaymentRepository) Update(paymentEntity *paymentDomain.Payment) error {
