@@ -3,9 +3,11 @@ package transactionManager
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/naelcodes/ab-backend/ent"
 	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 type TransactionManager struct {
@@ -43,6 +45,7 @@ func (tm *TransactionManager) GetTransaction() *ent.Tx {
 }
 
 func (tm *TransactionManager) CatchError() error {
+	utils.Logger.Info(fmt.Sprintf("[TransactionManager - CatchError] Transaction: %v", tm.transaction))
 	if err := recover(); err != nil {
 		rollBackErr := tm.Rollback()
 		err, _ := err.(error)

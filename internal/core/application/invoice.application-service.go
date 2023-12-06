@@ -1,6 +1,7 @@
 package application
 
 import (
+	"errors"
 	"fmt"
 
 	invoiceDomain "github.com/naelcodes/ab-backend/internal/core/domains/invoice-domain"
@@ -11,8 +12,6 @@ import (
 )
 
 func (application *Application) CreateInvoiceService(createInvoiceDto *dto.CreateInvoiceDTO) (*dto.GetInvoiceDTO, error) {
-
-	defer application.TransactionManager.CatchError()
 
 	utils.Logger.Info(fmt.Sprintf("[CreateInvoiceService] - CreateInvoiceDTO: %v", createInvoiceDto))
 
@@ -46,21 +45,26 @@ func (application *Application) CreateInvoiceService(createInvoiceDto *dto.Creat
 
 	if transactionErr != nil {
 		utils.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error starting transaction: %v", transactionErr))
-		panic(CustomError.ServiceError(transactionErr, "TransactionManager.Begin()"))
+		return nil, CustomError.ServiceError(transactionErr, "TransactionManager.Begin()")
 	}
 
 	savedInvoiceDto, repoError := application.invoiceRepository.Save(application.TransactionManager.GetTransaction(), invoice)
 
 	if repoError != nil {
 		utils.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error saving invoice: %v", repoError))
-		panic(repoError)
+		RollbackErr := application.TransactionManager.Rollback()
+		if RollbackErr != nil {
+			utils.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error rolling back transaction: %v", RollbackErr))
+			return nil, CustomError.ServiceError(errors.Join(RollbackErr, repoError), "TransactionManager.Rollback()")
+		}
+		return nil, repoError
 	}
 
 	transactionCommitErr := application.TransactionManager.Commit()
 
 	if transactionErr != nil {
 		utils.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error commiting transaction: %v", transactionCommitErr))
-		return nil, transactionCommitErr
+		return nil, CustomError.ServiceError(transactionCommitErr, "TransactionManager.Commit()")
 	}
 
 	utils.Logger.Info("[CreateInvoiceService] - Transaction committed")
@@ -83,5 +87,23 @@ func (application *Application) GetAllInvoiceService(queryParams *types.GetQuery
 
 	utils.Logger.Info(fmt.Sprintf("[GetAllInvoicesService] - GetAllInvoiceDTO: %v", getAllInvoiceDTO))
 	return getAllInvoiceDTO, nil
+
+}
+
+// Get invoice
+func (application *Application) GetInvoiceService(id int, queryParams *types.GetQueryParams) (*dto.GetInvoiceDTO, error) {
+
+	utils.Logger.Info(fmt.Sprintf("[GetInvoiceService] - GetInvoiceDTO: %v", id))
+
+	getInvoiceDTO, err := application.invoiceRepository.GetById(types.EID(id), queryParams)
+
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[GetInvoiceService] - Error getting invoice: %v", err))
+		return nil, err
+	}
+
+	utils.Logger.Info(fmt.Sprintf("[GetInvoiceService] - GetInvoiceDTO: %v", getInvoiceDTO))
+
+	return getInvoiceDTO, nil
 
 }

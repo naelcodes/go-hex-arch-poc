@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -45,19 +44,19 @@ func GetCurrentDate() string {
 }
 
 func FormatDate(date string) string {
-	log.Printf("date: %s", date)
+	// log.Printf("date: %s", date)
 	parsedDate, _ := time.Parse(time.RFC3339, date)
-	log.Printf("parsedDate: %s", parsedDate)
+	// log.Printf("parsedDate: %s", parsedDate)
 	return parsedDate.Local().Format("2006-01-02")
 }
 
+// Logger is a global logger instance
 var Logger = NewZeroLogger()
 
 type ZeroLogger struct {
 	logger zerolog.Logger
 }
 
-// NewLogger creates a new instance of the logger.
 func NewZeroLogger() *ZeroLogger {
 	output := zerolog.ConsoleWriter{Out: os.Stdout}
 	output.TimeFormat = "2006-01-02 15:04:05"
@@ -87,3 +86,5 @@ func (l *ZeroLogger) Debug(message string) {
 func (l *ZeroLogger) Panic(message string) {
 	l.logger.Panic().Msg(message + "\n")
 }
+
+// -------------------------------------------

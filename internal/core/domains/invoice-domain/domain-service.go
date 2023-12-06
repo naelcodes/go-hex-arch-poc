@@ -101,7 +101,7 @@ func (service *InvoiceDomainService) RemoveTravelItem(invoice Invoice, travelIte
 func (service *InvoiceDomainService) AddImputation(invoiceId types.EID, imputations []*imputationDomain.Imputation) {
 
 	payments := make([]*paymentDomain.Payment, 0)
-	invoiceDTO, RepositoryErr := service.invoiceRepository.GetById(invoiceId)
+	invoiceDTO, RepositoryErr := service.invoiceRepository.GetById(invoiceId, nil)
 
 	if RepositoryErr != nil {
 		panic(RepositoryErr)
@@ -157,7 +157,7 @@ func (service *InvoiceDomainService) AddImputation(invoiceId types.EID, imputati
 func (service *InvoiceDomainService) UpdateImputation(invoiceId types.EID, imputations []*imputationDomain.Imputation) {
 
 	payments := make([]*paymentDomain.Payment, 0)
-	invoiceDTO, InvoiceRepositoryErr := service.invoiceRepository.GetById(invoiceId)
+	invoiceDTO, InvoiceRepositoryErr := service.invoiceRepository.GetById(invoiceId, nil)
 
 	if InvoiceRepositoryErr != nil {
 		panic(InvoiceRepositoryErr)

@@ -48,6 +48,13 @@ func RepositoryError(err error) *CustomError {
 	}
 }
 
+func NotFoundError(err error) *CustomError {
+	return &CustomError{
+		Err:  err,
+		Type: "NotFoundError",
+	}
+}
+
 func ValidationError(err error) *CustomError {
 	return &CustomError{
 		Err:  err,
@@ -96,6 +103,8 @@ func GlobalErrorHandler(ctx *fiber.Ctx, err error) error {
 			return ErrorResponse(fiber.StatusBadRequest, customError, ctx)
 		case "RepositoryError":
 			return ErrorResponse(fiber.StatusInternalServerError, customError, ctx)
+		case "NotFoundError":
+			return ErrorResponse(fiber.StatusBadRequest, customError, ctx)
 		case "DomainError":
 			return ErrorResponse(fiber.StatusBadRequest, customError, ctx)
 		case "ServiceError":

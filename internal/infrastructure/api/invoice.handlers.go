@@ -59,7 +59,31 @@ func (controller *RestController) GetAllInvoiceHandler() fiber.Handler {
 
 func (controller *RestController) GetInvoiceHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		return c.Status(200).JSON("/getInvoice handler")
+
+		id, err := c.ParamsInt("id")
+		if err != nil {
+			utils.Logger.Error(fmt.Sprintf("[GetInvoiceHandler] - Error parsing id: %v", err))
+			return errors.ServiceError(err, "Id Parsing in URL parameter")
+		}
+		utils.Logger.Info(fmt.Sprintf("[GetInvoiceHandler] - params Id: %v", id))
+
+		queryParams := new(types.GetQueryParams)
+		err = c.QueryParser(queryParams)
+
+		if err != nil {
+			utils.Logger.Error(fmt.Sprintf("[GetInvoiceHandler] - Error parsing query params: %v", err))
+			return errors.ServiceError(err, "Parsing query params")
+		}
+
+		getInvoiceDTO, err := controller.ApplicationService.GetInvoiceService(id, queryParams)
+
+		if err != nil {
+			utils.Logger.Error(fmt.Sprintf("[GetInvoiceHandler] - Error getting invoice DTO: %v", err))
+			return err
+		}
+
+		utils.Logger.Info(fmt.Sprintf("[GetInvoiceHandler] - Invoice DTO: %v", getInvoiceDTO))
+		return c.Status(fiber.StatusOK).JSON(getInvoiceDTO)
 
 	}
 }

@@ -57,8 +57,38 @@ func (repo *InvoiceRepository) GetByCustomerID(types.EID, *types.GetQueryParams,
 	return nil, nil
 }
 
-func (repo *InvoiceRepository) GetById(id types.EID) (*dto.GetInvoiceDTO, error) {
-	return nil, nil
+func (repo *InvoiceRepository) GetById(id types.EID, queryParams *types.GetQueryParams) (*dto.GetInvoiceDTO, error) {
+
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetById] Invoice ID: %v", id))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetById] Query Params: %v", queryParams))
+
+	embedCustomer := false
+	invoiceQuery := repo.Database.Invoice.Query().Where(invoice.IDEQ(int(id)))
+
+	if queryParams != nil && queryParams.Embed != nil && *queryParams.Embed == "customer" {
+		embedCustomer = true
+		invoiceQuery.WithCustomer()
+
+	} else {
+		invoiceQuery.WithCustomer(func(cq *ent.CustomerQuery) {
+			cq.Select(customer.FieldID)
+		})
+	}
+
+	invoice, err := invoiceQuery.Only(repo.Context)
+
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - GetById] Error getting invoice: %v", err))
+		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting invoice: %v", err))
+	}
+
+	utils.Logger.Info("[InvoiceRepository - GetById] Invoice found")
+
+	invoiceDTO := InvoiceModelToDTO(invoice, embedCustomer)
+
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetById] Invoice DTO: %v", invoiceDTO))
+
+	return invoiceDTO, nil
 }
 
 func (repo *InvoiceRepository) GetAll(queryParams *types.GetQueryParams) (*dto.GetAllInvoiceDTO, error) {
@@ -119,16 +149,15 @@ func (repo *InvoiceRepository) Save(transaction *ent.Tx, invoiceDomainModel *inv
 
 	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - Save] Invoice: %v", invoiceDomainModel))
 
-	totalRowCount, err := transaction.Invoice.Query().Where(invoice.TagEQ(invoice.Tag3)).Count(repo.Context)
+	totalRowCount, err := repo.Count()
 
 	if err != nil {
-		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - Save] Error counting invoices: %v", err))
-		return nil, CustomErrors.RepositoryError(fmt.Errorf("error counting invoices: %v", err))
+		return nil, err
 	}
 
 	createdInvoice, err := transaction.Invoice.Create().
 		SetCreationDate(invoiceDomainModel.CreationDate).
-		SetInvoiceNumber(utils.GenerateCode("inv", totalRowCount+1)).
+		SetInvoiceNumber(utils.GenerateCode("inv", *totalRowCount+1)).
 		SetDueDate(invoiceDomainModel.DueDate).
 		SetCustomerID(int(invoiceDomainModel.IdCustomer)).
 		SetAmount(invoiceDomainModel.Amount).
@@ -144,6 +173,20 @@ func (repo *InvoiceRepository) Save(transaction *ent.Tx, invoiceDomainModel *inv
 	}
 
 	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - Save] Created invoice: %v", createdInvoice))
+
+	for _, travelItemId := range invoiceDomainModel.TravelItemsId {
+
+		exists, err := transaction.TravelItem.Query().Where(travelitem.And(travelitem.IDEQ(travelItemId), travelitem.Not(travelitem.HasInvoice()))).Exist(repo.Context)
+		if err != nil {
+			utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - Save] Error checking if travel item exists: %v", err))
+			return nil, CustomErrors.RepositoryError(fmt.Errorf("error checking if travel item exists: %v", err))
+		}
+		if !exists {
+			utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - Save] Travel item (id:%v) does not exist or already used in a different invoice", travelItemId))
+			return nil, CustomErrors.RepositoryError(fmt.Errorf("travel item (id:%v) does not exist or already used in a different invoice", travelItemId))
+		}
+
+	}
 
 	updatedRowCount, err := transaction.TravelItem.Update().
 		Where(travelitem.IDIn(invoiceDomainModel.TravelItemsId...)).
