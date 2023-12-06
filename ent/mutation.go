@@ -1613,6 +1613,10 @@ type InvoiceMutation struct {
 	due_date            *string
 	amount              *float64
 	addamount           *float64
+	net_amount          *float64
+	addnet_amount       *float64
+	base_amount         *float64
+	addbase_amount      *float64
 	balance             *float64
 	addbalance          *float64
 	credit_apply        *float64
@@ -1928,6 +1932,118 @@ func (m *InvoiceMutation) AddedAmount() (r float64, exists bool) {
 func (m *InvoiceMutation) ResetAmount() {
 	m.amount = nil
 	m.addamount = nil
+}
+
+// SetNetAmount sets the "net_amount" field.
+func (m *InvoiceMutation) SetNetAmount(f float64) {
+	m.net_amount = &f
+	m.addnet_amount = nil
+}
+
+// NetAmount returns the value of the "net_amount" field in the mutation.
+func (m *InvoiceMutation) NetAmount() (r float64, exists bool) {
+	v := m.net_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNetAmount returns the old "net_amount" field's value of the Invoice entity.
+// If the Invoice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvoiceMutation) OldNetAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNetAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNetAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNetAmount: %w", err)
+	}
+	return oldValue.NetAmount, nil
+}
+
+// AddNetAmount adds f to the "net_amount" field.
+func (m *InvoiceMutation) AddNetAmount(f float64) {
+	if m.addnet_amount != nil {
+		*m.addnet_amount += f
+	} else {
+		m.addnet_amount = &f
+	}
+}
+
+// AddedNetAmount returns the value that was added to the "net_amount" field in this mutation.
+func (m *InvoiceMutation) AddedNetAmount() (r float64, exists bool) {
+	v := m.addnet_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNetAmount resets all changes to the "net_amount" field.
+func (m *InvoiceMutation) ResetNetAmount() {
+	m.net_amount = nil
+	m.addnet_amount = nil
+}
+
+// SetBaseAmount sets the "base_amount" field.
+func (m *InvoiceMutation) SetBaseAmount(f float64) {
+	m.base_amount = &f
+	m.addbase_amount = nil
+}
+
+// BaseAmount returns the value of the "base_amount" field in the mutation.
+func (m *InvoiceMutation) BaseAmount() (r float64, exists bool) {
+	v := m.base_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBaseAmount returns the old "base_amount" field's value of the Invoice entity.
+// If the Invoice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvoiceMutation) OldBaseAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBaseAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBaseAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBaseAmount: %w", err)
+	}
+	return oldValue.BaseAmount, nil
+}
+
+// AddBaseAmount adds f to the "base_amount" field.
+func (m *InvoiceMutation) AddBaseAmount(f float64) {
+	if m.addbase_amount != nil {
+		*m.addbase_amount += f
+	} else {
+		m.addbase_amount = &f
+	}
+}
+
+// AddedBaseAmount returns the value that was added to the "base_amount" field in this mutation.
+func (m *InvoiceMutation) AddedBaseAmount() (r float64, exists bool) {
+	v := m.addbase_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBaseAmount resets all changes to the "base_amount" field.
+func (m *InvoiceMutation) ResetBaseAmount() {
+	m.base_amount = nil
+	m.addbase_amount = nil
 }
 
 // SetBalance sets the "balance" field.
@@ -2259,7 +2375,7 @@ func (m *InvoiceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InvoiceMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.creation_date != nil {
 		fields = append(fields, invoice.FieldCreationDate)
 	}
@@ -2274,6 +2390,12 @@ func (m *InvoiceMutation) Fields() []string {
 	}
 	if m.amount != nil {
 		fields = append(fields, invoice.FieldAmount)
+	}
+	if m.net_amount != nil {
+		fields = append(fields, invoice.FieldNetAmount)
+	}
+	if m.base_amount != nil {
+		fields = append(fields, invoice.FieldBaseAmount)
 	}
 	if m.balance != nil {
 		fields = append(fields, invoice.FieldBalance)
@@ -2302,6 +2424,10 @@ func (m *InvoiceMutation) Field(name string) (ent.Value, bool) {
 		return m.DueDate()
 	case invoice.FieldAmount:
 		return m.Amount()
+	case invoice.FieldNetAmount:
+		return m.NetAmount()
+	case invoice.FieldBaseAmount:
+		return m.BaseAmount()
 	case invoice.FieldBalance:
 		return m.Balance()
 	case invoice.FieldCreditApply:
@@ -2327,6 +2453,10 @@ func (m *InvoiceMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldDueDate(ctx)
 	case invoice.FieldAmount:
 		return m.OldAmount(ctx)
+	case invoice.FieldNetAmount:
+		return m.OldNetAmount(ctx)
+	case invoice.FieldBaseAmount:
+		return m.OldBaseAmount(ctx)
 	case invoice.FieldBalance:
 		return m.OldBalance(ctx)
 	case invoice.FieldCreditApply:
@@ -2377,6 +2507,20 @@ func (m *InvoiceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAmount(v)
 		return nil
+	case invoice.FieldNetAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNetAmount(v)
+		return nil
+	case invoice.FieldBaseAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBaseAmount(v)
+		return nil
 	case invoice.FieldBalance:
 		v, ok := value.(float64)
 		if !ok {
@@ -2409,6 +2553,12 @@ func (m *InvoiceMutation) AddedFields() []string {
 	if m.addamount != nil {
 		fields = append(fields, invoice.FieldAmount)
 	}
+	if m.addnet_amount != nil {
+		fields = append(fields, invoice.FieldNetAmount)
+	}
+	if m.addbase_amount != nil {
+		fields = append(fields, invoice.FieldBaseAmount)
+	}
 	if m.addbalance != nil {
 		fields = append(fields, invoice.FieldBalance)
 	}
@@ -2425,6 +2575,10 @@ func (m *InvoiceMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case invoice.FieldAmount:
 		return m.AddedAmount()
+	case invoice.FieldNetAmount:
+		return m.AddedNetAmount()
+	case invoice.FieldBaseAmount:
+		return m.AddedBaseAmount()
 	case invoice.FieldBalance:
 		return m.AddedBalance()
 	case invoice.FieldCreditApply:
@@ -2444,6 +2598,20 @@ func (m *InvoiceMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddAmount(v)
+		return nil
+	case invoice.FieldNetAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNetAmount(v)
+		return nil
+	case invoice.FieldBaseAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBaseAmount(v)
 		return nil
 	case invoice.FieldBalance:
 		v, ok := value.(float64)
@@ -2500,6 +2668,12 @@ func (m *InvoiceMutation) ResetField(name string) error {
 		return nil
 	case invoice.FieldAmount:
 		m.ResetAmount()
+		return nil
+	case invoice.FieldNetAmount:
+		m.ResetNetAmount()
+		return nil
+	case invoice.FieldBaseAmount:
+		m.ResetBaseAmount()
 		return nil
 	case invoice.FieldBalance:
 		m.ResetBalance()

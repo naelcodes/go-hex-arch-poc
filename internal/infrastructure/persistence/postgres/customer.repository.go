@@ -50,7 +50,6 @@ func (repo *CustomerRepository) GetAll(queryParams *types.GetQueryParams) ([]*dt
 
 	if queryParams != nil {
 
-		repo.Logger.Info(fmt.Sprintf("[CustomerRepository - GetAll] Search: here"))
 		repo.Logger.Info(fmt.Sprintf("[CustomerRepository - GetAll] Search: %v", queryParams.Fields))
 
 		if queryParams.Fields != nil {

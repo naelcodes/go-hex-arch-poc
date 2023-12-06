@@ -25,6 +25,10 @@ const (
 	FieldDueDate = "due_date"
 	// FieldAmount holds the string denoting the amount field in the database.
 	FieldAmount = "amount"
+	// FieldNetAmount holds the string denoting the net_amount field in the database.
+	FieldNetAmount = "net_amount"
+	// FieldBaseAmount holds the string denoting the base_amount field in the database.
+	FieldBaseAmount = "base_amount"
 	// FieldBalance holds the string denoting the balance field in the database.
 	FieldBalance = "balance"
 	// FieldCreditApply holds the string denoting the credit_apply field in the database.
@@ -70,6 +74,8 @@ var Columns = []string{
 	FieldStatus,
 	FieldDueDate,
 	FieldAmount,
+	FieldNetAmount,
+	FieldBaseAmount,
 	FieldBalance,
 	FieldCreditApply,
 	FieldTag,
@@ -105,6 +111,14 @@ var (
 	DefaultAmount float64
 	// AmountValidator is a validator for the "amount" field. It is called by the builders before save.
 	AmountValidator func(float64) error
+	// DefaultNetAmount holds the default value on creation for the "net_amount" field.
+	DefaultNetAmount float64
+	// NetAmountValidator is a validator for the "net_amount" field. It is called by the builders before save.
+	NetAmountValidator func(float64) error
+	// DefaultBaseAmount holds the default value on creation for the "base_amount" field.
+	DefaultBaseAmount float64
+	// BaseAmountValidator is a validator for the "base_amount" field. It is called by the builders before save.
+	BaseAmountValidator func(float64) error
 	// DefaultBalance holds the default value on creation for the "balance" field.
 	DefaultBalance float64
 	// BalanceValidator is a validator for the "balance" field. It is called by the builders before save.
@@ -116,6 +130,8 @@ var (
 	// ValueScanner of all Invoice fields.
 	ValueScanner struct {
 		Amount      field.TypeValueScanner[float64]
+		NetAmount   field.TypeValueScanner[float64]
+		BaseAmount  field.TypeValueScanner[float64]
 		Balance     field.TypeValueScanner[float64]
 		CreditApply field.TypeValueScanner[float64]
 	}
@@ -208,6 +224,16 @@ func ByDueDate(opts ...sql.OrderTermOption) OrderOption {
 // ByAmount orders the results by the amount field.
 func ByAmount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAmount, opts...).ToFunc()
+}
+
+// ByNetAmount orders the results by the net_amount field.
+func ByNetAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNetAmount, opts...).ToFunc()
+}
+
+// ByBaseAmount orders the results by the base_amount field.
+func ByBaseAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBaseAmount, opts...).ToFunc()
 }
 
 // ByBalance orders the results by the balance field.

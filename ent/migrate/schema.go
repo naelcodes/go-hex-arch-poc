@@ -64,6 +64,8 @@ var (
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "paid", "overdue", "unpaid", "void"}, Default: "unpaid"},
 		{Name: "due_date", Type: field.TypeString, SchemaType: map[string]string{"postgres": "date"}},
 		{Name: "amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "net_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "base_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
 		{Name: "balance", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
 		{Name: "credit_apply", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
 		{Name: "tag", Type: field.TypeEnum, Enums: []string{"1", "2", "3"}, Default: "3"},
@@ -77,7 +79,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "invoice_customer_invoices",
-				Columns:    []*schema.Column{InvoiceColumns[9]},
+				Columns:    []*schema.Column{InvoiceColumns[11]},
 				RefColumns: []*schema.Column{CustomerColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

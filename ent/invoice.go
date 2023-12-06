@@ -27,6 +27,10 @@ type Invoice struct {
 	DueDate string `json:"due_date,omitempty"`
 	// Amount holds the value of the "amount" field.
 	Amount float64 `json:"amount,omitempty"`
+	// NetAmount holds the value of the "net_amount" field.
+	NetAmount float64 `json:"net_amount,omitempty"`
+	// BaseAmount holds the value of the "base_amount" field.
+	BaseAmount float64 `json:"base_amount,omitempty"`
 	// Balance holds the value of the "balance" field.
 	Balance float64 `json:"balance,omitempty"`
 	// CreditApply holds the value of the "credit_apply" field.
@@ -95,6 +99,10 @@ func (*Invoice) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case invoice.FieldAmount:
 			values[i] = invoice.ValueScanner.Amount.ScanValue()
+		case invoice.FieldNetAmount:
+			values[i] = invoice.ValueScanner.NetAmount.ScanValue()
+		case invoice.FieldBaseAmount:
+			values[i] = invoice.ValueScanner.BaseAmount.ScanValue()
 		case invoice.FieldBalance:
 			values[i] = invoice.ValueScanner.Balance.ScanValue()
 		case invoice.FieldCreditApply:
@@ -151,6 +159,18 @@ func (i *Invoice) assignValues(columns []string, values []any) error {
 				return err
 			} else {
 				i.Amount = value
+			}
+		case invoice.FieldNetAmount:
+			if value, err := invoice.ValueScanner.NetAmount.FromValue(values[j]); err != nil {
+				return err
+			} else {
+				i.NetAmount = value
+			}
+		case invoice.FieldBaseAmount:
+			if value, err := invoice.ValueScanner.BaseAmount.FromValue(values[j]); err != nil {
+				return err
+			} else {
+				i.BaseAmount = value
 			}
 		case invoice.FieldBalance:
 			if value, err := invoice.ValueScanner.Balance.FromValue(values[j]); err != nil {
@@ -242,6 +262,12 @@ func (i *Invoice) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("amount=")
 	builder.WriteString(fmt.Sprintf("%v", i.Amount))
+	builder.WriteString(", ")
+	builder.WriteString("net_amount=")
+	builder.WriteString(fmt.Sprintf("%v", i.NetAmount))
+	builder.WriteString(", ")
+	builder.WriteString("base_amount=")
+	builder.WriteString(fmt.Sprintf("%v", i.BaseAmount))
 	builder.WriteString(", ")
 	builder.WriteString("balance=")
 	builder.WriteString(fmt.Sprintf("%v", i.Balance))

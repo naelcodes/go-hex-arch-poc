@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -38,4 +39,11 @@ func GenerateCode(prefix string, number int) string {
 func GetCurrentDate() string {
 	currentDate := time.Now().Format("2006-01-02")
 	return currentDate
+}
+
+func FormatDate(date string) string {
+	log.Printf("date: %s", date)
+	parsedDate, _ := time.Parse(time.RFC3339, date)
+	log.Printf("parsedDate: %s", parsedDate)
+	return parsedDate.Local().Format("2006-01-02")
 }

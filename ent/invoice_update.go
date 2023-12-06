@@ -107,6 +107,48 @@ func (iu *InvoiceUpdate) AddAmount(f float64) *InvoiceUpdate {
 	return iu
 }
 
+// SetNetAmount sets the "net_amount" field.
+func (iu *InvoiceUpdate) SetNetAmount(f float64) *InvoiceUpdate {
+	iu.mutation.ResetNetAmount()
+	iu.mutation.SetNetAmount(f)
+	return iu
+}
+
+// SetNillableNetAmount sets the "net_amount" field if the given value is not nil.
+func (iu *InvoiceUpdate) SetNillableNetAmount(f *float64) *InvoiceUpdate {
+	if f != nil {
+		iu.SetNetAmount(*f)
+	}
+	return iu
+}
+
+// AddNetAmount adds f to the "net_amount" field.
+func (iu *InvoiceUpdate) AddNetAmount(f float64) *InvoiceUpdate {
+	iu.mutation.AddNetAmount(f)
+	return iu
+}
+
+// SetBaseAmount sets the "base_amount" field.
+func (iu *InvoiceUpdate) SetBaseAmount(f float64) *InvoiceUpdate {
+	iu.mutation.ResetBaseAmount()
+	iu.mutation.SetBaseAmount(f)
+	return iu
+}
+
+// SetNillableBaseAmount sets the "base_amount" field if the given value is not nil.
+func (iu *InvoiceUpdate) SetNillableBaseAmount(f *float64) *InvoiceUpdate {
+	if f != nil {
+		iu.SetBaseAmount(*f)
+	}
+	return iu
+}
+
+// AddBaseAmount adds f to the "base_amount" field.
+func (iu *InvoiceUpdate) AddBaseAmount(f float64) *InvoiceUpdate {
+	iu.mutation.AddBaseAmount(f)
+	return iu
+}
+
 // SetBalance sets the "balance" field.
 func (iu *InvoiceUpdate) SetBalance(f float64) *InvoiceUpdate {
 	iu.mutation.ResetBalance()
@@ -306,6 +348,16 @@ func (iu *InvoiceUpdate) check() error {
 			return &ValidationError{Name: "amount", err: fmt.Errorf(`ent: validator failed for field "Invoice.amount": %w`, err)}
 		}
 	}
+	if v, ok := iu.mutation.NetAmount(); ok {
+		if err := invoice.NetAmountValidator(v); err != nil {
+			return &ValidationError{Name: "net_amount", err: fmt.Errorf(`ent: validator failed for field "Invoice.net_amount": %w`, err)}
+		}
+	}
+	if v, ok := iu.mutation.BaseAmount(); ok {
+		if err := invoice.BaseAmountValidator(v); err != nil {
+			return &ValidationError{Name: "base_amount", err: fmt.Errorf(`ent: validator failed for field "Invoice.base_amount": %w`, err)}
+		}
+	}
 	if v, ok := iu.mutation.Balance(); ok {
 		if err := invoice.BalanceValidator(v); err != nil {
 			return &ValidationError{Name: "balance", err: fmt.Errorf(`ent: validator failed for field "Invoice.balance": %w`, err)}
@@ -364,6 +416,34 @@ func (iu *InvoiceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			return 0, err
 		}
 		_spec.AddField(invoice.FieldAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iu.mutation.NetAmount(); ok {
+		vv, err := invoice.ValueScanner.NetAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(invoice.FieldNetAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iu.mutation.AddedNetAmount(); ok {
+		vv, err := invoice.ValueScanner.NetAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(invoice.FieldNetAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iu.mutation.BaseAmount(); ok {
+		vv, err := invoice.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(invoice.FieldBaseAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iu.mutation.AddedBaseAmount(); ok {
+		vv, err := invoice.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(invoice.FieldBaseAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := iu.mutation.Balance(); ok {
 		vv, err := invoice.ValueScanner.Balance.Value(value)
@@ -612,6 +692,48 @@ func (iuo *InvoiceUpdateOne) AddAmount(f float64) *InvoiceUpdateOne {
 	return iuo
 }
 
+// SetNetAmount sets the "net_amount" field.
+func (iuo *InvoiceUpdateOne) SetNetAmount(f float64) *InvoiceUpdateOne {
+	iuo.mutation.ResetNetAmount()
+	iuo.mutation.SetNetAmount(f)
+	return iuo
+}
+
+// SetNillableNetAmount sets the "net_amount" field if the given value is not nil.
+func (iuo *InvoiceUpdateOne) SetNillableNetAmount(f *float64) *InvoiceUpdateOne {
+	if f != nil {
+		iuo.SetNetAmount(*f)
+	}
+	return iuo
+}
+
+// AddNetAmount adds f to the "net_amount" field.
+func (iuo *InvoiceUpdateOne) AddNetAmount(f float64) *InvoiceUpdateOne {
+	iuo.mutation.AddNetAmount(f)
+	return iuo
+}
+
+// SetBaseAmount sets the "base_amount" field.
+func (iuo *InvoiceUpdateOne) SetBaseAmount(f float64) *InvoiceUpdateOne {
+	iuo.mutation.ResetBaseAmount()
+	iuo.mutation.SetBaseAmount(f)
+	return iuo
+}
+
+// SetNillableBaseAmount sets the "base_amount" field if the given value is not nil.
+func (iuo *InvoiceUpdateOne) SetNillableBaseAmount(f *float64) *InvoiceUpdateOne {
+	if f != nil {
+		iuo.SetBaseAmount(*f)
+	}
+	return iuo
+}
+
+// AddBaseAmount adds f to the "base_amount" field.
+func (iuo *InvoiceUpdateOne) AddBaseAmount(f float64) *InvoiceUpdateOne {
+	iuo.mutation.AddBaseAmount(f)
+	return iuo
+}
+
 // SetBalance sets the "balance" field.
 func (iuo *InvoiceUpdateOne) SetBalance(f float64) *InvoiceUpdateOne {
 	iuo.mutation.ResetBalance()
@@ -824,6 +946,16 @@ func (iuo *InvoiceUpdateOne) check() error {
 			return &ValidationError{Name: "amount", err: fmt.Errorf(`ent: validator failed for field "Invoice.amount": %w`, err)}
 		}
 	}
+	if v, ok := iuo.mutation.NetAmount(); ok {
+		if err := invoice.NetAmountValidator(v); err != nil {
+			return &ValidationError{Name: "net_amount", err: fmt.Errorf(`ent: validator failed for field "Invoice.net_amount": %w`, err)}
+		}
+	}
+	if v, ok := iuo.mutation.BaseAmount(); ok {
+		if err := invoice.BaseAmountValidator(v); err != nil {
+			return &ValidationError{Name: "base_amount", err: fmt.Errorf(`ent: validator failed for field "Invoice.base_amount": %w`, err)}
+		}
+	}
 	if v, ok := iuo.mutation.Balance(); ok {
 		if err := invoice.BalanceValidator(v); err != nil {
 			return &ValidationError{Name: "balance", err: fmt.Errorf(`ent: validator failed for field "Invoice.balance": %w`, err)}
@@ -899,6 +1031,34 @@ func (iuo *InvoiceUpdateOne) sqlSave(ctx context.Context) (_node *Invoice, err e
 			return nil, err
 		}
 		_spec.AddField(invoice.FieldAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iuo.mutation.NetAmount(); ok {
+		vv, err := invoice.ValueScanner.NetAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(invoice.FieldNetAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iuo.mutation.AddedNetAmount(); ok {
+		vv, err := invoice.ValueScanner.NetAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(invoice.FieldNetAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iuo.mutation.BaseAmount(); ok {
+		vv, err := invoice.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(invoice.FieldBaseAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iuo.mutation.AddedBaseAmount(); ok {
+		vv, err := invoice.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(invoice.FieldBaseAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := iuo.mutation.Balance(); ok {
 		vv, err := invoice.ValueScanner.Balance.Value(value)

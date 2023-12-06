@@ -43,7 +43,11 @@ func PayloadValidator(createDTO DtoValidator, updateDTO DtoValidator) fiber.Hand
 func QueryValidator() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		queryParams := new(types.GetQueryParams)
-		c.QueryParser(queryParams)
+		err := c.QueryParser(queryParams)
+
+		if err != nil {
+			return CustomErr.ServiceError(err, "Parsing query params")
+		}
 
 		if c.Method() == fiber.MethodGet {
 			if queryParams.PageNumber != nil && queryParams.PageSize == nil {

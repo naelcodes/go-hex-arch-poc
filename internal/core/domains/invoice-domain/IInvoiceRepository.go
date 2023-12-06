@@ -11,7 +11,7 @@ type IInvoiceRepository interface {
 	CountByCustomerId(customerId types.EID) (*int, error)
 	GetByCustomerID(types.EID, *types.GetQueryParams, *bool) ([]*dto.GetInvoiceDTO, error)
 	GetById(id types.EID) (*dto.GetInvoiceDTO, error)
-	GetAll(*types.GetQueryParams) ([]*dto.GetInvoiceDTO, error)
+	GetAll(*types.GetQueryParams) (*dto.GetAllInvoiceDTO, error)
 	Save(*ent.Tx, *Invoice) (*dto.GetInvoiceDTO, error)
 	SaveImputation(*ent.Tx, *Invoice)
 	Update(*ent.Tx, *Invoice) error

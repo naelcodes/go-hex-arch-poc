@@ -31,6 +31,16 @@ func (Invoice) Fields() []ent.Field {
 			SchemaType(map[string]string{
 				dialect.Postgres: "money",
 			}).Min(0).Default(0),
+		field.Float("net_amount").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
+		field.Float("base_amount").
+			ValueScanner(Money{CurrencyPrefix: "$"}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "money",
+			}).Min(0).Default(0),
 		field.Float("balance").
 			ValueScanner(Money{CurrencyPrefix: "$"}).
 			SchemaType(map[string]string{

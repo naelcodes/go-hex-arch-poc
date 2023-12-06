@@ -3,6 +3,7 @@ package postgres
 import (
 	"github.com/naelcodes/ab-backend/ent"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 func CustomerModelToDTO(customer *ent.Customer) *dto.GetCustomerDTO {
@@ -91,4 +92,40 @@ func TravelItemModelListToDTOList(travelItems []*ent.TravelItem) []*dto.TravelIt
 	}
 
 	return travelItemDTOList
+}
+
+func InvoiceModelToDTO(invoice *ent.Invoice, embedCustomer bool) *dto.GetInvoiceDTO {
+	invoiceDTO := new(dto.GetInvoiceDTO)
+	invoiceDTO.Id = invoice.ID
+	invoiceDTO.InvoiceNumber = invoice.InvoiceNumber
+	invoiceDTO.DueDate = utils.FormatDate(invoice.DueDate)
+	invoiceDTO.CreationDate = utils.FormatDate(invoice.CreationDate)
+	invoiceDTO.Amount = invoice.Amount
+	invoiceDTO.Credit_apply = invoice.CreditApply
+	invoiceDTO.Balance = invoice.Balance
+	invoiceDTO.Status = string(invoice.Status)
+
+	if embedCustomer {
+		invoiceDTO.IdCustomer = nil
+		invoiceDTO.Customer = CustomerModelToDTO(invoice.Edges.Customer)
+	} else {
+		if invoice.Edges.Customer != nil {
+			invoiceDTO.IdCustomer = &invoice.Edges.Customer.ID
+		}
+	}
+
+	for _, travelItem := range invoice.Edges.TravelItems {
+		invoiceDTO.TravelItems = append(invoiceDTO.TravelItems, TravelItemModelToDTO(travelItem))
+	}
+	return invoiceDTO
+}
+
+func InvoiceModelListToDTOList(invoices []*ent.Invoice, embedCustomer bool) []*dto.GetInvoiceDTO {
+	invoiceDTOList := make([]*dto.GetInvoiceDTO, 0)
+
+	for _, invoice := range invoices {
+		invoiceDTOList = append(invoiceDTOList, InvoiceModelToDTO(invoice, embedCustomer))
+	}
+
+	return invoiceDTOList
 }

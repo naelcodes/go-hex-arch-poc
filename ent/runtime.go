@@ -68,15 +68,29 @@ func init() {
 	invoice.ValueScanner.Amount = invoiceDescAmount.ValueScanner.(field.TypeValueScanner[float64])
 	// invoice.AmountValidator is a validator for the "amount" field. It is called by the builders before save.
 	invoice.AmountValidator = invoiceDescAmount.Validators[0].(func(float64) error)
+	// invoiceDescNetAmount is the schema descriptor for net_amount field.
+	invoiceDescNetAmount := invoiceFields[5].Descriptor()
+	// invoice.DefaultNetAmount holds the default value on creation for the net_amount field.
+	invoice.DefaultNetAmount = invoiceDescNetAmount.Default.(float64)
+	invoice.ValueScanner.NetAmount = invoiceDescNetAmount.ValueScanner.(field.TypeValueScanner[float64])
+	// invoice.NetAmountValidator is a validator for the "net_amount" field. It is called by the builders before save.
+	invoice.NetAmountValidator = invoiceDescNetAmount.Validators[0].(func(float64) error)
+	// invoiceDescBaseAmount is the schema descriptor for base_amount field.
+	invoiceDescBaseAmount := invoiceFields[6].Descriptor()
+	// invoice.DefaultBaseAmount holds the default value on creation for the base_amount field.
+	invoice.DefaultBaseAmount = invoiceDescBaseAmount.Default.(float64)
+	invoice.ValueScanner.BaseAmount = invoiceDescBaseAmount.ValueScanner.(field.TypeValueScanner[float64])
+	// invoice.BaseAmountValidator is a validator for the "base_amount" field. It is called by the builders before save.
+	invoice.BaseAmountValidator = invoiceDescBaseAmount.Validators[0].(func(float64) error)
 	// invoiceDescBalance is the schema descriptor for balance field.
-	invoiceDescBalance := invoiceFields[5].Descriptor()
+	invoiceDescBalance := invoiceFields[7].Descriptor()
 	// invoice.DefaultBalance holds the default value on creation for the balance field.
 	invoice.DefaultBalance = invoiceDescBalance.Default.(float64)
 	invoice.ValueScanner.Balance = invoiceDescBalance.ValueScanner.(field.TypeValueScanner[float64])
 	// invoice.BalanceValidator is a validator for the "balance" field. It is called by the builders before save.
 	invoice.BalanceValidator = invoiceDescBalance.Validators[0].(func(float64) error)
 	// invoiceDescCreditApply is the schema descriptor for credit_apply field.
-	invoiceDescCreditApply := invoiceFields[6].Descriptor()
+	invoiceDescCreditApply := invoiceFields[8].Descriptor()
 	// invoice.DefaultCreditApply holds the default value on creation for the credit_apply field.
 	invoice.DefaultCreditApply = invoiceDescCreditApply.Default.(float64)
 	invoice.ValueScanner.CreditApply = invoiceDescCreditApply.ValueScanner.(field.TypeValueScanner[float64])

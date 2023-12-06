@@ -1,12 +1,11 @@
 package application
 
 import (
-	"errors"
 	"fmt"
 
-	travelItemDomain "github.com/naelcodes/ab-backend/internal/core/domains/TravelItem-domain"
 	invoiceDomain "github.com/naelcodes/ab-backend/internal/core/domains/invoice-domain"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
+	CustomError "github.com/naelcodes/ab-backend/pkg/errors"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
 
@@ -16,68 +15,72 @@ func (application *Application) CreateInvoiceService(createInvoiceDto *dto.Creat
 
 	application.Logger.Info(fmt.Sprintf("[CreateInvoiceService] - CreateInvoiceDTO: %v", createInvoiceDto))
 
-	totalInvoiceCount, err := application.invoiceRepository.Count()
+	travelItemsId := make([]int, 0)
+	invoiceAmount := float64(0)
+
+	for _, travelItem := range createInvoiceDto.TravelItems {
+		travelItemsId = append(travelItemsId, travelItem.Id)
+		invoiceAmount += travelItem.TotalPrice
+	}
+
+	invoiceBuilder := invoiceDomain.NewInvoiceBuilder().
+		SetCreationDate(createInvoiceDto.CreationDate).
+		SetDueDate(createInvoiceDto.DueDate).
+		SetIdCustomer(types.EID(createInvoiceDto.IdCustomer)).
+		SetAmount(invoiceAmount).
+		SetCreditApply(0).
+		SetBalance(invoiceAmount).
+		SetTravelItemsId(travelItemsId)
+
+	err := invoiceBuilder.Validate()
 
 	if err != nil {
-		application.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error counting invoices: %v", err))
+		application.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error validating invoice: %v", err))
 		return nil, err
 	}
 
-	application.Logger.Info(fmt.Sprintf("[CreateInvoiceService] - Total number of invoices: %v", totalInvoiceCount))
-
-	invoice := invoiceDomain.NewInvoiceBuilder().
-		SetCreationDate(createInvoiceDto.CreationDate).
-		SetInvoiceNumber(*totalInvoiceCount + 1).
-		SetDueDate(createInvoiceDto.DueDate).
-		SetIdCustomer(types.EID(createInvoiceDto.IdCustomer)).
-		SetAmount(0).
-		SetCreditApply(0).
-		SetBalance(0).
-		Build()
+	invoice := invoiceBuilder.Build()
 
 	transactionErr := application.TransactionManager.Begin()
 
 	if transactionErr != nil {
 		application.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error starting transaction: %v", transactionErr))
-		return nil, transactionErr
+		panic(CustomError.ServiceError(transactionErr, "TransactionManager.Begin()"))
 	}
 
-	savedInvoiceDto, saveInvoiceErr := application.invoiceRepository.Save(application.TransactionManager.GetTransaction(), invoice)
+	savedInvoiceDto, repoError := application.invoiceRepository.Save(application.TransactionManager.GetTransaction(), invoice)
 
-	if saveInvoiceErr != nil {
-		err := application.TransactionManager.Rollback()
-		application.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error saving invoice: %v", errors.Join(err, saveInvoiceErr)))
-		return nil, errors.Join(err, saveInvoiceErr)
+	if repoError != nil {
+		application.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error saving invoice: %v", repoError))
+		panic(repoError)
 	}
 
-	if len(createInvoiceDto.TravelItems) > 0 {
-
-		invoice.Id = types.EID(savedInvoiceDto.Id)
-		travelItemList := make([]*travelItemDomain.TravelItem, 0)
-
-		// convert travelItemDTO to TravelItem domain model
-
-		for _, travelItemDTO := range createInvoiceDto.TravelItems {
-			travelItem := travelItemDomain.NewTravelItemBuilder().
-				SetTotalPrice(travelItemDTO.TotalPrice).
-				SetIdInvoice(invoice.Id).
-				SetId(types.EID(travelItemDTO.Id)).
-				Build()
-			travelItemList = append(travelItemList, travelItem)
-		}
-
-		domainService := invoiceDomain.NewInvoiceDomainService(application.travelItemRepository, application.imputationRepository, nil, application.invoiceRepository, application.TransactionManager)
-
-		domainService.AddTravelItem(invoice, travelItemList)
-
-	}
-
-	transactionErr = application.TransactionManager.Commit()
+	transactionCommitErr := application.TransactionManager.Commit()
 
 	if transactionErr != nil {
-		application.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error commiting transaction: %v", transactionErr))
-		return nil, transactionErr
+		application.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error commiting transaction: %v", transactionCommitErr))
+		return nil, transactionCommitErr
 	}
 
+	application.Logger.Info("[CreateInvoiceService] - Transaction committed")
+	application.Logger.Info(fmt.Sprintf("[CreateInvoiceService] - Invoice created: %v", savedInvoiceDto))
+
 	return savedInvoiceDto, nil
+}
+
+// Get all invoices
+func (application *Application) GetAllInvoiceService(queryParams *types.GetQueryParams) (*dto.GetAllInvoiceDTO, error) {
+
+	application.Logger.Info(fmt.Sprintf("[GetAllInvoicesService] - GetQueryParams: %v", queryParams))
+
+	getAllInvoiceDTO, err := application.invoiceRepository.GetAll(queryParams)
+
+	if err != nil {
+		application.Logger.Error(fmt.Sprintf("[GetAllInvoicesService] - Error getting invoices: %v", err))
+		return nil, err
+	}
+
+	application.Logger.Info(fmt.Sprintf("[GetAllInvoicesService] - GetAllInvoiceDTO: %v", getAllInvoiceDTO))
+	return getAllInvoiceDTO, nil
+
 }

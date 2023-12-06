@@ -68,6 +68,34 @@ func (ic *InvoiceCreate) SetNillableAmount(f *float64) *InvoiceCreate {
 	return ic
 }
 
+// SetNetAmount sets the "net_amount" field.
+func (ic *InvoiceCreate) SetNetAmount(f float64) *InvoiceCreate {
+	ic.mutation.SetNetAmount(f)
+	return ic
+}
+
+// SetNillableNetAmount sets the "net_amount" field if the given value is not nil.
+func (ic *InvoiceCreate) SetNillableNetAmount(f *float64) *InvoiceCreate {
+	if f != nil {
+		ic.SetNetAmount(*f)
+	}
+	return ic
+}
+
+// SetBaseAmount sets the "base_amount" field.
+func (ic *InvoiceCreate) SetBaseAmount(f float64) *InvoiceCreate {
+	ic.mutation.SetBaseAmount(f)
+	return ic
+}
+
+// SetNillableBaseAmount sets the "base_amount" field if the given value is not nil.
+func (ic *InvoiceCreate) SetNillableBaseAmount(f *float64) *InvoiceCreate {
+	if f != nil {
+		ic.SetBaseAmount(*f)
+	}
+	return ic
+}
+
 // SetBalance sets the "balance" field.
 func (ic *InvoiceCreate) SetBalance(f float64) *InvoiceCreate {
 	ic.mutation.SetBalance(f)
@@ -194,6 +222,14 @@ func (ic *InvoiceCreate) defaults() {
 		v := invoice.DefaultAmount
 		ic.mutation.SetAmount(v)
 	}
+	if _, ok := ic.mutation.NetAmount(); !ok {
+		v := invoice.DefaultNetAmount
+		ic.mutation.SetNetAmount(v)
+	}
+	if _, ok := ic.mutation.BaseAmount(); !ok {
+		v := invoice.DefaultBaseAmount
+		ic.mutation.SetBaseAmount(v)
+	}
 	if _, ok := ic.mutation.Balance(); !ok {
 		v := invoice.DefaultBalance
 		ic.mutation.SetBalance(v)
@@ -243,6 +279,22 @@ func (ic *InvoiceCreate) check() error {
 	if v, ok := ic.mutation.Amount(); ok {
 		if err := invoice.AmountValidator(v); err != nil {
 			return &ValidationError{Name: "amount", err: fmt.Errorf(`ent: validator failed for field "Invoice.amount": %w`, err)}
+		}
+	}
+	if _, ok := ic.mutation.NetAmount(); !ok {
+		return &ValidationError{Name: "net_amount", err: errors.New(`ent: missing required field "Invoice.net_amount"`)}
+	}
+	if v, ok := ic.mutation.NetAmount(); ok {
+		if err := invoice.NetAmountValidator(v); err != nil {
+			return &ValidationError{Name: "net_amount", err: fmt.Errorf(`ent: validator failed for field "Invoice.net_amount": %w`, err)}
+		}
+	}
+	if _, ok := ic.mutation.BaseAmount(); !ok {
+		return &ValidationError{Name: "base_amount", err: errors.New(`ent: missing required field "Invoice.base_amount"`)}
+	}
+	if v, ok := ic.mutation.BaseAmount(); ok {
+		if err := invoice.BaseAmountValidator(v); err != nil {
+			return &ValidationError{Name: "base_amount", err: fmt.Errorf(`ent: validator failed for field "Invoice.base_amount": %w`, err)}
 		}
 	}
 	if _, ok := ic.mutation.Balance(); !ok {
@@ -324,6 +376,22 @@ func (ic *InvoiceCreate) createSpec() (*Invoice, *sqlgraph.CreateSpec, error) {
 		}
 		_spec.SetField(invoice.FieldAmount, field.TypeFloat64, vv)
 		_node.Amount = value
+	}
+	if value, ok := ic.mutation.NetAmount(); ok {
+		vv, err := invoice.ValueScanner.NetAmount.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(invoice.FieldNetAmount, field.TypeFloat64, vv)
+		_node.NetAmount = value
+	}
+	if value, ok := ic.mutation.BaseAmount(); ok {
+		vv, err := invoice.ValueScanner.BaseAmount.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(invoice.FieldBaseAmount, field.TypeFloat64, vv)
+		_node.BaseAmount = value
 	}
 	if value, ok := ic.mutation.Balance(); ok {
 		vv, err := invoice.ValueScanner.Balance.Value(value)

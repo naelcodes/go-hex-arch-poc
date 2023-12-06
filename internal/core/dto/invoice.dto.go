@@ -6,17 +6,17 @@ import (
 )
 
 type GetInvoiceDTO struct {
-	Id            int             `json:"id"`
-	InvoiceNumber string          `json:"invoiceNumber"`
-	CreationDate  string          `json:"creationDate"`
-	DueDate       string          `json:"dueDate"`
-	Amount        float64         `json:"amount"`
-	Balance       float64         `json:"balance"`
-	Credit_apply  float64         `json:"credit_apply"`
-	Status        string          `json:"status"`
-	IdCustomer    *int            `json:"idCustomer,omitempty"`
-	Customer      *GetCustomerDTO `json:"customer,omitempty"`
-	TravelItems   []TravelItemDTO `json:"travelItems,omitempty"`
+	Id            int              `json:"id"`
+	InvoiceNumber string           `json:"invoiceNumber"`
+	CreationDate  string           `json:"creationDate"`
+	DueDate       string           `json:"dueDate"`
+	Amount        float64          `json:"amount"`
+	Balance       float64          `json:"balance"`
+	Credit_apply  float64          `json:"credit_apply"`
+	Status        string           `json:"status"`
+	IdCustomer    *int             `json:"idCustomer,omitempty"`
+	Customer      *GetCustomerDTO  `json:"customer,omitempty"`
+	TravelItems   []*TravelItemDTO `json:"travelItems,omitempty"`
 }
 
 type CreateInvoiceDTO struct {
@@ -29,8 +29,8 @@ type CreateInvoiceDTO struct {
 func (c CreateInvoiceDTO) Validate() error {
 	return validation.ValidateStruct(&c,
 		validation.Field(&c.IdCustomer, validation.Required),
-		validation.Field(&c.CreationDate, validation.Required),
-		validation.Field(&c.DueDate, validation.Required),
+		validation.Field(&c.CreationDate, validation.Required, validation.Date("2006-01-02")),
+		validation.Field(&c.DueDate, validation.Required, validation.Date("2006-01-02")),
 		validation.Field(&c.TravelItems, validation.Required),
 	)
 }
