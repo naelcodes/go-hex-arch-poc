@@ -18,6 +18,32 @@ type TravelItemRepository struct {
 	Context  context.Context
 }
 
+func (repo *TravelItemRepository) GetById(id types.EID) (*dto.TravelItemDTO, error) {
+
+	utils.Logger.Info("[TravelItemRepository - GetById] Getting travel item")
+
+	travelItem, err := repo.Database.TravelItem.Query().
+		Where(travelitem.IDEQ(int(id))).
+		WithInvoice(func(q *ent.InvoiceQuery) {
+			q.Select(invoice.FieldID)
+		}).First(repo.Context)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			utils.Logger.Error(fmt.Sprintf("[TravelItemRepository - GetById] Travel Item with id:%v not found", id))
+			return nil, CustomErrors.NotFoundError(fmt.Errorf("error getting travel item with ID: %v", id))
+		}
+		utils.Logger.Error(fmt.Sprintf("[TravelItemRepository - GetById] Error getting travel item with ID: %v - error: %v", id, err))
+		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting travel item with ID: %v - error: %v", id, err))
+	}
+
+	utils.Logger.Info(fmt.Sprintf("[TravelItemRepository - GetById] Found travel item: %v", travelItem))
+
+	travelItemDTO := TravelItemModelToDTO(travelItem)
+
+	return travelItemDTO, nil
+}
+
 func (repo *TravelItemRepository) Count() (*int, error) {
 	utils.Logger.Info("[TravelItemRepository - Count] counting travel items")
 	count, err := repo.Database.TravelItem.Query().

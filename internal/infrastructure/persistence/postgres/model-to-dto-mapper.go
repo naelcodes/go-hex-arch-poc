@@ -81,6 +81,10 @@ func TravelItemModelToDTO(travelItem *ent.TravelItem) *dto.TravelItemDTO {
 	travelItemDTO.TicketNumber = new(string)
 	*travelItemDTO.TicketNumber = travelItem.TicketNumber
 
+	if travelItem.Edges.Invoice != nil {
+		travelItemDTO.IdInvoice = &travelItem.Edges.Invoice.ID
+	}
+
 	return travelItemDTO
 }
 

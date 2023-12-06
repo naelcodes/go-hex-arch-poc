@@ -15,12 +15,25 @@ func (application *Application) CreateInvoiceService(createInvoiceDto *dto.Creat
 
 	utils.Logger.Info(fmt.Sprintf("[CreateInvoiceService] - CreateInvoiceDTO: %v", createInvoiceDto))
 
-	travelItemsId := make([]int, 0)
 	invoiceAmount := float64(0)
+	travelItemIdList := make([]int, 0)
 
-	for _, travelItem := range createInvoiceDto.TravelItems {
-		travelItemsId = append(travelItemsId, travelItem.Id)
-		invoiceAmount += travelItem.TotalPrice
+	//check if travelItems exist and it's not used
+	for _, travelItem := range createInvoiceDto.TravelItemIds {
+		travelItemDTO, err := application.travelItemRepository.GetById(types.EID(travelItem.Id))
+
+		if err != nil {
+			utils.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error getting travel item: %v", err))
+			return nil, err
+		}
+
+		if travelItemDTO.IdInvoice != nil {
+			utils.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Travel item already has an invoice: %v", travelItemDTO))
+			return nil, CustomError.ValidationError(errors.New("travel item already has an invoice"))
+		}
+
+		travelItemIdList = append(travelItemIdList, int(travelItem.Id))
+		invoiceAmount += travelItemDTO.TotalPrice
 	}
 
 	invoiceBuilder := invoiceDomain.NewInvoiceBuilder().
@@ -30,7 +43,7 @@ func (application *Application) CreateInvoiceService(createInvoiceDto *dto.Creat
 		SetAmount(invoiceAmount).
 		SetCreditApply(0).
 		SetBalance(invoiceAmount).
-		SetTravelItemsId(travelItemsId)
+		SetTravelItemsId(travelItemIdList)
 
 	err := invoiceBuilder.Validate()
 
@@ -39,7 +52,7 @@ func (application *Application) CreateInvoiceService(createInvoiceDto *dto.Creat
 		return nil, err
 	}
 
-	invoice := invoiceBuilder.Build()
+	invoiceDomainModel := invoiceBuilder.Build()
 
 	transactionErr := application.TransactionManager.Begin()
 
@@ -48,7 +61,7 @@ func (application *Application) CreateInvoiceService(createInvoiceDto *dto.Creat
 		return nil, CustomError.ServiceError(transactionErr, "TransactionManager.Begin()")
 	}
 
-	savedInvoiceDto, repoError := application.invoiceRepository.Save(application.TransactionManager.GetTransaction(), invoice)
+	savedInvoiceDto, repoError := application.invoiceRepository.Save(application.TransactionManager.GetTransaction(), invoiceDomainModel)
 
 	if repoError != nil {
 		utils.Logger.Error(fmt.Sprintf("[CreateInvoiceService] - Error saving invoice: %v", repoError))

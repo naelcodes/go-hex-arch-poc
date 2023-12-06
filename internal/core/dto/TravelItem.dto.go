@@ -9,6 +9,7 @@ import (
 
 type TravelItemDTO struct {
 	Id           int     `json:"id"`
+	IdInvoice    *int    `json:"idInvoice,omitempty"`
 	Itinerary    *string `json:"itinerary,omitempty"`
 	TravelerName *string `json:"travelerName,omitempty"`
 	TicketNumber *string `json:"ticketNumber,omitempty"`
