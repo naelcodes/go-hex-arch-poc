@@ -11,77 +11,66 @@ import (
 
 func (application *Application) GetAllPaymentsService(queryParams *types.GetQueryParams) (*dto.GetAllPaymentsDTO, error) {
 
-	totalRowCount, err := application.paymentRepository.Count()
+	utils.Logger.Info(fmt.Sprintf("[GetAllPaymentsService] Query params: %v", queryParams))
+
+	getAllPaymentsDTO, err := application.paymentRepository.GetAll(queryParams)
 
 	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[GetAllPaymentsService] Error getting all payments: %v", err))
 		return nil, err
 	}
 
-	if queryParams == nil || (queryParams.PageNumber == nil && queryParams.PageSize == nil) {
-		if queryParams == nil {
-			queryParams = new(types.GetQueryParams)
-		}
-		queryParams.PageNumber = new(int)
-		queryParams.PageSize = new(int)
-		*queryParams.PageNumber = 0
-		*queryParams.PageSize = *totalRowCount
-	}
+	utils.Logger.Info(fmt.Sprintf("[GetAllPaymentsService] Get all payments DTO: %v", getAllPaymentsDTO))
 
-	payments, err := application.paymentRepository.GetAll(queryParams)
-
-	if err != nil {
-		return nil, err
-	}
-
-	getPaymentsDTO := new(dto.GetAllPaymentsDTO)
-	getPaymentsDTO.Data = payments
-	getPaymentsDTO.PageNumber = *queryParams.PageNumber
-	getPaymentsDTO.PageSize = *queryParams.PageSize
-	getPaymentsDTO.TotalRowCount = *totalRowCount
-
-	return getPaymentsDTO, nil
+	return getAllPaymentsDTO, nil
 
 }
 
 func (application *Application) GetPaymentService(id types.EID) (*dto.GetPaymentDTO, error) {
 
-	payment, err := application.paymentRepository.GetById(types.EID(id))
+	utils.Logger.Info(fmt.Sprintf("[GetPaymentService] Payment ID: %v", id))
+
+	paymentDTO, err := application.paymentRepository.GetById(types.EID(id))
 	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[GetPaymentService] Error getting payment: %v", err))
 		return nil, err
 	}
 
-	return payment, nil
+	utils.Logger.Info(fmt.Sprintf("[GetPaymentService] Payment DTO: %v", paymentDTO))
+	return paymentDTO, nil
 }
 
 func (application *Application) CreatePaymentService(paymentDTO *dto.CreatePaymentDTO) (*dto.GetPaymentDTO, error) {
 
-	totalRowCount, err := application.paymentRepository.Count()
-	if err != nil {
-		utils.Logger.Error(fmt.Sprintf("payment records Count error: %v", err))
-		return nil, err
-	}
+	utils.Logger.Info(fmt.Sprintf("payment DTO: %v", paymentDTO))
 
-	utils.Logger.Info(fmt.Sprintf("payment records Count: %v", totalRowCount))
-
-	payment := paymentDomain.NewPaymentBuilder().
+	paymentBuilder := paymentDomain.NewPaymentBuilder().
 		SetAmount(paymentDTO.Amount).
 		SetIdCustomer(types.EID(paymentDTO.IdCustomer)).
 		SetPaymentMode(paymentDTO.PaymentMode).
-		SetPaymentNumber(*totalRowCount + 1).
 		SetPaymentDate().
-		SetBalance(paymentDTO.Amount - 10).
-		SetUsedAmount(10).
-		Build()
+		SetBalance(paymentDTO.Amount).
+		SetUsedAmount(0)
 
-	savedPaymentDTO, err := application.paymentRepository.Save(payment)
+	err := paymentBuilder.Validate()
 
 	if err != nil {
-		utils.Logger.Error(fmt.Sprintf("payment save error: %v", err))
+		utils.Logger.Error(fmt.Sprintf("payment validation error: %v", err))
 		return nil, err
 	}
 
-	utils.Logger.Info(fmt.Sprintf("payment saved: %v", savedPaymentDTO))
+	paymentDomainModel := paymentBuilder.Build()
 
+	utils.Logger.Info(fmt.Sprintf("payment domain model: %v", paymentDomainModel))
+
+	savedPaymentDTO, err := application.paymentRepository.Save(paymentDomainModel)
+
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("payment saving error: %v", err))
+		return nil, err
+	}
+
+	utils.Logger.Info(fmt.Sprintf("saved payment DTO: %v", savedPaymentDTO))
 	return savedPaymentDTO, nil
 
 }

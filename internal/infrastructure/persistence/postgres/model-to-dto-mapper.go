@@ -36,7 +36,7 @@ func PaymentModelToDTO(payment *ent.Payment, embedCustomer bool, idCustomer *int
 	paymentDTO.Id = payment.ID
 	paymentDTO.Amount = payment.Amount
 	paymentDTO.PaymentNumber = payment.Number
-	paymentDTO.PaymentDate = payment.Date
+	paymentDTO.PaymentDate = utils.FormatDate(payment.Date)
 	paymentDTO.PaymentMode = string(payment.Fop)
 	paymentDTO.Balance = payment.Balance
 	paymentDTO.UsedAmount = payment.UsedAmount
@@ -70,7 +70,7 @@ func TravelItemModelToDTO(travelItem *ent.TravelItem) *dto.TravelItemDTO {
 	travelItemDTO := new(dto.TravelItemDTO)
 
 	travelItemDTO.Id = travelItem.ID
-	travelItemDTO.TotalPrice = travelItem.TotalPrice
+	travelItemDTO.TotalPrice = &travelItem.TotalPrice
 
 	travelItemDTO.Itinerary = new(string)
 	*travelItemDTO.Itinerary = travelItem.Itinerary

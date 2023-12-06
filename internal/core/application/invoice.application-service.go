@@ -33,7 +33,7 @@ func (application *Application) CreateInvoiceService(createInvoiceDto *dto.Creat
 		}
 
 		travelItemIdList = append(travelItemIdList, int(travelItem.Id))
-		invoiceAmount += travelItemDTO.TotalPrice
+		invoiceAmount += *travelItemDTO.TotalPrice
 	}
 
 	invoiceBuilder := invoiceDomain.NewInvoiceBuilder().

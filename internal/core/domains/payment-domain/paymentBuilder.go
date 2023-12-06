@@ -1,12 +1,17 @@
 package paymentDomain
 
 import (
+	"errors"
+	"fmt"
+
+	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
 	"github.com/naelcodes/ab-backend/pkg/types"
 	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 type PaymentBuilder struct {
 	payment *Payment
+	errors  error
 }
 
 func NewPaymentBuilder() *PaymentBuilder {
@@ -59,6 +64,34 @@ func (builder *PaymentBuilder) SetStatus(status string) *PaymentBuilder {
 func (builder *PaymentBuilder) SetIdCustomer(idCustomer types.EID) *PaymentBuilder {
 	builder.payment.IdCustomer = idCustomer
 	return builder
+}
+
+func (builder *PaymentBuilder) Validate() error {
+
+	if builder.payment.Amount < 0 {
+		builder.errors = errors.Join(builder.errors, fmt.Errorf("payment.amount can't be less than 0"))
+	}
+
+	if builder.payment.Balance < 0 {
+		builder.errors = errors.Join(builder.errors, fmt.Errorf("payment.balance can't be less than 0"))
+	}
+
+	if builder.payment.UsedAmount < 0 {
+		builder.errors = errors.Join(builder.errors, fmt.Errorf("payment.usedAmount can't be less than 0"))
+	}
+
+	if builder.payment.Balance != (builder.payment.Amount - builder.payment.UsedAmount) {
+		builder.errors = errors.Join(builder.errors, fmt.Errorf("payment.balance must be equal to the difference between payment.amount  and payment.usedAmount"))
+	}
+
+	if builder.payment.UsedAmount > builder.payment.Amount {
+		builder.errors = errors.Join(builder.errors, fmt.Errorf("payment.usedAmount can't be greater than payment.amount"))
+	}
+
+	if builder.errors != nil {
+		return CustomErrors.DomainError(builder.errors)
+	}
+	return nil
 }
 
 func (builder *PaymentBuilder) Build() *Payment {

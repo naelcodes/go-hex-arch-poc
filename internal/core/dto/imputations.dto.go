@@ -20,6 +20,7 @@ type PaymentDetails struct {
 	PaymentNumber string  `json:"paymentNumber"`
 	Amount        float64 `json:"amount"`
 	Balance       float64 `json:"balance"`
+	PaymentDate   string  `json:"paymentDate"`
 }
 
 type ImputationDetails struct {

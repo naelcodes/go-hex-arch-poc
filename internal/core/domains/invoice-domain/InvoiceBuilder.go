@@ -80,7 +80,7 @@ func (builder *InvoiceBuilder) Validate() error {
 	}
 
 	if builder.invoice.Balance != (builder.invoice.Amount - builder.invoice.Credit_apply) {
-		builder.errors = errors.Join(builder.errors, fmt.Errorf("invoice.balance is not equal to invoice.amount - invoice.credit_apply"))
+		builder.errors = errors.Join(builder.errors, fmt.Errorf("invoice.balance is not equal to the difference between invoice.amount and invoice.credit_apply"))
 	}
 
 	if builder.invoice.Credit_apply < 0 {

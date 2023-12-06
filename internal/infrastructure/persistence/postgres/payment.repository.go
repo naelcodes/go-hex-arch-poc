@@ -52,6 +52,8 @@ func (repo *PaymentRepository) CountByCustomerID(customerId types.EID) (*int, er
 
 func (repo *PaymentRepository) GetById(id types.EID) (*dto.GetPaymentDTO, error) {
 
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - GetById] Payment ID: %v", id))
+
 	payment, err := repo.Database.Payment.Query().Where(payment.IDEQ(int(id))).
 		WithCustomer(func(q *ent.CustomerQuery) {
 			q.Select(customer.FieldID)
@@ -59,15 +61,23 @@ func (repo *PaymentRepository) GetById(id types.EID) (*dto.GetPaymentDTO, error)
 
 	if err != nil {
 		if ent.IsNotFound(err) {
+			utils.Logger.Error("[PaymentRepository - GetById] Payment not found")
 			return nil, CustomErrors.RepositoryError(errors.New("payment record not found"))
 		}
+
+		utils.Logger.Error(fmt.Sprintf("[PaymentRepository - GetById] Error getting payment: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting payment record: %v", err))
 	}
+
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - GetById] Payment: %v", payment))
+
 	paymentDTO := PaymentModelToDTO(payment, false, nil)
+
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - GetById] Payment DTO: %v", paymentDTO))
 	return paymentDTO, nil
 }
 
-func (repo *PaymentRepository) GetAll(queryParams *types.GetQueryParams) ([]*dto.GetPaymentDTO, error) {
+func (repo *PaymentRepository) GetAll(queryParams *types.GetQueryParams) (*dto.GetAllPaymentsDTO, error) {
 	embedCustomer := false
 	PaymentQuery := repo.Database.Payment.Query().Where(payment.TagEQ(payment.Tag3))
 
@@ -80,65 +90,60 @@ func (repo *PaymentRepository) GetAll(queryParams *types.GetQueryParams) ([]*dto
 		})
 	}
 
+	totalRowCount, err := repo.Count()
+	if err != nil {
+		return nil, err
+	}
+
+	pageNumber := 0
+	pageSize := *totalRowCount
+
 	if queryParams != nil && queryParams.PageNumber != nil && queryParams.PageSize != nil {
-		PaymentQuery.Offset(*queryParams.PageNumber * *queryParams.PageSize).Limit(*queryParams.PageSize)
+		pageNumber = *queryParams.PageNumber
+		pageSize = *queryParams.PageSize
+		PaymentQuery.Offset(pageNumber * pageSize).Limit(pageSize)
 	}
 
 	payments, err := PaymentQuery.All(repo.Context)
 
 	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[PaymentRepository - GetAll] Error getting payments: %v", err))
 		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting payments records: %v", err))
 	}
 
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - GetAll] Total number of payments: %v", totalRowCount))
 	paymentDTOList := PaymentModelListToDTOList(payments, embedCustomer, nil)
 
-	return paymentDTOList, nil
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - GetAll] Payments DTO: %v", paymentDTOList))
+
+	getAllPaymentsDTO := new(dto.GetAllPaymentsDTO)
+	getAllPaymentsDTO.Data = paymentDTOList
+	getAllPaymentsDTO.TotalRowCount = *totalRowCount
+	getAllPaymentsDTO.PageNumber = pageNumber
+	getAllPaymentsDTO.PageSize = pageSize
+
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - GetAll] GetAllPaymentsDTO: %v", getAllPaymentsDTO))
+
+	return getAllPaymentsDTO, nil
 }
 
-func (repo *PaymentRepository) GetByCustomerID(id types.EID, queryParams *types.GetQueryParams, isOpen *bool) ([]*dto.GetPaymentDTO, error) {
+func (repo *PaymentRepository) Save(paymentDomainModel *paymentDomain.Payment) (*dto.GetPaymentDTO, error) {
 
-	PaymentQuery := repo.Database.Payment.Query()
+	utils.Logger.Info(fmt.Sprintf("Reposiotry - Saving payment domain model: %v", paymentDomainModel))
 
-	if isOpen != nil && *isOpen {
-		PaymentQuery.Where(payment.
-			And(payment.StatusEQ(payment.StatusOpen),
-				payment.HasCustomerWith(customer.IDEQ(int(id))),
-				payment.TagEQ(payment.Tag3)))
-	} else {
-		PaymentQuery.Where(payment.
-			And(payment.HasCustomerWith(customer.IDEQ(int(id))),
-				payment.TagEQ(payment.Tag3)))
-	}
-
-	if queryParams != nil && queryParams.PageNumber != nil && queryParams.PageSize != nil {
-		PaymentQuery.Offset(*queryParams.PageNumber * *queryParams.PageSize).Limit(*queryParams.PageSize)
-	}
-
-	payments, err := PaymentQuery.All(repo.Context)
-
+	totalRowCount, err := repo.Count()
 	if err != nil {
-		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting customer's payments records: %v", err))
+		return nil, err
 	}
-
-	customerId := int(id)
-	paymentDTOList := PaymentModelListToDTOList(payments, false, &customerId)
-
-	return paymentDTOList, nil
-
-}
-
-func (repo *PaymentRepository) Save(paymentEntity *paymentDomain.Payment) (*dto.GetPaymentDTO, error) {
-
-	utils.Logger.Info(fmt.Sprintf("Reposiotry - Saving payment entity: %v", paymentEntity))
 
 	payment, err := repo.Database.Payment.Create().
-		SetAmount(paymentEntity.Amount).
-		SetCustomerID(int(paymentEntity.IdCustomer)).
-		SetBalance(paymentEntity.Balance).
-		SetUsedAmount(paymentEntity.UsedAmount).
-		SetFop(payment.Fop(paymentEntity.PaymentMode)).
-		SetDate(paymentEntity.PaymentDate).
-		SetNumber(paymentEntity.PaymentNumber).
+		SetAmount(paymentDomainModel.Amount).
+		SetCustomerID(int(paymentDomainModel.IdCustomer)).
+		SetBalance(paymentDomainModel.Balance).
+		SetUsedAmount(paymentDomainModel.UsedAmount).
+		SetFop(payment.Fop(paymentDomainModel.PaymentMode)).
+		SetDate(paymentDomainModel.PaymentDate).
+		SetNumber(utils.GenerateCode("pr", *totalRowCount+1)).
 		Save(repo.Context)
 
 	if err != nil {
@@ -148,7 +153,7 @@ func (repo *PaymentRepository) Save(paymentEntity *paymentDomain.Payment) (*dto.
 
 	utils.Logger.Info(fmt.Sprintf("Repository - Converting to DTO: %v", payment))
 
-	customerId := int(paymentEntity.IdCustomer)
+	customerId := int(paymentDomainModel.IdCustomer)
 	paymentDTO := PaymentModelToDTO(payment, false, &customerId)
 
 	utils.Logger.Info(fmt.Sprintf("Repository - Saved payment DTO: %v", paymentDTO))

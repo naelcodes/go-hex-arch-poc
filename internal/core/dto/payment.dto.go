@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"errors"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/naelcodes/ab-backend/pkg/types"
 )
@@ -43,7 +45,17 @@ type UpdatePaymentDTO struct {
 func (u UpdatePaymentDTO) Validate() error {
 	return validation.ValidateStruct(&u,
 		validation.Field(&u.IdCustomer, validation.NilOrNotEmpty),
-		validation.Field(&u.Amount, validation.NilOrNotEmpty, validation.Min(0)),
+		validation.Field(&u.Amount, validation.NilOrNotEmpty, validation.By(func(value any) error {
+			floatValue, ok := value.(float64)
+			if !ok {
+				return errors.New("validation error : payment amount must be a numeric value")
+			}
+
+			if floatValue <= 0 {
+				return errors.New("validation error : payment amount must be greater than  zero")
+			}
+			return nil
+		})),
 		validation.Field(&u.PaymentMode, validation.NilOrNotEmpty, validation.In("cash", "check", "bank_transfer")),
 	)
 }
