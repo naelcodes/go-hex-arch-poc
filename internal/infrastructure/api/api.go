@@ -33,7 +33,6 @@ func (controller *RestController) attachCustomerRoutesHandlers(router fiber.Rout
 	router.Use(middleware.PayloadValidator(new(dto.CreateCustomerDTO), new(dto.UpdateCustomerDTO)))
 	router.Get("", controller.GetAllCustomersHandler())
 	router.Get("/:id", controller.GetCustomerHandler())
-	router.Get("/:id/payments", controller.GetCustomerPaymentsHandler())
 	router.Get("/:id/invoices", controller.GetCustomerInvoicesHandler())
 	router.Post("", controller.CreateCustomerHandler())
 	router.Patch("/:id", controller.UpdateCustomerHandler())

@@ -143,44 +143,6 @@ func (controller *RestController) DeleteCustomerHandler() fiber.Handler {
 
 }
 
-func (controller *RestController) GetCustomerPaymentsHandler() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		id, err := c.ParamsInt("id")
-		if err != nil {
-			utils.Logger.Error(fmt.Sprintf("[GetCustomerPaymentsHandler] - Error parsing id: %v", err))
-			return errors.ServiceError(err, "Id Parsing in URL parameter")
-		}
-
-		utils.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsHandler] - params Id: %v", id))
-
-		queryParams := new(types.GetQueryParams)
-		err = c.QueryParser(queryParams)
-
-		if err != nil {
-			utils.Logger.Error(fmt.Sprintf("[GetCustomerPaymentsHandler] - Error parsing query params: %v", err))
-			return errors.ServiceError(err, "Parsing query params")
-		}
-
-		utils.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsHandler] - Query params: %v", queryParams))
-
-		isOpen := c.QueryBool("open", false)
-
-		utils.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsHandler] - Query params: %v", isOpen))
-
-		getAllCustomerPaymentsDTO, err := controller.ApplicationService.GetCustomerPaymentsService(types.EID(id), queryParams, &isOpen)
-
-		if err != nil {
-			utils.Logger.Error(fmt.Sprintf("[GetCustomerPaymentsHandler] - Error getting all customer payments DTO: %v", err))
-			return err
-		}
-
-		utils.Logger.Info(fmt.Sprintf("[GetCustomerPaymentsHandler] - All customer payments DTO: %v", getAllCustomerPaymentsDTO))
-
-		return c.Status(fiber.StatusOK).JSON(getAllCustomerPaymentsDTO)
-
-	}
-}
-
 func (controller *RestController) GetCustomerInvoicesHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
@@ -203,19 +165,18 @@ func (controller *RestController) GetCustomerInvoicesHandler() fiber.Handler {
 		utils.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesHandler] - Query params: %v", queryParams))
 
 		paid := c.QueryBool("paid", false)
-
 		utils.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesHandler] - Query params: %v", paid))
 
-		getAllCustomerInvoicesDTO, err := controller.ApplicationService.GetCustomerInvoicesService(types.EID(id), queryParams, &paid)
+		getCustomerInvoicesDTO, err := controller.ApplicationService.GetCustomerInvoicesService(types.EID(id), queryParams, paid)
 
 		if err != nil {
 			utils.Logger.Error(fmt.Sprintf("[GetCustomerInvoicesHandler] - Error getting all customer invoices DTO: %v", err))
 			return err
 		}
 
-		utils.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesHandler] - All customer invoices DTO: %v", getAllCustomerInvoicesDTO))
+		utils.Logger.Info(fmt.Sprintf("[GetCustomerInvoicesHandler] - All customer invoices DTO: %v", getCustomerInvoicesDTO))
 
-		return c.Status(fiber.StatusOK).JSON(getAllCustomerInvoicesDTO)
+		return c.Status(fiber.StatusOK).JSON(getCustomerInvoicesDTO)
 	}
 
 }

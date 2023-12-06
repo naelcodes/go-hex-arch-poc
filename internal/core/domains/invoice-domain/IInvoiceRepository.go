@@ -9,7 +9,7 @@ import (
 type IInvoiceRepository interface {
 	Count() (*int, error)
 	CountByCustomerId(customerId types.EID) (*int, error)
-	GetByCustomerID(types.EID, *types.GetQueryParams, *bool) ([]*dto.GetInvoiceDTO, error)
+	GetByCustomerID(types.EID, *types.GetQueryParams, bool) (*dto.GetCustomerInvoicesDTO, error)
 	GetById(id types.EID, query *types.GetQueryParams) (*dto.GetInvoiceDTO, error)
 	GetAll(*types.GetQueryParams) (*dto.GetAllInvoiceDTO, error)
 	Save(*ent.Tx, *Invoice) (*dto.GetInvoiceDTO, error)

@@ -53,8 +53,62 @@ func (repo *InvoiceRepository) CountByCustomerId(customerId types.EID) (*int, er
 
 	return &totalRowCount, nil
 }
-func (repo *InvoiceRepository) GetByCustomerID(types.EID, *types.GetQueryParams, *bool) ([]*dto.GetInvoiceDTO, error) {
-	return nil, nil
+func (repo *InvoiceRepository) GetByCustomerID(id types.EID, queryParams *types.GetQueryParams, paid bool) (*dto.GetCustomerInvoicesDTO, error) {
+
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetByCustomerID] Customer ID: %v", id))
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetByCustomerID] Query Params: %v", queryParams))
+
+	invoiceQuery := repo.Database.Invoice.Query().Where(
+		invoice.And(
+			invoice.TagEQ(invoice.Tag3),
+			invoice.HasCustomerWith(customer.IDEQ(int(id))),
+		),
+	)
+
+	if paid {
+		invoiceQuery.Where(invoice.StatusEQ(invoice.StatusPaid))
+	} else {
+		invoiceQuery.Where(invoice.StatusEQ(invoice.StatusUnpaid))
+
+	}
+
+	totalRowCount, err := invoiceQuery.Count(repo.Context)
+	if err != nil {
+		return nil, err
+	}
+
+	pageNumber := 0
+	pageSize := totalRowCount
+
+	if queryParams != nil {
+		if queryParams.PageNumber != nil && queryParams.PageSize != nil {
+			pageNumber = *queryParams.PageNumber
+			pageSize = *queryParams.PageSize
+			invoiceQuery.Offset(pageNumber * pageSize).Limit(pageSize)
+
+		}
+	}
+
+	invoices, err := invoiceQuery.All(repo.Context)
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - GetByCustomerID] Error getting customer(id:%v) invoices: %v", id, err))
+		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting  customer(id:%v) invoices: %v", id, err))
+	}
+
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetByCustomerID] Total number of customer(id:%v) invoices: %v", id, len(invoices)))
+
+	invoiceDTOList := InvoiceModelListToDTOList(invoices, false)
+	customerInvoiceDTO := new(dto.CustomerInvoice)
+	customerInvoiceDTO.IdCustomer = int(id)
+	customerInvoiceDTO.Invoices = invoiceDTOList
+
+	getCustomerInvoicesDTO := new(dto.GetCustomerInvoicesDTO)
+	getCustomerInvoicesDTO.Data = customerInvoiceDTO
+	getCustomerInvoicesDTO.PageNumber = pageNumber
+	getCustomerInvoicesDTO.PageSize = pageSize
+	getCustomerInvoicesDTO.TotalRowCount = totalRowCount
+
+	return getCustomerInvoicesDTO, nil
 }
 
 func (repo *InvoiceRepository) GetById(id types.EID, queryParams *types.GetQueryParams) (*dto.GetInvoiceDTO, error) {
@@ -94,14 +148,13 @@ func (repo *InvoiceRepository) GetById(id types.EID, queryParams *types.GetQuery
 func (repo *InvoiceRepository) GetAll(queryParams *types.GetQueryParams) (*dto.GetAllInvoiceDTO, error) {
 
 	embedCustomer := false
-	totalRowCount, err := repo.Database.Invoice.Query().Where(invoice.TagEQ(invoice.Tag3)).Count(repo.Context)
+	totalRowCount, err := repo.Count()
 	if err != nil {
-		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - GetAll] Error counting invoices: %v", err))
-		return nil, CustomErrors.RepositoryError(fmt.Errorf("error counting invoices: %v", err))
+		return nil, err
 	}
 
 	pageNumber := 0
-	pageSize := totalRowCount
+	pageSize := *totalRowCount
 
 	invoiceQuery := repo.Database.Invoice.Query().WithTravelItems().Where(invoice.TagEQ(invoice.Tag3))
 
@@ -139,7 +192,7 @@ func (repo *InvoiceRepository) GetAll(queryParams *types.GetQueryParams) (*dto.G
 	getAllInvoiceDTO.Data = invoiceDTOList
 	getAllInvoiceDTO.PageNumber = pageNumber
 	getAllInvoiceDTO.PageSize = pageSize
-	getAllInvoiceDTO.TotalRowCount = totalRowCount
+	getAllInvoiceDTO.TotalRowCount = *totalRowCount
 
 	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - GetAll] GetAllInvoiceDTO: %v", getAllInvoiceDTO))
 	return getAllInvoiceDTO, nil
