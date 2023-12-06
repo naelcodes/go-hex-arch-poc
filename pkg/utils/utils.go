@@ -2,8 +2,10 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -44,10 +46,15 @@ func GetCurrentDate() string {
 }
 
 func FormatDate(date string) string {
-	// log.Printf("date: %s", date)
-	parsedDate, _ := time.Parse(time.RFC3339, date)
-	// log.Printf("parsedDate: %s", parsedDate)
-	return parsedDate.Local().Format("2006-01-02")
+	ok, _ := regexp.Match("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", []byte(date))
+	if !ok {
+		log.Printf("date: %s", date)
+		parsedDate, _ := time.Parse(time.RFC3339, date)
+		log.Printf("parsedDate: %s", parsedDate)
+		return parsedDate.Local().Format("2006-01-02")
+	}
+	return date
+
 }
 
 // Logger is a global logger instance
@@ -69,22 +76,22 @@ func NewZeroLogger() *ZeroLogger {
 
 // Info logs an informational message.
 func (l *ZeroLogger) Info(message string) {
-	l.logger.Info().Msg(message + "\n")
+	l.logger.Info().Msg(message)
 }
 
 // Error logs an error message.
 func (l *ZeroLogger) Error(message string) {
-	l.logger.Error().Msg(message + "\n")
+	l.logger.Error().Msg(message)
 }
 
 // Debug logs a debug message.
 func (l *ZeroLogger) Debug(message string) {
-	l.logger.Debug().Msg(message + "\n")
+	l.logger.Debug().Msg(message)
 }
 
 // Panic logs a panic message and panics.
 func (l *ZeroLogger) Panic(message string) {
-	l.logger.Panic().Msg(message + "\n")
+	l.logger.Panic().Msg(message)
 }
 
 // -------------------------------------------
