@@ -75,7 +75,11 @@ func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputa
 			imputationsToUpdate = append(imputationsToUpdate, imputationDomainModel)
 			savedImputationPaymentIdToAmountMap[imputationRecord.Edges.Payment.ID] = imputationRecord.AmountApply
 		} else {
-			imputationsToInsert = append(imputationsToInsert, imputationDomainModel)
+
+			if imputationDomainModel.AmountApplied > 0 {
+				imputationsToInsert = append(imputationsToInsert, imputationDomainModel)
+			}
+
 		}
 	}
 
