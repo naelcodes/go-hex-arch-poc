@@ -59,6 +59,18 @@ func AmountApply(v float64) predicate.Imputation {
 	return predicate.ImputationOrErr(sql.FieldEQ(FieldAmountApply, vc), err)
 }
 
+// InvoiceAmount applies equality check predicate on the "invoice_amount" field. It's identical to InvoiceAmountEQ.
+func InvoiceAmount(v float64) predicate.Imputation {
+	vc, err := ValueScanner.InvoiceAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldEQ(FieldInvoiceAmount, vc), err)
+}
+
+// PaymentAmount applies equality check predicate on the "payment_amount" field. It's identical to PaymentAmountEQ.
+func PaymentAmount(v float64) predicate.Imputation {
+	vc, err := ValueScanner.PaymentAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldEQ(FieldPaymentAmount, vc), err)
+}
+
 // AmountApplyEQ applies the EQ predicate on the "amount_apply" field.
 func AmountApplyEQ(v float64) predicate.Imputation {
 	vc, err := ValueScanner.AmountApply.Value(v)
@@ -121,6 +133,134 @@ func AmountApplyLT(v float64) predicate.Imputation {
 func AmountApplyLTE(v float64) predicate.Imputation {
 	vc, err := ValueScanner.AmountApply.Value(v)
 	return predicate.ImputationOrErr(sql.FieldLTE(FieldAmountApply, vc), err)
+}
+
+// InvoiceAmountEQ applies the EQ predicate on the "invoice_amount" field.
+func InvoiceAmountEQ(v float64) predicate.Imputation {
+	vc, err := ValueScanner.InvoiceAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldEQ(FieldInvoiceAmount, vc), err)
+}
+
+// InvoiceAmountNEQ applies the NEQ predicate on the "invoice_amount" field.
+func InvoiceAmountNEQ(v float64) predicate.Imputation {
+	vc, err := ValueScanner.InvoiceAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldNEQ(FieldInvoiceAmount, vc), err)
+}
+
+// InvoiceAmountIn applies the In predicate on the "invoice_amount" field.
+func InvoiceAmountIn(vs ...float64) predicate.Imputation {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.InvoiceAmount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.ImputationOrErr(sql.FieldIn(FieldInvoiceAmount, v...), err)
+}
+
+// InvoiceAmountNotIn applies the NotIn predicate on the "invoice_amount" field.
+func InvoiceAmountNotIn(vs ...float64) predicate.Imputation {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.InvoiceAmount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.ImputationOrErr(sql.FieldNotIn(FieldInvoiceAmount, v...), err)
+}
+
+// InvoiceAmountGT applies the GT predicate on the "invoice_amount" field.
+func InvoiceAmountGT(v float64) predicate.Imputation {
+	vc, err := ValueScanner.InvoiceAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldGT(FieldInvoiceAmount, vc), err)
+}
+
+// InvoiceAmountGTE applies the GTE predicate on the "invoice_amount" field.
+func InvoiceAmountGTE(v float64) predicate.Imputation {
+	vc, err := ValueScanner.InvoiceAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldGTE(FieldInvoiceAmount, vc), err)
+}
+
+// InvoiceAmountLT applies the LT predicate on the "invoice_amount" field.
+func InvoiceAmountLT(v float64) predicate.Imputation {
+	vc, err := ValueScanner.InvoiceAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldLT(FieldInvoiceAmount, vc), err)
+}
+
+// InvoiceAmountLTE applies the LTE predicate on the "invoice_amount" field.
+func InvoiceAmountLTE(v float64) predicate.Imputation {
+	vc, err := ValueScanner.InvoiceAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldLTE(FieldInvoiceAmount, vc), err)
+}
+
+// PaymentAmountEQ applies the EQ predicate on the "payment_amount" field.
+func PaymentAmountEQ(v float64) predicate.Imputation {
+	vc, err := ValueScanner.PaymentAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldEQ(FieldPaymentAmount, vc), err)
+}
+
+// PaymentAmountNEQ applies the NEQ predicate on the "payment_amount" field.
+func PaymentAmountNEQ(v float64) predicate.Imputation {
+	vc, err := ValueScanner.PaymentAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldNEQ(FieldPaymentAmount, vc), err)
+}
+
+// PaymentAmountIn applies the In predicate on the "payment_amount" field.
+func PaymentAmountIn(vs ...float64) predicate.Imputation {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.PaymentAmount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.ImputationOrErr(sql.FieldIn(FieldPaymentAmount, v...), err)
+}
+
+// PaymentAmountNotIn applies the NotIn predicate on the "payment_amount" field.
+func PaymentAmountNotIn(vs ...float64) predicate.Imputation {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.PaymentAmount.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.ImputationOrErr(sql.FieldNotIn(FieldPaymentAmount, v...), err)
+}
+
+// PaymentAmountGT applies the GT predicate on the "payment_amount" field.
+func PaymentAmountGT(v float64) predicate.Imputation {
+	vc, err := ValueScanner.PaymentAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldGT(FieldPaymentAmount, vc), err)
+}
+
+// PaymentAmountGTE applies the GTE predicate on the "payment_amount" field.
+func PaymentAmountGTE(v float64) predicate.Imputation {
+	vc, err := ValueScanner.PaymentAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldGTE(FieldPaymentAmount, vc), err)
+}
+
+// PaymentAmountLT applies the LT predicate on the "payment_amount" field.
+func PaymentAmountLT(v float64) predicate.Imputation {
+	vc, err := ValueScanner.PaymentAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldLT(FieldPaymentAmount, vc), err)
+}
+
+// PaymentAmountLTE applies the LTE predicate on the "payment_amount" field.
+func PaymentAmountLTE(v float64) predicate.Imputation {
+	vc, err := ValueScanner.PaymentAmount.Value(v)
+	return predicate.ImputationOrErr(sql.FieldLTE(FieldPaymentAmount, vc), err)
 }
 
 // TagEQ applies the EQ predicate on the "tag" field.

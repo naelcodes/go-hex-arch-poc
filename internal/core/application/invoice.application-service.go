@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	imputationDomain "github.com/naelcodes/ab-backend/internal/core/domains/imputation-domain"
 	invoiceDomain "github.com/naelcodes/ab-backend/internal/core/domains/invoice-domain"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
 	CustomError "github.com/naelcodes/ab-backend/pkg/errors"
@@ -118,5 +119,83 @@ func (application *Application) GetInvoiceService(id int, queryParams *types.Get
 	utils.Logger.Info(fmt.Sprintf("[GetInvoiceService] - GetInvoiceDTO: %v", getInvoiceDTO))
 
 	return getInvoiceDTO, nil
+
+}
+
+func (application *Application) ApplyInvoiceImputationService(invoiceId types.EID, invoiceImputationDTOList []*dto.InvoiceImputationDTO) error {
+
+	utils.Logger.Info(fmt.Sprintf("[ApplyInvoiceImputationService] - InvoiceImputationDTOList: %v", invoiceImputationDTOList))
+
+	exists, err := application.invoiceRepository.Exists(invoiceId)
+
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error checking if invoice exists: %v", err))
+		return err
+	}
+
+	if !exists {
+		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Invoice does not exist: %v", invoiceId))
+		return CustomError.ValidationError(errors.New("invoice does not exist"))
+	}
+
+	//construct imputationDomainModel
+
+	ImputationDomainModelList := make([]*imputationDomain.Imputation, 0)
+	PaymentsIdList := make([]int, 0)
+
+	for _, invoiceImputationDTO := range invoiceImputationDTOList {
+		ImputationDomainModelList = append(ImputationDomainModelList, imputationDomain.NewImputationBuilder().
+			SetIdInvoice(invoiceId).
+			SetIdPayment(types.EID(invoiceImputationDTO.IdPayment)).
+			SetAmountApplied(invoiceImputationDTO.AmountApplied).
+			Build())
+
+		PaymentsIdList = append(PaymentsIdList, invoiceImputationDTO.IdPayment)
+	}
+
+	notFoundList, err := application.paymentRepository.CheckInvoiceOwnerPayments(invoiceId, PaymentsIdList)
+
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error checking if payment exists: %v", err))
+		return err
+	}
+
+	if len(*notFoundList) > 0 {
+		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - %v Payments used in imputation does not belong to invoice owner, payment ids: %v", len(*notFoundList), *notFoundList))
+		return CustomError.ValidationError(fmt.Errorf("%v payments used in imputation does not belong to invoice owner, payment ids: %v", len(*notFoundList), *notFoundList))
+	}
+
+	transactionErr := application.TransactionManager.Begin()
+
+	if transactionErr != nil {
+		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error starting transaction: %v", transactionErr))
+		return CustomError.ServiceError(transactionErr, "TransactionManager.Begin()")
+	}
+
+	domainService := invoiceDomain.NewInvoiceDomainService(application.imputationRepository, application.paymentRepository, application.invoiceRepository, application.TransactionManager)
+
+	err = domainService.ApplyImputation(invoiceId, ImputationDomainModelList)
+
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error applying imputation: %v", err))
+		RollbackErr := application.TransactionManager.Rollback()
+
+		if RollbackErr != nil {
+			utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error rolling back transaction: %v", RollbackErr))
+			return CustomError.ServiceError(errors.Join(RollbackErr, err), "TransactionManager.Rollback()")
+		}
+		return err
+	}
+
+	transactionCommitErr := application.TransactionManager.Commit()
+
+	if transactionErr != nil {
+		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error committing transaction: %v", transactionCommitErr))
+		return CustomError.ServiceError(transactionCommitErr, "TransactionManager.Commit()")
+	}
+
+	utils.Logger.Info("[ApplyInvoiceImputationService] - Transaction committed")
+
+	return nil
 
 }

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"regexp"
@@ -94,3 +95,8 @@ func (l *ZeroLogger) Panic(message string) {
 }
 
 // -------------------------------------------
+
+func RoundDecimalPlaces(value float64, precision int) float64 {
+	shift := math.Pow(10, float64(precision))
+	return math.Round(value*shift) / shift
+}

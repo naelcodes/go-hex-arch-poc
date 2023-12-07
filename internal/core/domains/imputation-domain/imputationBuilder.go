@@ -29,7 +29,7 @@ func (builder *ImputationBuilder) SetIdPayment(idPayment types.EID) *ImputationB
 	return builder
 }
 
-func (builder *ImputationBuilder) SetAmountApply(amountApply float64) *ImputationBuilder {
+func (builder *ImputationBuilder) SetAmountApplied(amountApply float64) *ImputationBuilder {
 	builder.imputation.AmountApplied = amountApply
 	return builder
 }

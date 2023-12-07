@@ -20,6 +20,10 @@ type Imputation struct {
 	ID int `json:"id,omitempty"`
 	// AmountApply holds the value of the "amount_apply" field.
 	AmountApply float64 `json:"amount_apply,omitempty"`
+	// InvoiceAmount holds the value of the "invoice_amount" field.
+	InvoiceAmount float64 `json:"invoice_amount,omitempty"`
+	// PaymentAmount holds the value of the "payment_amount" field.
+	PaymentAmount float64 `json:"payment_amount,omitempty"`
 	// Tag holds the value of the "tag" field.
 	Tag imputation.Tag `json:"tag,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -78,6 +82,10 @@ func (*Imputation) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case imputation.FieldAmountApply:
 			values[i] = imputation.ValueScanner.AmountApply.ScanValue()
+		case imputation.FieldInvoiceAmount:
+			values[i] = imputation.ValueScanner.InvoiceAmount.ScanValue()
+		case imputation.FieldPaymentAmount:
+			values[i] = imputation.ValueScanner.PaymentAmount.ScanValue()
 		case imputation.ForeignKeys[0]: // id_invoice
 			values[i] = new(sql.NullInt64)
 		case imputation.ForeignKeys[1]: // id_payment_received
@@ -108,6 +116,18 @@ func (i *Imputation) assignValues(columns []string, values []any) error {
 				return err
 			} else {
 				i.AmountApply = value
+			}
+		case imputation.FieldInvoiceAmount:
+			if value, err := imputation.ValueScanner.InvoiceAmount.FromValue(values[j]); err != nil {
+				return err
+			} else {
+				i.InvoiceAmount = value
+			}
+		case imputation.FieldPaymentAmount:
+			if value, err := imputation.ValueScanner.PaymentAmount.FromValue(values[j]); err != nil {
+				return err
+			} else {
+				i.PaymentAmount = value
 			}
 		case imputation.FieldTag:
 			if value, ok := values[j].(*sql.NullString); !ok {
@@ -177,6 +197,12 @@ func (i *Imputation) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
 	builder.WriteString("amount_apply=")
 	builder.WriteString(fmt.Sprintf("%v", i.AmountApply))
+	builder.WriteString(", ")
+	builder.WriteString("invoice_amount=")
+	builder.WriteString(fmt.Sprintf("%v", i.InvoiceAmount))
+	builder.WriteString(", ")
+	builder.WriteString("payment_amount=")
+	builder.WriteString(fmt.Sprintf("%v", i.PaymentAmount))
 	builder.WriteString(", ")
 	builder.WriteString("tag=")
 	builder.WriteString(fmt.Sprintf("%v", i.Tag))

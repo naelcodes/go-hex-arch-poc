@@ -20,6 +20,20 @@ type InvoiceRepository struct {
 	Context  context.Context
 }
 
+func (repo *InvoiceRepository) Exists(idInvoice types.EID) (bool, error) {
+
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - Exists] Invoice ID: %v", idInvoice))
+
+	invoiceExists, err := repo.Database.Invoice.Query().Where(invoice.IDEQ(int(idInvoice))).Exist(repo.Context)
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - Exists] Error checking if invoice exists: %v", err))
+		return false, CustomErrors.RepositoryError(fmt.Errorf("error checking if invoice exists: %v", err))
+	}
+
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - Exists] Invoice exists: %v", invoiceExists))
+	return invoiceExists, nil
+}
+
 func (repo *InvoiceRepository) Count() (*int, error) {
 
 	utils.Logger.Info("[InvoiceRepository - Count]")
@@ -243,21 +257,23 @@ func (repo *InvoiceRepository) Save(transaction *ent.Tx, invoiceDomainModel *inv
 	return InvoiceModelToDTO(createdInvoice, false), nil
 }
 
-func (repo *InvoiceRepository) SaveImputation(transaction *ent.Tx, invoiceEntity *invoiceDomain.Invoice) {
-	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - SaveImputation] Invoice ID: %v", invoiceEntity.Id))
+func (repo *InvoiceRepository) SaveImputation(transaction *ent.Tx, invoiceDomainModel *invoiceDomain.Invoice) error {
+	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - SaveImputation] Invoice ID: %v", invoiceDomainModel.Id))
 
-	updatedInvoice, err := transaction.Invoice.UpdateOneID(int(invoiceEntity.Id)).
-		SetBalance(invoiceEntity.Balance).
-		SetCreditApply(invoiceEntity.Credit_apply).
-		SetStatus(invoice.Status(invoiceEntity.Status)).
+	updatedInvoice, err := transaction.Invoice.UpdateOneID(int(invoiceDomainModel.Id)).
+		SetBalance(invoiceDomainModel.Balance).
+		SetCreditApply(invoiceDomainModel.Credit_apply).
+		SetStatus(invoice.Status(invoiceDomainModel.Status)).
 		Save(repo.Context)
 
 	if err != nil {
 		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - SaveImputation] Error updating invoice: %v", err))
-		panic(CustomErrors.RepositoryError(fmt.Errorf("error updating invoice: %v", err)))
+		return CustomErrors.RepositoryError(fmt.Errorf("error updating invoice: %v", err))
 	}
 
 	utils.Logger.Info(fmt.Sprintf("[InvoiceRepository - SaveImputation] Updated invoice: %v", updatedInvoice))
+
+	return nil
 }
 
 func (repo *InvoiceRepository) Update(transaction *ent.Tx, invoice *invoiceDomain.Invoice) error {

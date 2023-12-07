@@ -12,28 +12,24 @@ import (
 
 type AppEngine struct {
 	server *fiber.App
-	logger *utils.ZeroLogger
 }
 
 func (appEngine *AppEngine) Init() {
 
 	app := fiber.New(fiber.Config{
-		ErrorHandler: errors.GlobalErrorHandler,
+		ErrorHandler:  errors.GlobalErrorHandler,
+		CaseSensitive: true,
+		StrictRouting: false,
 	})
 	appEngine.server = app
-	appEngine.logger = utils.NewZeroLogger()
 
 }
 
 func (appEngine *AppEngine) Start() error {
-	appEngine.logger.Info(fmt.Sprintf("Server Running on port :%v....", config.APP_ENGINE_SERVER_PORT))
+	utils.Logger.Info(fmt.Sprintf("Server Running on port :%v....", config.APP_ENGINE_SERVER_PORT))
 	return appEngine.server.Listen(fmt.Sprintf(":%v", config.APP_ENGINE_SERVER_PORT))
 }
 
 func (appEngine *AppEngine) GetServer() *fiber.App {
 	return appEngine.server
-}
-
-func (appEngine *AppEngine) GetLogger() *utils.ZeroLogger {
-	return appEngine.logger
 }

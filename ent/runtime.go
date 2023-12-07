@@ -51,6 +51,20 @@ func init() {
 	imputation.ValueScanner.AmountApply = imputationDescAmountApply.ValueScanner.(field.TypeValueScanner[float64])
 	// imputation.AmountApplyValidator is a validator for the "amount_apply" field. It is called by the builders before save.
 	imputation.AmountApplyValidator = imputationDescAmountApply.Validators[0].(func(float64) error)
+	// imputationDescInvoiceAmount is the schema descriptor for invoice_amount field.
+	imputationDescInvoiceAmount := imputationFields[1].Descriptor()
+	// imputation.DefaultInvoiceAmount holds the default value on creation for the invoice_amount field.
+	imputation.DefaultInvoiceAmount = imputationDescInvoiceAmount.Default.(float64)
+	imputation.ValueScanner.InvoiceAmount = imputationDescInvoiceAmount.ValueScanner.(field.TypeValueScanner[float64])
+	// imputation.InvoiceAmountValidator is a validator for the "invoice_amount" field. It is called by the builders before save.
+	imputation.InvoiceAmountValidator = imputationDescInvoiceAmount.Validators[0].(func(float64) error)
+	// imputationDescPaymentAmount is the schema descriptor for payment_amount field.
+	imputationDescPaymentAmount := imputationFields[2].Descriptor()
+	// imputation.DefaultPaymentAmount holds the default value on creation for the payment_amount field.
+	imputation.DefaultPaymentAmount = imputationDescPaymentAmount.Default.(float64)
+	imputation.ValueScanner.PaymentAmount = imputationDescPaymentAmount.ValueScanner.(field.TypeValueScanner[float64])
+	// imputation.PaymentAmountValidator is a validator for the "payment_amount" field. It is called by the builders before save.
+	imputation.PaymentAmountValidator = imputationDescPaymentAmount.Validators[0].(func(float64) error)
 	invoiceFields := schema.Invoice{}.Fields()
 	_ = invoiceFields
 	// invoiceDescCreationDate is the schema descriptor for creation_date field.

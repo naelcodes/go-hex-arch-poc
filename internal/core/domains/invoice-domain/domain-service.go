@@ -20,13 +20,12 @@ type InvoiceDomainService struct {
 }
 
 func NewInvoiceDomainService(
-	travelItemRepository travelItemDomain.ITravelItemRepository,
+
 	imputationRepository imputationDomain.IImputationRepository,
 	paymentRepository paymentDomain.IPaymentRepository,
 	invoiceRepository IInvoiceRepository,
 	transactionManager *transactionManager.TransactionManager) *InvoiceDomainService {
 	return &InvoiceDomainService{
-		travelItemRepository: travelItemRepository,
 		imputationRepository: imputationRepository,
 		paymentRepository:    paymentRepository,
 		invoiceRepository:    invoiceRepository,
@@ -34,207 +33,244 @@ func NewInvoiceDomainService(
 	}
 }
 
-func (service *InvoiceDomainService) AddTravelItem(invoice *Invoice, travelItems []*travelItemDomain.TravelItem) {
+func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputationDomainModelList []*imputationDomain.Imputation) error {
 
-	imputationCount, err := service.imputationRepository.CountByInvoiceId(invoice.Id)
+	savedImputationPaymentIdToAmountMap := make(map[int]float64, 0)
+	imputationsToInsert := make([]*imputationDomain.Imputation, 0)
+	imputationsToUpdate := make([]*imputationDomain.Imputation, 0)
 
-	if err != nil {
-		panic(err)
-	}
-
-	if *imputationCount > 0 {
-		panic(CustomErrors.DomainError(errors.New("cannot add travel item to an invoice  with imputations")))
-	}
-
-	travelItemIds := make([]int, 0)
-
-	for _, travelItem := range travelItems {
-		travelItemIds = append(travelItemIds, int(travelItem.Id))
-		invoice.Amount += travelItem.TotalPrice
-	}
-
-	invoiceRepoErr := service.invoiceRepository.Update(service.transactionManager.GetTransaction(), invoice)
-
-	if invoiceRepoErr != nil {
-		panic(invoiceRepoErr)
-	}
-
-	travelItemRepoErr := service.travelItemRepository.UpdateByInvoiceId(service.transactionManager.GetTransaction(), &invoice.Id, travelItemIds)
-
-	if travelItemRepoErr != nil {
-		panic(travelItemRepoErr)
-	}
-}
-
-func (service *InvoiceDomainService) RemoveTravelItem(invoice Invoice, travelItems []*travelItemDomain.TravelItem) {
-
-	imputationCount, err := service.imputationRepository.CountByInvoiceId(invoice.Id)
-
-	if err != nil {
-		panic(err)
-	}
-
-	if *imputationCount > 0 {
-		panic(CustomErrors.DomainError(errors.New("cannot remove travel item to an invoice  with imputations")))
-	}
-
-	travelItemIds := make([]int, 0)
-
-	for _, travelItem := range travelItems {
-		travelItemIds = append(travelItemIds, int(travelItem.Id))
-		invoice.Amount -= travelItem.TotalPrice
-	}
-
-	invoiceRepoErr := service.invoiceRepository.Update(service.transactionManager.GetTransaction(), &invoice)
-
-	if invoiceRepoErr != nil {
-		panic(invoiceRepoErr)
-	}
-
-	travelItemRepoErr := service.travelItemRepository.UpdateByInvoiceId(service.transactionManager.GetTransaction(), nil, travelItemIds)
-
-	if travelItemRepoErr != nil {
-		panic(travelItemRepoErr)
-	}
-}
-
-func (service *InvoiceDomainService) AddImputation(invoiceId types.EID, imputations []*imputationDomain.Imputation) {
-
-	payments := make([]*paymentDomain.Payment, 0)
 	invoiceDTO, RepositoryErr := service.invoiceRepository.GetById(invoiceId, nil)
 
 	if RepositoryErr != nil {
-		panic(RepositoryErr)
+		return RepositoryErr
 	}
 
-	invoice := NewInvoiceBuilder().
+	invoiceBuilder := NewInvoiceBuilder().
 		SetId(types.EID(invoiceDTO.Id)).
+		SetCreationDate(invoiceDTO.CreationDate).
+		SetDueDate(invoiceDTO.DueDate).
+		SetIdCustomer(types.EID(*invoiceDTO.IdCustomer)).
 		SetAmount(invoiceDTO.Amount).
 		SetBalance(invoiceDTO.Balance).
 		SetCreditApply(invoiceDTO.Credit_apply).
-		SetStatus(invoiceDTO.Status).
-		Build()
+		SetStatus(invoiceDTO.Status)
 
-	for _, imputation := range imputations {
-
-		paymentDTO, RepositoryErr := service.paymentRepository.GetById(imputation.IdPayment)
-
-		if RepositoryErr != nil {
-			panic(RepositoryErr)
-		}
-
-		payment := paymentDomain.NewPaymentBuilder().
-			SetId(types.EID(paymentDTO.Id)).
-			SetStatus(paymentDTO.Status).
-			SetAmount(paymentDTO.Amount).
-			SetBalance(paymentDTO.Balance).
-			SetUsedAmount(paymentDTO.UsedAmount).
-			Build()
-
-		// imputation logic on payment (payment domain)
-		paymentDomainErr := payment.AllocateAmount(imputation.AmountApplied)
-
-		if paymentDomainErr != nil {
-			panic(paymentDomainErr)
-		}
-
-		payments = append(payments, payment)
-
-		// imputation logic on invoice (invoice domain)
-		invoiceDomainErr := invoice.ApplyImputation(imputation.AmountApplied)
-		if invoiceDomainErr != nil {
-			panic(invoiceDomainErr)
-		}
-
+	invoiceDomainErr := invoiceBuilder.Validate()
+	if invoiceDomainErr != nil {
+		return CustomErrors.DomainError(errors.Join(errors.New("error - saved invoice in invalid state"), invoiceDomainErr))
 	}
 
-	service.paymentRepository.SaveAllPaymentsAllocations(service.transactionManager.GetTransaction(), payments)
-	service.invoiceRepository.SaveImputation(service.transactionManager.GetTransaction(), invoice)
-	service.imputationRepository.SaveAll(service.transactionManager.GetTransaction(), imputations)
+	invoiceDomainModel := invoiceBuilder.Build()
 
-}
+	// Check if imputation already exists and sort them
+	for _, imputationDomainModel := range imputationDomainModelList {
+		exists, imputationRecord, err := service.imputationRepository.GetByPaymentAndInvoiceId(imputationDomainModel.IdPayment, imputationDomainModel.IdInvoice)
 
-func (service *InvoiceDomainService) UpdateImputation(invoiceId types.EID, imputations []*imputationDomain.Imputation) {
-
-	payments := make([]*paymentDomain.Payment, 0)
-	invoiceDTO, InvoiceRepositoryErr := service.invoiceRepository.GetById(invoiceId, nil)
-
-	if InvoiceRepositoryErr != nil {
-		panic(InvoiceRepositoryErr)
-	}
-
-	invoice := NewInvoiceBuilder().
-		SetId(types.EID(invoiceDTO.Id)).
-		SetAmount(invoiceDTO.Amount).
-		SetBalance(invoiceDTO.Balance).
-		SetCreditApply(invoiceDTO.Credit_apply).
-		SetStatus(invoiceDTO.Status).
-		Build()
-
-	for _, imputation := range imputations {
-
-		savedImputationDTO, ImputationRepoErr := service.imputationRepository.GetByPaymentAndInvoiceId(imputation.IdPayment, invoiceId)
-
-		if ImputationRepoErr != nil {
-			panic(ImputationRepoErr)
+		if err != nil {
+			return err
 		}
 
-		newImputation := imputationDomain.NewImputationBuilder().
-			SetId(imputation.Id).
-			SetAmountApply(imputation.AmountApplied).
-			Build()
-
-		if newImputation.AmountApplied == 0 && savedImputationDTO.AmountApplied > 0 {
-
-			ImputationRepoErr := service.imputationRepository.Delete(service.transactionManager.GetTransaction(), imputation.Id)
-			if ImputationRepoErr != nil {
-				panic(ImputationRepoErr)
-			}
-
+		if *exists {
+			imputationDomainModel.Id = types.EID(imputationRecord.ID)
+			imputationsToUpdate = append(imputationsToUpdate, imputationDomainModel)
+			savedImputationPaymentIdToAmountMap[imputationRecord.Edges.Payment.ID] = imputationRecord.AmountApply
 		} else {
+			imputationsToInsert = append(imputationsToInsert, imputationDomainModel)
+		}
+	}
 
-			ImputationRepoErr := service.imputationRepository.Update(service.transactionManager.GetTransaction(), newImputation)
-			if ImputationRepoErr != nil {
-				panic(ImputationRepoErr)
+	if len(imputationsToUpdate) > 0 {
+
+		for _, imputationToUpdate := range imputationsToUpdate {
+
+			imputedDiff := imputationToUpdate.AmountApplied - savedImputationPaymentIdToAmountMap[int(imputationToUpdate.IdPayment)]
+
+			// Delete imputation if amount applied is 0
+			if imputationToUpdate.AmountApplied == 0 {
+				repoErr := service.imputationRepository.Delete(service.transactionManager.GetTransaction(), imputationToUpdate.Id)
+
+				if repoErr != nil {
+					return repoErr
+				}
+
+			} else {
+
+				//  Update imputation
+				repoErr := service.imputationRepository.Update(service.transactionManager.GetTransaction(), imputationToUpdate)
+
+				if repoErr != nil {
+					return repoErr
+				}
 			}
+
+			// apply imputation to payment
+			paymentDTO, RepositoryErr := service.paymentRepository.GetById(imputationToUpdate.IdPayment)
+
+			if RepositoryErr != nil {
+				return RepositoryErr
+			}
+
+			paymentBuilder := paymentDomain.NewPaymentBuilder().
+				SetId(types.EID(paymentDTO.Id)).
+				SetStatus(paymentDTO.Status).
+				SetAmount(paymentDTO.Amount).
+				SetBalance(paymentDTO.Balance).
+				SetUsedAmount(paymentDTO.UsedAmount)
+
+			domainErr := paymentBuilder.Validate()
+			if domainErr != nil {
+
+				return domainErr
+			}
+			paymentDomainModel := paymentBuilder.Build()
+			domainErr = paymentDomainModel.AllocateAmount(imputedDiff)
+
+			if domainErr != nil {
+				return domainErr
+			}
+
+			repoErr := service.paymentRepository.SavePaymentAllocation(service.transactionManager.GetTransaction(), paymentDomainModel)
+
+			if repoErr != nil {
+				return repoErr
+			}
+
+			// Case 1.4 - Update invoice domain model
+			domainErr = invoiceDomainModel.ApplyImputation(imputedDiff)
+
+			if domainErr != nil {
+				return domainErr
+			}
+
 		}
-
-		imputationDiff := newImputation.AmountApplied - savedImputationDTO.AmountApplied
-
-		invoiceDomainErr := invoice.ApplyImputation(imputationDiff)
-
-		if invoiceDomainErr != nil {
-			panic(invoiceDomainErr)
-		}
-
-		paymentDTO, PaymentRepositoryErr := service.paymentRepository.GetById(imputation.IdPayment)
-
-		if PaymentRepositoryErr != nil {
-			panic(PaymentRepositoryErr)
-		}
-
-		payment := paymentDomain.NewPaymentBuilder().
-			SetId(types.EID(paymentDTO.Id)).
-			SetAmount(paymentDTO.Amount).
-			SetBalance(paymentDTO.Balance).
-			SetUsedAmount(paymentDTO.UsedAmount).
-			Build()
-
-		paymentDomainErr := payment.AllocateAmount(imputationDiff)
-
-		if paymentDomainErr != nil {
-			panic(paymentDomainErr)
-		}
-		payments = append(payments, payment)
 
 	}
 
-	service.invoiceRepository.SaveImputation(service.transactionManager.GetTransaction(), invoice)
-	service.paymentRepository.SaveAllPaymentsAllocations(service.transactionManager.GetTransaction(), payments)
-}
+	if len(imputationsToInsert) > 0 {
 
-func (service *InvoiceDomainService) VoidInvoice(invoiceId types.EID) error {
-	defer service.transactionManager.CatchError()
+		for _, imputationToInsert := range imputationsToInsert {
+
+			paymentDTO, RepositoryErr := service.paymentRepository.GetById(imputationToInsert.IdPayment)
+
+			if RepositoryErr != nil {
+				return RepositoryErr
+			}
+
+			paymentBuilder := paymentDomain.NewPaymentBuilder().
+				SetId(types.EID(paymentDTO.Id)).
+				SetStatus(paymentDTO.Status).
+				SetAmount(paymentDTO.Amount).
+				SetBalance(paymentDTO.Balance).
+				SetUsedAmount(paymentDTO.UsedAmount)
+
+			domainErr := paymentBuilder.Validate()
+			if domainErr != nil {
+				return domainErr
+			}
+			paymentDomainModel := paymentBuilder.Build()
+
+			domainErr = paymentDomainModel.AllocateAmount(imputationToInsert.AmountApplied)
+
+			if domainErr != nil {
+				return domainErr
+			}
+
+			repoErr := service.paymentRepository.SavePaymentAllocation(service.transactionManager.GetTransaction(), paymentDomainModel)
+
+			if repoErr != nil {
+				return repoErr
+			}
+
+			domainErr = invoiceDomainModel.ApplyImputation(imputationToInsert.AmountApplied)
+
+			if domainErr != nil {
+				return domainErr
+			}
+
+		}
+
+		RepoErr := service.imputationRepository.SaveAll(service.transactionManager.GetTransaction(), imputationsToInsert)
+
+		if RepoErr != nil {
+			return RepoErr
+		}
+	}
+
+	RepoErr := service.invoiceRepository.SaveImputation(service.transactionManager.GetTransaction(), invoiceDomainModel)
+	if RepoErr != nil {
+		return RepoErr
+	}
 
 	return nil
+
 }
+
+// func (service *InvoiceDomainService) AddTravelItem(invoice *Invoice, travelItems []*travelItemDomain.TravelItem) {
+
+// 	imputationCount, err := service.imputationRepository.CountByInvoiceId(invoice.Id)
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	if *imputationCount > 0 {
+// 		panic(CustomErrors.DomainError(errors.New("cannot add travel item to an invoice  with imputations")))
+// 	}
+
+// 	travelItemIds := make([]int, 0)
+
+// 	for _, travelItem := range travelItems {
+// 		travelItemIds = append(travelItemIds, int(travelItem.Id))
+// 		invoice.Amount += travelItem.TotalPrice
+// 	}
+
+// 	invoiceRepoErr := service.invoiceRepository.Update(service.transactionManager.GetTransaction(), invoice)
+
+// 	if invoiceRepoErr != nil {
+// 		panic(invoiceRepoErr)
+// 	}
+
+// 	travelItemRepoErr := service.travelItemRepository.UpdateByInvoiceId(service.transactionManager.GetTransaction(), &invoice.Id, travelItemIds)
+
+// 	if travelItemRepoErr != nil {
+// 		panic(travelItemRepoErr)
+// 	}
+// }
+
+// func (service *InvoiceDomainService) RemoveTravelItem(invoice Invoice, travelItems []*travelItemDomain.TravelItem) {
+
+// 	imputationCount, err := service.imputationRepository.CountByInvoiceId(invoice.Id)
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	if *imputationCount > 0 {
+// 		panic(CustomErrors.DomainError(errors.New("cannot remove travel item to an invoice  with imputations")))
+// 	}
+
+// 	travelItemIds := make([]int, 0)
+
+// 	for _, travelItem := range travelItems {
+// 		travelItemIds = append(travelItemIds, int(travelItem.Id))
+// 		invoice.Amount -= travelItem.TotalPrice
+// 	}
+
+// 	invoiceRepoErr := service.invoiceRepository.Update(service.transactionManager.GetTransaction(), &invoice)
+
+// 	if invoiceRepoErr != nil {
+// 		panic(invoiceRepoErr)
+// 	}
+
+// 	travelItemRepoErr := service.travelItemRepository.UpdateByInvoiceId(service.transactionManager.GetTransaction(), nil, travelItemIds)
+
+// 	if travelItemRepoErr != nil {
+// 		panic(travelItemRepoErr)
+// 	}
+// }
+
+// func (service *InvoiceDomainService) VoidInvoice(invoiceId types.EID) error {
+// 	defer service.transactionManager.CatchError()
+
+// 	return nil
+// }

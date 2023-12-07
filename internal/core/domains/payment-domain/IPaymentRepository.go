@@ -13,6 +13,7 @@ type IPaymentRepository interface {
 	GetAll(*types.GetQueryParams) (*dto.GetAllPaymentsDTO, error)
 	Save(*Payment) (*dto.GetPaymentDTO, error)
 	Update(*Payment) error
-	SaveAllPaymentsAllocations(*ent.Tx, []*Payment)
+	SavePaymentAllocation(*ent.Tx, *Payment) error
+	CheckInvoiceOwnerPayments(invoiceId types.EID, paymentIds []int) (*[]int, error)
 	Delete(id types.EID) error
 }

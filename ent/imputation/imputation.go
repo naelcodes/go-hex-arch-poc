@@ -17,6 +17,10 @@ const (
 	FieldID = "id"
 	// FieldAmountApply holds the string denoting the amount_apply field in the database.
 	FieldAmountApply = "amount_apply"
+	// FieldInvoiceAmount holds the string denoting the invoice_amount field in the database.
+	FieldInvoiceAmount = "invoice_amount"
+	// FieldPaymentAmount holds the string denoting the payment_amount field in the database.
+	FieldPaymentAmount = "payment_amount"
 	// FieldTag holds the string denoting the tag field in the database.
 	FieldTag = "tag"
 	// EdgeInvoice holds the string denoting the invoice edge name in mutations.
@@ -45,6 +49,8 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldAmountApply,
+	FieldInvoiceAmount,
+	FieldPaymentAmount,
 	FieldTag,
 }
 
@@ -75,9 +81,19 @@ var (
 	DefaultAmountApply float64
 	// AmountApplyValidator is a validator for the "amount_apply" field. It is called by the builders before save.
 	AmountApplyValidator func(float64) error
+	// DefaultInvoiceAmount holds the default value on creation for the "invoice_amount" field.
+	DefaultInvoiceAmount float64
+	// InvoiceAmountValidator is a validator for the "invoice_amount" field. It is called by the builders before save.
+	InvoiceAmountValidator func(float64) error
+	// DefaultPaymentAmount holds the default value on creation for the "payment_amount" field.
+	DefaultPaymentAmount float64
+	// PaymentAmountValidator is a validator for the "payment_amount" field. It is called by the builders before save.
+	PaymentAmountValidator func(float64) error
 	// ValueScanner of all Imputation fields.
 	ValueScanner struct {
-		AmountApply field.TypeValueScanner[float64]
+		AmountApply   field.TypeValueScanner[float64]
+		InvoiceAmount field.TypeValueScanner[float64]
+		PaymentAmount field.TypeValueScanner[float64]
 	}
 )
 
@@ -119,6 +135,16 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByAmountApply orders the results by the amount_apply field.
 func ByAmountApply(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAmountApply, opts...).ToFunc()
+}
+
+// ByInvoiceAmount orders the results by the invoice_amount field.
+func ByInvoiceAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInvoiceAmount, opts...).ToFunc()
+}
+
+// ByPaymentAmount orders the results by the payment_amount field.
+func ByPaymentAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPaymentAmount, opts...).ToFunc()
 }
 
 // ByTag orders the results by the tag field.

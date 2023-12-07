@@ -50,6 +50,48 @@ func (iu *ImputationUpdate) AddAmountApply(f float64) *ImputationUpdate {
 	return iu
 }
 
+// SetInvoiceAmount sets the "invoice_amount" field.
+func (iu *ImputationUpdate) SetInvoiceAmount(f float64) *ImputationUpdate {
+	iu.mutation.ResetInvoiceAmount()
+	iu.mutation.SetInvoiceAmount(f)
+	return iu
+}
+
+// SetNillableInvoiceAmount sets the "invoice_amount" field if the given value is not nil.
+func (iu *ImputationUpdate) SetNillableInvoiceAmount(f *float64) *ImputationUpdate {
+	if f != nil {
+		iu.SetInvoiceAmount(*f)
+	}
+	return iu
+}
+
+// AddInvoiceAmount adds f to the "invoice_amount" field.
+func (iu *ImputationUpdate) AddInvoiceAmount(f float64) *ImputationUpdate {
+	iu.mutation.AddInvoiceAmount(f)
+	return iu
+}
+
+// SetPaymentAmount sets the "payment_amount" field.
+func (iu *ImputationUpdate) SetPaymentAmount(f float64) *ImputationUpdate {
+	iu.mutation.ResetPaymentAmount()
+	iu.mutation.SetPaymentAmount(f)
+	return iu
+}
+
+// SetNillablePaymentAmount sets the "payment_amount" field if the given value is not nil.
+func (iu *ImputationUpdate) SetNillablePaymentAmount(f *float64) *ImputationUpdate {
+	if f != nil {
+		iu.SetPaymentAmount(*f)
+	}
+	return iu
+}
+
+// AddPaymentAmount adds f to the "payment_amount" field.
+func (iu *ImputationUpdate) AddPaymentAmount(f float64) *ImputationUpdate {
+	iu.mutation.AddPaymentAmount(f)
+	return iu
+}
+
 // SetTag sets the "tag" field.
 func (iu *ImputationUpdate) SetTag(i imputation.Tag) *ImputationUpdate {
 	iu.mutation.SetTag(i)
@@ -137,6 +179,16 @@ func (iu *ImputationUpdate) check() error {
 			return &ValidationError{Name: "amount_apply", err: fmt.Errorf(`ent: validator failed for field "Imputation.amount_apply": %w`, err)}
 		}
 	}
+	if v, ok := iu.mutation.InvoiceAmount(); ok {
+		if err := imputation.InvoiceAmountValidator(v); err != nil {
+			return &ValidationError{Name: "invoice_amount", err: fmt.Errorf(`ent: validator failed for field "Imputation.invoice_amount": %w`, err)}
+		}
+	}
+	if v, ok := iu.mutation.PaymentAmount(); ok {
+		if err := imputation.PaymentAmountValidator(v); err != nil {
+			return &ValidationError{Name: "payment_amount", err: fmt.Errorf(`ent: validator failed for field "Imputation.payment_amount": %w`, err)}
+		}
+	}
 	if v, ok := iu.mutation.Tag(); ok {
 		if err := imputation.TagValidator(v); err != nil {
 			return &ValidationError{Name: "tag", err: fmt.Errorf(`ent: validator failed for field "Imputation.tag": %w`, err)}
@@ -176,6 +228,34 @@ func (iu *ImputationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			return 0, err
 		}
 		_spec.AddField(imputation.FieldAmountApply, field.TypeFloat64, vv)
+	}
+	if value, ok := iu.mutation.InvoiceAmount(); ok {
+		vv, err := imputation.ValueScanner.InvoiceAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(imputation.FieldInvoiceAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iu.mutation.AddedInvoiceAmount(); ok {
+		vv, err := imputation.ValueScanner.InvoiceAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(imputation.FieldInvoiceAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iu.mutation.PaymentAmount(); ok {
+		vv, err := imputation.ValueScanner.PaymentAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(imputation.FieldPaymentAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iu.mutation.AddedPaymentAmount(); ok {
+		vv, err := imputation.ValueScanner.PaymentAmount.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.AddField(imputation.FieldPaymentAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := iu.mutation.Tag(); ok {
 		_spec.SetField(imputation.FieldTag, field.TypeEnum, value)
@@ -279,6 +359,48 @@ func (iuo *ImputationUpdateOne) AddAmountApply(f float64) *ImputationUpdateOne {
 	return iuo
 }
 
+// SetInvoiceAmount sets the "invoice_amount" field.
+func (iuo *ImputationUpdateOne) SetInvoiceAmount(f float64) *ImputationUpdateOne {
+	iuo.mutation.ResetInvoiceAmount()
+	iuo.mutation.SetInvoiceAmount(f)
+	return iuo
+}
+
+// SetNillableInvoiceAmount sets the "invoice_amount" field if the given value is not nil.
+func (iuo *ImputationUpdateOne) SetNillableInvoiceAmount(f *float64) *ImputationUpdateOne {
+	if f != nil {
+		iuo.SetInvoiceAmount(*f)
+	}
+	return iuo
+}
+
+// AddInvoiceAmount adds f to the "invoice_amount" field.
+func (iuo *ImputationUpdateOne) AddInvoiceAmount(f float64) *ImputationUpdateOne {
+	iuo.mutation.AddInvoiceAmount(f)
+	return iuo
+}
+
+// SetPaymentAmount sets the "payment_amount" field.
+func (iuo *ImputationUpdateOne) SetPaymentAmount(f float64) *ImputationUpdateOne {
+	iuo.mutation.ResetPaymentAmount()
+	iuo.mutation.SetPaymentAmount(f)
+	return iuo
+}
+
+// SetNillablePaymentAmount sets the "payment_amount" field if the given value is not nil.
+func (iuo *ImputationUpdateOne) SetNillablePaymentAmount(f *float64) *ImputationUpdateOne {
+	if f != nil {
+		iuo.SetPaymentAmount(*f)
+	}
+	return iuo
+}
+
+// AddPaymentAmount adds f to the "payment_amount" field.
+func (iuo *ImputationUpdateOne) AddPaymentAmount(f float64) *ImputationUpdateOne {
+	iuo.mutation.AddPaymentAmount(f)
+	return iuo
+}
+
 // SetTag sets the "tag" field.
 func (iuo *ImputationUpdateOne) SetTag(i imputation.Tag) *ImputationUpdateOne {
 	iuo.mutation.SetTag(i)
@@ -379,6 +501,16 @@ func (iuo *ImputationUpdateOne) check() error {
 			return &ValidationError{Name: "amount_apply", err: fmt.Errorf(`ent: validator failed for field "Imputation.amount_apply": %w`, err)}
 		}
 	}
+	if v, ok := iuo.mutation.InvoiceAmount(); ok {
+		if err := imputation.InvoiceAmountValidator(v); err != nil {
+			return &ValidationError{Name: "invoice_amount", err: fmt.Errorf(`ent: validator failed for field "Imputation.invoice_amount": %w`, err)}
+		}
+	}
+	if v, ok := iuo.mutation.PaymentAmount(); ok {
+		if err := imputation.PaymentAmountValidator(v); err != nil {
+			return &ValidationError{Name: "payment_amount", err: fmt.Errorf(`ent: validator failed for field "Imputation.payment_amount": %w`, err)}
+		}
+	}
 	if v, ok := iuo.mutation.Tag(); ok {
 		if err := imputation.TagValidator(v); err != nil {
 			return &ValidationError{Name: "tag", err: fmt.Errorf(`ent: validator failed for field "Imputation.tag": %w`, err)}
@@ -435,6 +567,34 @@ func (iuo *ImputationUpdateOne) sqlSave(ctx context.Context) (_node *Imputation,
 			return nil, err
 		}
 		_spec.AddField(imputation.FieldAmountApply, field.TypeFloat64, vv)
+	}
+	if value, ok := iuo.mutation.InvoiceAmount(); ok {
+		vv, err := imputation.ValueScanner.InvoiceAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(imputation.FieldInvoiceAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iuo.mutation.AddedInvoiceAmount(); ok {
+		vv, err := imputation.ValueScanner.InvoiceAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(imputation.FieldInvoiceAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iuo.mutation.PaymentAmount(); ok {
+		vv, err := imputation.ValueScanner.PaymentAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(imputation.FieldPaymentAmount, field.TypeFloat64, vv)
+	}
+	if value, ok := iuo.mutation.AddedPaymentAmount(); ok {
+		vv, err := imputation.ValueScanner.PaymentAmount.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.AddField(imputation.FieldPaymentAmount, field.TypeFloat64, vv)
 	}
 	if value, ok := iuo.mutation.Tag(); ok {
 		_spec.SetField(imputation.FieldTag, field.TypeEnum, value)

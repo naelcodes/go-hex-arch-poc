@@ -17,7 +17,7 @@ type Money struct {
 
 // Value implements the TypeValueScanner.Value method.
 func (m Money) Value(amount float64) (driver.Value, error) {
-	return m.CurrencyPrefix + strconv.FormatFloat(amount, 'f', 'f', 64), nil
+	return m.CurrencyPrefix + strconv.FormatFloat(amount, 'f', '2', 64), nil
 }
 
 // ScanValue implements the TypeValueScanner.ScanValue method.

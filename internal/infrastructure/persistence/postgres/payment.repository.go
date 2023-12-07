@@ -7,6 +7,7 @@ import (
 
 	"github.com/naelcodes/ab-backend/ent"
 	"github.com/naelcodes/ab-backend/ent/customer"
+	"github.com/naelcodes/ab-backend/ent/invoice"
 	"github.com/naelcodes/ab-backend/ent/payment"
 	paymentDomain "github.com/naelcodes/ab-backend/internal/core/domains/payment-domain"
 	"github.com/naelcodes/ab-backend/internal/core/dto"
@@ -162,24 +163,25 @@ func (repo *PaymentRepository) Save(paymentDomainModel *paymentDomain.Payment) (
 
 }
 
-func (repo *PaymentRepository) SaveAllPaymentsAllocations(transaction *ent.Tx, payments []*paymentDomain.Payment) {
+func (repo *PaymentRepository) SavePaymentAllocation(transaction *ent.Tx, paymentDomainModel *paymentDomain.Payment) error {
 
-	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - SavePaymentsAllocations] - Saving payments allocations: %v", payments))
+	utils.Logger.Info("[PaymentRepository - SavePaymentAllocation] - Saving payment allocation")
 
-	for _, p := range payments {
-		updatedPayment, err := transaction.Payment.UpdateOneID(int(p.Id)).
-			SetBalance(p.Balance).
-			SetUsedAmount(p.UsedAmount).
-			SetStatus(payment.Status(p.Status)).
-			Save(repo.Context)
+	updatedPayment, err := transaction.Payment.UpdateOneID(int(paymentDomainModel.Id)).
+		SetBalance(paymentDomainModel.Balance).
+		SetUsedAmount(paymentDomainModel.UsedAmount).
+		SetStatus(payment.Status(paymentDomainModel.Status)).
+		Save(repo.Context)
 
-		utils.Logger.Info(fmt.Sprintf("[PaymentRepository - SavePaymentsAllocations] - Updated payment: %v", updatedPayment))
-		if err != nil {
-			panic(CustomErrors.RepositoryError(fmt.Errorf("error saving payments allocations: %v", err)))
-		}
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[PaymentRepository - SavePaymentAllocation] - Error updating payment: %v", err))
+		return CustomErrors.RepositoryError(fmt.Errorf("error updating payment: %v", err))
 	}
 
-	utils.Logger.Info("[PaymentRepository - SavePaymentsAllocations] - Saved payments allocations")
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - SavePaymentAllocation] - Updated payment: %v", updatedPayment))
+
+	return nil
+
 }
 
 func (repo *PaymentRepository) Update(paymentEntity *paymentDomain.Payment) error {
@@ -230,4 +232,36 @@ func (repo *PaymentRepository) Delete(id types.EID) error {
 
 	return nil
 
+}
+
+func (repo *PaymentRepository) CheckInvoiceOwnerPayments(invoiceId types.EID, paymentIds []int) (*[]int, error) {
+
+	utils.Logger.Info(fmt.Sprintf("[PaymentRepository - CheckInvoiceOwnerPayments] Invoice ID: %v, Payment IDs: %v", invoiceId, paymentIds))
+
+	invoiceRecord, err := repo.Database.Invoice.Query().WithCustomer(func(q *ent.CustomerQuery) {
+		q.Select(customer.FieldID)
+	}).Where(invoice.IDEQ(int(invoiceId))).Only(repo.Context)
+
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[PaymentRepository - CheckInvoiceOwnerPayments] Error getting invoice: %v", err))
+		return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting invoice: %v", err))
+	}
+
+	customerId := int(invoiceRecord.Edges.Customer.ID)
+	NotFoundPaymentsId := []int{}
+	for _, paymentId := range paymentIds {
+		_, err := repo.Database.Payment.Query().Where(payment.And(payment.IDEQ(int(paymentId)), payment.HasCustomerWith(customer.IDEQ(customerId)))).Only(repo.Context)
+
+		if err != nil {
+			utils.Logger.Error(fmt.Sprintf("[PaymentRepository - CheckInvoiceOwnerPayments] Error getting payment: %v", err))
+			if ent.IsNotFound(err) {
+				NotFoundPaymentsId = append(NotFoundPaymentsId, paymentId)
+			}
+			if ent.IsNotSingular(err) {
+				return nil, CustomErrors.RepositoryError(fmt.Errorf("error getting single payment: %v", err))
+			}
+		}
+
+	}
+	return &NotFoundPaymentsId, nil
 }

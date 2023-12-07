@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/naelcodes/ab-backend/pkg/types"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 
 	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
 )
@@ -35,7 +36,7 @@ func (i *Invoice) ApplyImputation(imputedAmount float64) error {
 		return CustomErrors.DomainError(fmt.Errorf("imputation can't be applied, invoice is already paid"))
 	}
 
-	i.Credit_apply += imputedAmount
+	i.Credit_apply += utils.RoundDecimalPlaces(imputedAmount, 2)
 	err := i.CalculateBalance()
 
 	if err != nil {
@@ -49,7 +50,7 @@ func (i *Invoice) CalculateBalance() error {
 	if i.Credit_apply > i.Amount {
 		return CustomErrors.DomainError(fmt.Errorf("the balance of an invoice can't be less than 0. credit_apply can't be greater than  invoice amount"))
 	}
-	i.Balance = i.Amount - i.Credit_apply
+	i.Balance = utils.RoundDecimalPlaces(i.Amount-i.Credit_apply, 2)
 	i.UpdateStatus()
 
 	return nil

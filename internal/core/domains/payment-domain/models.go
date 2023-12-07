@@ -6,6 +6,7 @@ import (
 
 	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
 	"github.com/naelcodes/ab-backend/pkg/types"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 type Payment struct {
@@ -26,7 +27,7 @@ func (p *Payment) calculateBalance() error {
 		return CustomErrors.DomainError(errors.New("payment balance can't be less than 0"))
 	}
 
-	p.Balance = p.Amount - p.UsedAmount
+	p.Balance = utils.RoundDecimalPlaces(p.Amount-p.UsedAmount, 2)
 	p.updateStatus()
 
 	return nil
@@ -51,7 +52,7 @@ func (p *Payment) AllocateAmount(imputationAmount float64) error {
 		return CustomErrors.DomainError(fmt.Errorf("allocated(used) amount on payment %v can't be greater than the payment amount", p.PaymentNumber))
 	}
 
-	p.UsedAmount = p.UsedAmount + imputationAmount
+	p.UsedAmount = p.UsedAmount + utils.RoundDecimalPlaces(imputationAmount, 2)
 	err := p.calculateBalance()
 
 	if err != nil {

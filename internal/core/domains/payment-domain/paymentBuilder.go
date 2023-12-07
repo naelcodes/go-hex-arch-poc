@@ -80,8 +80,8 @@ func (builder *PaymentBuilder) Validate() error {
 		builder.errors = errors.Join(builder.errors, fmt.Errorf("payment.usedAmount can't be less than 0"))
 	}
 
-	if builder.payment.Balance != (builder.payment.Amount - builder.payment.UsedAmount) {
-		builder.errors = errors.Join(builder.errors, fmt.Errorf("payment.balance must be equal to the difference between payment.amount  and payment.usedAmount"))
+	if builder.payment.Balance != utils.RoundDecimalPlaces(builder.payment.Amount-builder.payment.UsedAmount, 2) {
+		builder.errors = errors.Join(builder.errors, fmt.Errorf("payment.balance (%v) must be equal to the difference between payment.amount (%v) and payment.usedAmount (%v)", builder.payment.Balance, float64(builder.payment.Amount), float64(builder.payment.UsedAmount)))
 	}
 
 	if builder.payment.UsedAmount > builder.payment.Amount {

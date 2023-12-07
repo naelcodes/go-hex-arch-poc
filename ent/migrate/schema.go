@@ -32,6 +32,8 @@ var (
 	InvoicePaymentReceivedColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "amount_apply", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "invoice_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
+		{Name: "payment_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "money"}},
 		{Name: "tag", Type: field.TypeEnum, Enums: []string{"1", "2", "3"}, Default: "3"},
 		{Name: "id_invoice", Type: field.TypeInt},
 		{Name: "id_payment_received", Type: field.TypeInt},
@@ -44,13 +46,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "invoice_payment_received_invoice_imputations",
-				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[3]},
+				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[5]},
 				RefColumns: []*schema.Column{InvoiceColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "invoice_payment_received_payment_received_imputations",
-				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[4]},
+				Columns:    []*schema.Column{InvoicePaymentReceivedColumns[6]},
 				RefColumns: []*schema.Column{PaymentReceivedColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
