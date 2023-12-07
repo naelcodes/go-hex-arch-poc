@@ -191,7 +191,7 @@ func (repo *InvoiceRepository) GetAll(queryParams *types.GetQueryParams) (*dto.G
 		}
 	}
 
-	invoices, err := invoiceQuery.All(repo.Context)
+	invoices, err := invoiceQuery.Order(ent.Asc(invoice.FieldInvoiceNumber)).All(repo.Context)
 
 	if err != nil {
 		utils.Logger.Error(fmt.Sprintf("[InvoiceRepository - GetAll] Error getting invoices records: %v", err))

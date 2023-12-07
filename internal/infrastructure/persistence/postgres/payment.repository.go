@@ -105,7 +105,7 @@ func (repo *PaymentRepository) GetAll(queryParams *types.GetQueryParams) (*dto.G
 		PaymentQuery.Offset(pageNumber * pageSize).Limit(pageSize)
 	}
 
-	payments, err := PaymentQuery.All(repo.Context)
+	payments, err := PaymentQuery.Order(ent.Asc(payment.FieldNumber)).All(repo.Context)
 
 	if err != nil {
 		utils.Logger.Error(fmt.Sprintf("[PaymentRepository - GetAll] Error getting payments: %v", err))
