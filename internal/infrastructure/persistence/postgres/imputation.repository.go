@@ -49,7 +49,7 @@ func (repo *ImputationRepository) GetByInvoiceId(idInvoice types.EID) (*dto.GetI
 	paymentRecords, err := repo.Database.Payment.Query().
 		Where(payment.
 			And(payment.HasCustomerWith(customer.IDEQ(customerId)),
-				payment.StatusEQ(payment.StatusOpen),
+				// payment.StatusEQ(payment.StatusOpen),
 				payment.TagEQ(payment.Tag3))).
 		All(repo.Context)
 

@@ -28,7 +28,7 @@ func (p *Payment) calculateBalance() error {
 	}
 
 	p.Balance = utils.RoundDecimalPlaces(p.Amount-p.UsedAmount, 2)
-	p.updateStatus()
+	// p.updateStatus()
 
 	return nil
 }
@@ -44,9 +44,9 @@ func (p *Payment) updateStatus() {
 
 func (p *Payment) AllocateAmount(imputationAmount float64) error {
 
-	if p.Status == "used" {
-		return CustomErrors.DomainError(fmt.Errorf("payment %v is already used. new allocations can't be made on a used payment", p.PaymentNumber))
-	}
+	// if p.Status == "used" {
+	// 	return CustomErrors.DomainError(fmt.Errorf("payment %v is already used. new allocations can't be made on a used payment", p.PaymentNumber))
+	// }
 
 	if p.UsedAmount+imputationAmount > p.Amount {
 		return CustomErrors.DomainError(fmt.Errorf("allocated(used) amount on payment %v can't be greater than the payment amount", p.PaymentNumber))

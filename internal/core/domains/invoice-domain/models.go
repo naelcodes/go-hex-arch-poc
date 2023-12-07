@@ -32,9 +32,9 @@ func (i *Invoice) CheckDates() error {
 	return nil
 }
 func (i *Invoice) ApplyImputation(imputedAmount float64) error {
-	if i.Status == "paid" {
-		return CustomErrors.DomainError(fmt.Errorf("imputation can't be applied, invoice is already paid"))
-	}
+	// if i.Status == "paid" {
+	// 	return CustomErrors.DomainError(fmt.Errorf("imputation can't be applied, invoice is already paid"))
+	// }
 
 	i.Credit_apply += utils.RoundDecimalPlaces(imputedAmount, 2)
 	err := i.CalculateBalance()
@@ -51,7 +51,7 @@ func (i *Invoice) CalculateBalance() error {
 		return CustomErrors.DomainError(fmt.Errorf("the balance of an invoice can't be less than 0. credit_apply can't be greater than  invoice amount"))
 	}
 	i.Balance = utils.RoundDecimalPlaces(i.Amount-i.Credit_apply, 2)
-	i.UpdateStatus()
+	// i.UpdateStatus()
 
 	return nil
 }
