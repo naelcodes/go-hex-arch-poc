@@ -67,6 +67,7 @@ func (repo *ImputationRepository) GetByInvoiceId(idInvoice types.EID) (*dto.GetI
 		paymentDetails := new(dto.PaymentDetails)
 		paymentDetails.Id = int(paymentRecord.ID)
 		paymentDetails.Amount = paymentRecord.Amount
+		paymentDetails.Balance = paymentRecord.Balance
 		paymentDetails.PaymentDate = utils.FormatDate(paymentRecord.Date)
 		paymentDetails.PaymentNumber = paymentRecord.Number
 
