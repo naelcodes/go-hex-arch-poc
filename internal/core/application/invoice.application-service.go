@@ -122,20 +122,21 @@ func (application *Application) GetInvoiceService(id int, queryParams *types.Get
 
 }
 
-func (application *Application) ApplyInvoiceImputationService(invoiceId types.EID, invoiceImputationDTOList []*dto.InvoiceImputationDTO) error {
+func (application *Application) ApplyInvoiceImputationService(invoiceId types.EID, invoiceImputationDTOList []*dto.InvoiceImputationDTO) (*dto.ImputationOperationResult, error) {
 
 	utils.Logger.Info(fmt.Sprintf("[ApplyInvoiceImputationService] - InvoiceImputationDTOList: %v", invoiceImputationDTOList))
+	imputationOperationResult := new(dto.ImputationOperationResult)
 
 	exists, err := application.invoiceRepository.Exists(invoiceId)
 
 	if err != nil {
 		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error checking if invoice exists: %v", err))
-		return err
+		return nil, err
 	}
 
 	if !exists {
 		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Invoice does not exist: %v", invoiceId))
-		return CustomError.ValidationError(errors.New("invoice does not exist"))
+		return nil, CustomError.ValidationError(errors.New("invoice does not exist"))
 	}
 
 	//construct imputationDomainModel
@@ -157,24 +158,28 @@ func (application *Application) ApplyInvoiceImputationService(invoiceId types.EI
 
 	if err != nil {
 		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error checking if payment exists: %v", err))
-		return err
+		return nil, err
 	}
 
 	if len(*notFoundList) > 0 {
 		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - %v Payments used in imputation does not belong to invoice owner, payment ids: %v", len(*notFoundList), *notFoundList))
-		return CustomError.ValidationError(fmt.Errorf("%v payments used in imputation does not belong to invoice owner, payment ids: %v", len(*notFoundList), *notFoundList))
+		return nil, CustomError.ValidationError(fmt.Errorf("%v payments used in imputation does not belong to invoice owner, payment ids: %v", len(*notFoundList), *notFoundList))
 	}
 
 	transactionErr := application.TransactionManager.Begin()
 
 	if transactionErr != nil {
 		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error starting transaction: %v", transactionErr))
-		return CustomError.ServiceError(transactionErr, "TransactionManager.Begin()")
+		return nil, CustomError.ServiceError(transactionErr, "TransactionManager.Begin()")
 	}
 
 	domainService := invoiceDomain.NewInvoiceDomainService(application.imputationRepository, application.paymentRepository, application.invoiceRepository, application.TransactionManager)
 
-	err = domainService.ApplyImputation(invoiceId, ImputationDomainModelList)
+	insertedCount, updatedCount, deletedCount, err := domainService.ApplyImputation(invoiceId, ImputationDomainModelList)
+
+	imputationOperationResult.InsertedImputationCount = insertedCount
+	imputationOperationResult.UpdatedImputationCount = updatedCount
+	imputationOperationResult.DeletedImputationCount = deletedCount
 
 	if err != nil {
 		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error applying imputation: %v", err))
@@ -182,20 +187,37 @@ func (application *Application) ApplyInvoiceImputationService(invoiceId types.EI
 
 		if RollbackErr != nil {
 			utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error rolling back transaction: %v", RollbackErr))
-			return CustomError.ServiceError(errors.Join(RollbackErr, err), "TransactionManager.Rollback()")
+			return nil, CustomError.ServiceError(errors.Join(RollbackErr, err), "TransactionManager.Rollback()")
 		}
-		return err
+		return nil, err
 	}
 
 	transactionCommitErr := application.TransactionManager.Commit()
 
 	if transactionErr != nil {
 		utils.Logger.Error(fmt.Sprintf("[ApplyInvoiceImputationService] - Error committing transaction: %v", transactionCommitErr))
-		return CustomError.ServiceError(transactionCommitErr, "TransactionManager.Commit()")
+		return nil, CustomError.ServiceError(transactionCommitErr, "TransactionManager.Commit()")
 	}
 
 	utils.Logger.Info("[ApplyInvoiceImputationService] - Transaction committed")
 
-	return nil
+	return imputationOperationResult, nil
+
+}
+
+func (application *Application) GetInvoiceImputationService(invoiceId types.EID) (*dto.GetInvoiceImputationDTO, error) {
+
+	utils.Logger.Info(fmt.Sprintf("[GetInvoiceImputationService] - InvoiceId: %v", invoiceId))
+
+	getInvoiceImputationDTO, err := application.imputationRepository.GetByInvoiceId(invoiceId)
+
+	if err != nil {
+		utils.Logger.Error(fmt.Sprintf("[GetInvoiceImputationService] - Error getting invoice imputation: %v", err))
+		return nil, err
+	}
+
+	utils.Logger.Info(fmt.Sprintf("[GetInvoiceImputationService] - GetInvoiceImputationDTO: %v", getInvoiceImputationDTO))
+
+	return getInvoiceImputationDTO, nil
 
 }

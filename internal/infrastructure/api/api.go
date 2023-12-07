@@ -19,7 +19,7 @@ type RestController struct {
 func (controller *RestController) Init(globalContext *types.GlobalContext) {
 	server := globalContext.AppEngine.GetServer()
 
-	server.Use(recover.New())
+	server.Use(recover.New(recover.Config{EnableStackTrace: true}))
 	server.Use(middleware.Cors())
 	server.Use(middleware.QueryValidator())
 

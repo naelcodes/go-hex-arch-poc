@@ -8,13 +8,13 @@ import (
 )
 
 type GetInvoiceImputationDTO struct {
-	IdInvoice   int                    `json:"idInvoice"`
-	Imputations []GetImputationDetails `json:"imputations"`
+	InvoiceAmount float64                 `json:"invoiceAmount"`
+	Imputations   []*GetImputationDetails `json:"imputations"`
 }
 
 type GetImputationDetails struct {
-	Payment       PaymentDetails `json:"payment"`
-	AmountApplied float64        `json:"amountApplied"`
+	Payment       *PaymentDetails `json:"payment"`
+	AmountApplied float64         `json:"amountApplied"`
 }
 
 type PaymentDetails struct {
@@ -45,6 +45,12 @@ func (i InvoiceImputationDTO) Validate() error {
 			return nil
 		})),
 	)
+}
+
+type ImputationOperationResult struct {
+	InsertedImputationCount int
+	UpdatedImputationCount  int
+	DeletedImputationCount  int
 }
 
 type GetAllImputationsDTO types.GetAllDTO[[]*GetInvoiceImputationDTO]

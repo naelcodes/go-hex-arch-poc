@@ -33,16 +33,20 @@ func NewInvoiceDomainService(
 	}
 }
 
-func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputationDomainModelList []*imputationDomain.Imputation) error {
+func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputationDomainModelList []*imputationDomain.Imputation) (int, int, int, error) {
 
 	savedImputationPaymentIdToAmountMap := make(map[int]float64, 0)
 	imputationsToInsert := make([]*imputationDomain.Imputation, 0)
 	imputationsToUpdate := make([]*imputationDomain.Imputation, 0)
 
+	insertedImputationCount := 0
+	updatedImputationCount := 0
+	deletedImputationCount := 0
+
 	invoiceDTO, RepositoryErr := service.invoiceRepository.GetById(invoiceId, nil)
 
 	if RepositoryErr != nil {
-		return RepositoryErr
+		return 0, 0, 0, RepositoryErr
 	}
 
 	invoiceBuilder := NewInvoiceBuilder().
@@ -57,7 +61,7 @@ func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputa
 
 	invoiceDomainErr := invoiceBuilder.Validate()
 	if invoiceDomainErr != nil {
-		return CustomErrors.DomainError(errors.Join(errors.New("error - saved invoice in invalid state"), invoiceDomainErr))
+		return 0, 0, 0, CustomErrors.DomainError(errors.Join(errors.New("error - saved invoice in invalid state"), invoiceDomainErr))
 	}
 
 	invoiceDomainModel := invoiceBuilder.Build()
@@ -67,13 +71,16 @@ func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputa
 		exists, imputationRecord, err := service.imputationRepository.GetByPaymentAndInvoiceId(imputationDomainModel.IdPayment, imputationDomainModel.IdInvoice)
 
 		if err != nil {
-			return err
+			return insertedImputationCount, updatedImputationCount, deletedImputationCount, err
 		}
 
 		if *exists {
-			imputationDomainModel.Id = types.EID(imputationRecord.ID)
-			imputationsToUpdate = append(imputationsToUpdate, imputationDomainModel)
-			savedImputationPaymentIdToAmountMap[imputationRecord.Edges.Payment.ID] = imputationRecord.AmountApply
+			if imputationDomainModel.AmountApplied != imputationRecord.AmountApply {
+				imputationDomainModel.Id = types.EID(imputationRecord.ID)
+				imputationsToUpdate = append(imputationsToUpdate, imputationDomainModel)
+				savedImputationPaymentIdToAmountMap[imputationRecord.Edges.Payment.ID] = imputationRecord.AmountApply
+			}
+
 		} else {
 
 			if imputationDomainModel.AmountApplied > 0 {
@@ -91,27 +98,30 @@ func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputa
 
 			// Delete imputation if amount applied is 0
 			if imputationToUpdate.AmountApplied == 0 {
-				repoErr := service.imputationRepository.Delete(service.transactionManager.GetTransaction(), imputationToUpdate.Id)
+				deleteCount, repoErr := service.imputationRepository.Delete(service.transactionManager.GetTransaction(), imputationToUpdate.Id)
 
 				if repoErr != nil {
-					return repoErr
+					return insertedImputationCount, updatedImputationCount, deletedImputationCount, repoErr
 				}
 
+				deletedImputationCount += deleteCount
 			} else {
 
 				//  Update imputation
-				repoErr := service.imputationRepository.Update(service.transactionManager.GetTransaction(), imputationToUpdate)
+				updateCount, repoErr := service.imputationRepository.Update(service.transactionManager.GetTransaction(), imputationToUpdate)
 
 				if repoErr != nil {
-					return repoErr
+					return insertedImputationCount, updatedImputationCount, deletedImputationCount, repoErr
 				}
+
+				updatedImputationCount += updateCount
 			}
 
 			// apply imputation to payment
 			paymentDTO, RepositoryErr := service.paymentRepository.GetById(imputationToUpdate.IdPayment)
 
 			if RepositoryErr != nil {
-				return RepositoryErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, RepositoryErr
 			}
 
 			paymentBuilder := paymentDomain.NewPaymentBuilder().
@@ -124,26 +134,26 @@ func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputa
 			domainErr := paymentBuilder.Validate()
 			if domainErr != nil {
 
-				return domainErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, domainErr
 			}
 			paymentDomainModel := paymentBuilder.Build()
 			domainErr = paymentDomainModel.AllocateAmount(imputedDiff)
 
 			if domainErr != nil {
-				return domainErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, domainErr
 			}
 
 			repoErr := service.paymentRepository.SavePaymentAllocation(service.transactionManager.GetTransaction(), paymentDomainModel)
 
 			if repoErr != nil {
-				return repoErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, repoErr
 			}
 
 			// Case 1.4 - Update invoice domain model
 			domainErr = invoiceDomainModel.ApplyImputation(imputedDiff)
 
 			if domainErr != nil {
-				return domainErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, domainErr
 			}
 
 		}
@@ -157,7 +167,7 @@ func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputa
 			paymentDTO, RepositoryErr := service.paymentRepository.GetById(imputationToInsert.IdPayment)
 
 			if RepositoryErr != nil {
-				return RepositoryErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, RepositoryErr
 			}
 
 			paymentBuilder := paymentDomain.NewPaymentBuilder().
@@ -169,43 +179,49 @@ func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputa
 
 			domainErr := paymentBuilder.Validate()
 			if domainErr != nil {
-				return domainErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, domainErr
 			}
 			paymentDomainModel := paymentBuilder.Build()
 
 			domainErr = paymentDomainModel.AllocateAmount(imputationToInsert.AmountApplied)
 
 			if domainErr != nil {
-				return domainErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, domainErr
 			}
 
 			repoErr := service.paymentRepository.SavePaymentAllocation(service.transactionManager.GetTransaction(), paymentDomainModel)
 
 			if repoErr != nil {
-				return repoErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, repoErr
 			}
 
 			domainErr = invoiceDomainModel.ApplyImputation(imputationToInsert.AmountApplied)
 
 			if domainErr != nil {
-				return domainErr
+				return insertedImputationCount, updatedImputationCount, deletedImputationCount, domainErr
 			}
 
 		}
 
-		RepoErr := service.imputationRepository.SaveAll(service.transactionManager.GetTransaction(), imputationsToInsert)
+		insertedCount, RepoErr := service.imputationRepository.SaveAll(service.transactionManager.GetTransaction(), imputationsToInsert)
 
 		if RepoErr != nil {
-			return RepoErr
+			return insertedImputationCount, updatedImputationCount, deletedImputationCount, RepoErr
 		}
+
+		insertedImputationCount += insertedCount
 	}
 
-	RepoErr := service.invoiceRepository.SaveImputation(service.transactionManager.GetTransaction(), invoiceDomainModel)
-	if RepoErr != nil {
-		return RepoErr
+	if len(imputationsToInsert) > 0 || len(imputationsToUpdate) > 0 {
+
+		RepoErr := service.invoiceRepository.SaveImputation(service.transactionManager.GetTransaction(), invoiceDomainModel)
+		if RepoErr != nil {
+			return insertedImputationCount, updatedImputationCount, deletedImputationCount, RepoErr
+		}
+
 	}
 
-	return nil
+	return insertedImputationCount, updatedImputationCount, deletedImputationCount, nil
 
 }
 
