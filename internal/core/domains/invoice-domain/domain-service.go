@@ -2,6 +2,7 @@ package invoiceDomain
 
 import (
 	"errors"
+	"fmt"
 
 	travelItemDomain "github.com/naelcodes/ab-backend/internal/core/domains/TravelItem-domain"
 	imputationDomain "github.com/naelcodes/ab-backend/internal/core/domains/imputation-domain"
@@ -9,6 +10,7 @@ import (
 	CustomErrors "github.com/naelcodes/ab-backend/pkg/errors"
 	"github.com/naelcodes/ab-backend/pkg/transactionManager"
 	"github.com/naelcodes/ab-backend/pkg/types"
+	"github.com/naelcodes/ab-backend/pkg/utils"
 )
 
 type InvoiceDomainService struct {
@@ -95,6 +97,8 @@ func (service *InvoiceDomainService) ApplyImputation(invoiceId types.EID, imputa
 		for _, imputationToUpdate := range imputationsToUpdate {
 
 			imputedDiff := imputationToUpdate.AmountApplied - savedImputationPaymentIdToAmountMap[int(imputationToUpdate.IdPayment)]
+
+			utils.Logger.Info(fmt.Sprintf("imputed diff: %f", imputedDiff))
 
 			// Delete imputation if amount applied is 0
 			if imputationToUpdate.AmountApplied == 0 {
